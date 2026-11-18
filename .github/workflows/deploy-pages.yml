@@ -95,7 +95,13 @@ jobs:
             }
 
             await page.getByText("Food diary", { exact: true }).last().click();
-            await page.getByText("BROWSE BY CATEGORY", { exact: true }).waitFor({ timeout: 180000 });
+            try {
+              await page.getByText("BROWSE BY CATEGORY", { exact: true }).waitFor({ timeout: 180000 });
+            } catch (error) {
+              console.error("FOOD DIARY DIAGNOSTICS:", JSON.stringify(await page.evaluate(() => ({ title: document.title, text: document.body?.innerText?.slice(0, 12000), url: location.href, isolated: window.crossOriginIsolated, controller: Boolean(navigator.serviceWorker?.controller) }))));
+              console.error("BROWSER ERRORS:", JSON.stringify(errors));
+              throw error;
+            }
             await page.getByText("Meat & poultry", { exact: true }).click();
             await page.getByText(/chicken|beef|pork|turkey/i).first().waitFor({ timeout: 120000 });
             await page.getByPlaceholder("Search saved foods").fill("chicken");
