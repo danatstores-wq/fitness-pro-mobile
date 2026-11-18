@@ -98,6 +98,13 @@ async function database() {
           value REAL,
           unit TEXT NOT NULL DEFAULT 'kg'
         );
+        CREATE TABLE IF NOT EXISTS body_measurements (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          recorded_at TEXT NOT NULL,
+          measurement_type TEXT NOT NULL,
+          value REAL NOT NULL CHECK (value > 0),
+          unit TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS translations (
           language TEXT NOT NULL,
           translation_key TEXT NOT NULL,
@@ -210,7 +217,7 @@ export async function addWeightMeasurement(weightKg: number) {
 
 export async function getWeightMeasurements(): Promise<{ id: number; recorded_at: string; weight_kg: number }[]> {
   const db = await database();
-  return db.getAllAsync("SELECT id, recorded_at, weight_kg FROM measurements ORDER BY recorded_at DESC LIMIT 100");
+  return db.getAllAsync("SELECT id, recorded_at, weight_kg FROM measurements WHERE measurement_type = 'weight' ORDER BY recorded_at DESC LIMIT 100");
 }
 
 export async function getDatabaseStatus() {
@@ -478,9 +485,15 @@ export async function addBodyMeasurement(type: string, value: number, unit: stri
     throw new Error("Enter a measurement type, unit and positive value.");
   }
   const db = await database();
-  const weightKg = type.toLowerCase() === "weight" && unit.toLowerCase() === "kg" ? value : 0.001;
   await db.runAsync(
-    "INSERT INTO measurements (recorded_at, weight_kg, measurement_type, value, unit) VALUES (?, ?, ?, ?, ?)",
-    new Date().toISOString(), weightKg, type.trim().toLowerCase(), value, unit.trim()
+    "INSERT INTO body_measurements (recorded_at, measurement_type, value, unit) VALUES (?, ?, ?, ?)",
+    new Date().toISOString(), type.trim().toLowerCase(), value, unit.trim()
+  );
+}
+
+export async function getBodyMeasurements() {
+  const db = await database();
+  return db.getAllAsync<{ id: number; recorded_at: string; measurement_type: string; value: number; unit: string }>(
+    "SELECT id, recorded_at, measurement_type, value, unit FROM body_measurements ORDER BY recorded_at DESC LIMIT 200"
   );
 }
