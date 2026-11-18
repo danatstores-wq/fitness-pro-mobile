@@ -123,8 +123,10 @@ export default function App() {
     let active = true;
     (async () => {
       try {
+        // Make the app usable as soon as the smaller verified Foundation
+        // catalogue is ready. The much larger FNDDS catalogue is imported in
+        // the background so it cannot block profile saving or food browsing.
         await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as unknown as ImportedFoodRecord[]);
-        await ensureFnddsFoodsImported(loadFnddsFoods);
         const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
         if (!active) return;
         if (storedProfile) {
@@ -142,6 +144,12 @@ export default function App() {
           setSaved(true);
         }
         setWeightLog(measurements);
+        setHydrated(true);
+        ensureFnddsFoodsImported(loadFnddsFoods).then(result => {
+          console.info("Additional USDA FNDDS foods imported", result.imported);
+        }).catch(error => {
+          console.warn("Additional USDA FNDDS catalogue import failed; Foundation foods remain available", error);
+        });
       } catch (error) {
         console.warn("Could not load local fitness data", error);
         setStorageError(error instanceof Error ? error.message : String(error));
