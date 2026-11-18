@@ -15,7 +15,7 @@ export const translations: Record<Language, Record<string, string>> = {
     weight: "Weight (kg)", goalWeight: "Goal weight (kg)", activity: "Activity level",
     objective: "Goal", lose: "Lose weight", maintain: "Maintain", gain: "Gain weight",
     sedentary: "Sedentary", light: "Light", moderate: "Moderate", active: "Active", veryActive: "Very active",
-    save: "Save profile", saved: "Profile saved on this device", language: "Language",
+    save: "Save profile", saved: "Profile updated", language: "Language",
     healthyRange: "Healthy weight range", bmr: "BMR", tdee: "Daily energy need",
     caloriesLeft: "calories left", settings: "Settings", emptyProgress: "Start logging your weight to see your progress.",
     invalid: "Please enter valid profile details.", grams: "g", kg: "kg"
@@ -34,7 +34,7 @@ export const translations: Record<Language, Record<string, string>> = {
     weight: "الوزن (كغ)", goalWeight: "الوزن المستهدف (كغ)", activity: "مستوى النشاط",
     objective: "الهدف", lose: "خسارة الوزن", maintain: "المحافظة على الوزن", gain: "زيادة الوزن",
     sedentary: "قليل الحركة", light: "نشاط خفيف", moderate: "نشاط متوسط", active: "نشط", veryActive: "نشاط عالٍ",
-    save: "حفظ الملف", saved: "تم حفظ الملف على هذا الجهاز", language: "اللغة",
+    save: "حفظ الملف", saved: "تم تحديث الملف الشخصي", language: "اللغة",
     healthyRange: "نطاق الوزن الصحي", bmr: "معدل الأيض الأساسي", tdee: "احتياج الطاقة اليومي",
     caloriesLeft: "سعرة متبقية", settings: "الإعدادات", emptyProgress: "ابدأ بتسجيل وزنك لمتابعة تقدمك.",
     invalid: "يرجى إدخال بيانات صحيحة.", grams: "غ", kg: "كغ"
@@ -53,7 +53,7 @@ export const translations: Record<Language, Record<string, string>> = {
     weight: "Poids (kg)", goalWeight: "Poids cible (kg)", activity: "Niveau d'activité",
     objective: "Objectif", lose: "Perdre du poids", maintain: "Maintenir", gain: "Prendre du poids",
     sedentary: "Sédentaire", light: "Léger", moderate: "Modéré", active: "Actif", veryActive: "Très actif",
-    save: "Enregistrer le profil", saved: "Profil enregistré sur cet appareil", language: "Langue",
+    save: "Enregistrer le profil", saved: "Profil mis à jour", language: "Langue",
     healthyRange: "Fourchette de poids santé", bmr: "Métabolisme de base", tdee: "Besoin énergétique quotidien",
     caloriesLeft: "calories restantes", settings: "Paramètres", emptyProgress: "Enregistrez votre poids pour suivre vos progrès.",
     invalid: "Veuillez saisir des informations valides.", grams: "g", kg: "kg"
