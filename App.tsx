@@ -18,12 +18,12 @@ type Profile = {
   waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
 };
 
-const GOLD = "#258F72";
-const GREEN = "#54B88B";
-const BG = "#F4F8F5";
+const GOLD = "#3478B8";
+const GREEN = "#75A9D6";
+const BG = "#F1F4F8";
 const PANEL = "#FFFFFF";
-const MUTED = "#718078";
-const IVORY = "#20352D";
+const MUTED = "#536477";
+const IVORY = "#172638";
 const initialProfile: Profile = {
   age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
@@ -131,10 +131,10 @@ export default function App() {
         if (!active) return;
         if (storedProfile) {
           setProfile({
-            age: String(storedProfile.age), sex: storedProfile.sex,
-            height: String(storedProfile.height_cm),
-            weight: String(storedProfile.current_weight_kg),
-            targetWeight: String(storedProfile.target_weight_kg),
+            age: storedProfile.age > 0 ? String(storedProfile.age) : "", sex: storedProfile.sex,
+            height: storedProfile.height_cm > 0 ? String(storedProfile.height_cm) : "",
+            weight: storedProfile.current_weight_kg > 0 ? String(storedProfile.current_weight_kg) : "",
+            targetWeight: storedProfile.target_weight_kg > 0 ? String(storedProfile.target_weight_kg) : "",
             activity: storedProfile.activity_level as Profile["activity"],
             objective: storedProfile.fitness_objective as Profile["objective"],
             waist: storedProfile.waist_cm == null ? "" : String(storedProfile.waist_cm), hip: storedProfile.hip_cm == null ? "" : String(storedProfile.hip_cm),
@@ -185,31 +185,41 @@ export default function App() {
   };
   const saveProfile = async () => {
     if (!hydrated) {
-      Alert.alert("Please wait", "The food catalogue and local database are still being prepared.");
+      Alert.alert("Please wait", "Your local data is still being prepared.");
       return;
     }
     if (storageError) {
       Alert.alert("Storage unavailable", storageError);
       return;
     }
-    if (!metrics || Number(profile.age) < 13 || Number(profile.age) > 110 ||
-        Number(profile.height) < 80 || Number(profile.height) > 250 ||
-        Number(profile.weight) <= 0 || Number(profile.targetWeight) <= 0) {
+    const numericFields = [profile.age, profile.height, profile.weight, profile.targetWeight, profile.waist, profile.hip, profile.neck, profile.bodyFat, profile.muscleMass];
+    if (!numericFields.some(value => value.trim() !== "")) {
+      Alert.alert("Nothing to save", "Enter any profile detail you want to save. All fields are optional.");
+      return;
+    }
+    const valid = (!profile.age || (Number(profile.age) >= 13 && Number(profile.age) <= 110)) &&
+      (!profile.height || (Number(profile.height) >= 80 && Number(profile.height) <= 250)) &&
+      (!profile.weight || Number(profile.weight) > 0) &&
+      (!profile.targetWeight || Number(profile.targetWeight) > 0) &&
+      [profile.waist, profile.hip, profile.neck, profile.bodyFat, profile.muscleMass].every(value => !value || Number(value) > 0);
+    if (!valid) {
       Alert.alert(t.invalid);
       return;
     }
     try {
       await saveProfileToDatabase({
-        age: Number(profile.age), sex: profile.sex,
-        height_cm: Number(profile.height), current_weight_kg: Number(profile.weight),
-        target_weight_kg: Number(profile.targetWeight),
+        age: Number(profile.age) || 0, sex: profile.sex,
+        height_cm: Number(profile.height) || 0, current_weight_kg: Number(profile.weight) || 0,
+        target_weight_kg: Number(profile.targetWeight) || 0,
         activity_level: profile.activity, fitness_objective: profile.objective,
         waist_cm: Number(profile.waist) || null, hip_cm: Number(profile.hip) || null, neck_cm: Number(profile.neck) || null,
         body_fat_percent: Number(profile.bodyFat) || null, muscle_mass_kg: Number(profile.muscleMass) || null
       });
-      const existingMeasurements = await getWeightMeasurements();
-      if (existingMeasurements.length === 0) await addWeightMeasurement(Number(profile.weight));
-      setWeightLog(await getWeightMeasurements());
+      if (Number(profile.weight) > 0) {
+        const existingMeasurements = await getWeightMeasurements();
+        if (existingMeasurements.length === 0) await addWeightMeasurement(Number(profile.weight));
+        setWeightLog(await getWeightMeasurements());
+      }
       setSaved(true);
       Alert.alert(t.saved);
     } catch (error) {
@@ -233,7 +243,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <View style={styles.logo}><Text style={styles.logoMark}>d.</Text></View>
@@ -254,11 +264,17 @@ export default function App() {
             <Text style={[styles.greeting, direction]}>{t.greeting}</Text>
             <Text style={[styles.introNote, direction]}>A little better, every day.</Text>
           </View>
-          {!hydrated ? <Card><Text style={styles.muted}>Loading your saved fitness data…</Text></Card> : !metrics ? <Card>
-            <Text style={styles.cardTitle}>{t.startProfile}</Text>
-            <Text style={styles.muted}>{t.profileHint}</Text>
-            <GoldButton title={t.profile} onPress={() => setTab("profile")} />
-          </Card> : <>
+          {!hydrated ? <Card><Text style={styles.muted}>Loading your dashboard…</Text></Card> : !metrics ? <>
+            <Card>
+              <Text style={styles.cardTitle}>YOUR WELLNESS DASHBOARD</Text>
+              <Text style={styles.muted}>Your day starts here. Explore the food diary, track your progress, and add profile details only when you want personalized calculations.</Text>
+              <GoldButton title="OPEN FOOD DIARY" onPress={() => setTab("diary")} />
+            </Card>
+            <View style={styles.statRow}>
+              <StatCard label="MEALS LOGGED TODAY" value="0" icon="＋" />
+              <StatCard label="DAILY CALORIES" value="—" icon="◌" />
+            </View>
+          </> : <>
             <View style={styles.statRow}>
               <StatCard label={t.currentWeight} value={profile.weight + " " + t.kg} icon="↗" />
               <StatCard label={t.bmi} value={metrics.bmi.toFixed(1)} icon="◌" />
@@ -406,7 +422,7 @@ const styles = StyleSheet.create({
   logoMark: { color: BG, fontWeight: "900", fontSize: 25, letterSpacing: -2 },
   brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
-  languageButton: { borderWidth: 1, borderColor: "#CFE2D8", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  languageButton: { borderWidth: 1, borderColor: "#C8D5E3", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   languageText: { color: GOLD, fontSize: 12, fontWeight: "800" },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
@@ -414,20 +430,20 @@ const styles = StyleSheet.create({
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
-  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#E1EAE4", padding: 19, marginBottom: 2 },
+  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#D9E1EA", padding: 19, marginBottom: 2 },
   cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
   muted: { color: MUTED, fontSize: 12, lineHeight: 19 },
-  calorieHero: { backgroundColor: "#EAF5EF", borderRadius: 22, borderWidth: 1, borderColor: "#D7E9DE", padding: 21, marginBottom: 2 },
+  calorieHero: { backgroundColor: "#E7EEF6", borderRadius: 22, borderWidth: 1, borderColor: "#CAD7E5", padding: 21, marginBottom: 2 },
   heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heroLabel: { color: "#53685D", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
+  heroLabel: { color: "#536477", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
   heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
   heroSubline: { color: GOLD, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
-  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#9CCBB7", alignItems: "center", justifyContent: "center", marginLeft: 10 },
+  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#A9BDD2", alignItems: "center", justifyContent: "center", marginLeft: 10 },
   badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
   badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
-  progressTrack: { height: 5, backgroundColor: "#E0EBE4", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
+  progressTrack: { height: 5, backgroundColor: "#DCE4ED", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: GREEN, borderRadius: 10 },
   sectionHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
   sectionMeta: { color: GOLD, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
