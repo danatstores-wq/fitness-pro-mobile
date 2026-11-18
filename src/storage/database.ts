@@ -99,7 +99,8 @@ async function database() {
         );
         CREATE INDEX IF NOT EXISTS idx_measurements_date ON measurements(recorded_at);
         CREATE INDEX IF NOT EXISTS idx_meals_date ON meals(eaten_at);
-        CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);\n        CREATE UNIQUE INDEX IF NOT EXISTS idx_foods_source_id ON foods(source, source_id) WHERE source_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_foods_source_id ON foods(source, source_id) WHERE source_id IS NOT NULL;
       `);
 
       const foodColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(foods)");
