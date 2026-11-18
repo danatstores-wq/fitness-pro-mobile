@@ -17,11 +17,12 @@ type Profile = {
   objective: "lose" | "maintain" | "gain";
 };
 
-const GOLD = "#D7B66D";
-const GREEN = "#53C58A";
-const BG = "#090B0F";
-const PANEL = "#151920";
-const MUTED = "#9299A5";
+const GOLD = "#C5A46D";
+const GREEN = "#9BC6A5";
+const BG = "#101110";
+const PANEL = "#191C19";
+const MUTED = "#9A9D96";
+const IVORY = "#F2F0E9";
 const initialProfile: Profile = {
   age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain"
@@ -152,9 +153,9 @@ export default function App() {
       <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
-          <View style={styles.logo}><Text style={styles.logoMark}>D</Text></View>
+          <View style={styles.logo}><Text style={styles.logoMark}>d.</Text></View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.brandEyebrow, direction]}>DANAT</Text>
+            <Text style={[styles.brandEyebrow, direction]}>DANAT / WELLNESS</Text>
             <Text style={[styles.brandName, direction]}>FITNESS PRO</Text>
           </View>
           <Pressable style={styles.languageButton} onPress={() => setLanguage(language === "en" ? "ar" : language === "ar" ? "fr" : "en")}>
@@ -165,28 +166,45 @@ export default function App() {
 
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.greeting, direction]}>{t.greeting}</Text>
-          <Text style={[styles.eyebrow, direction]}>{t.today}</Text>
+          <View style={styles.dashboardIntro}>
+            <Text style={[styles.eyebrow, direction]}>{t.today}</Text>
+            <Text style={[styles.greeting, direction]}>{t.greeting}</Text>
+            <Text style={[styles.introNote, direction]}>A little better, every day.</Text>
+          </View>
           {!hydrated ? <Card><Text style={styles.muted}>Loading your saved fitness data…</Text></Card> : !metrics ? <Card>
             <Text style={styles.cardTitle}>{t.startProfile}</Text>
             <Text style={styles.muted}>{t.profileHint}</Text>
             <GoldButton title={t.profile} onPress={() => setTab("profile")} />
           </Card> : <>
             <View style={styles.statRow}>
-              <StatCard label={t.currentWeight} value={profile.weight + " " + t.kg} icon="⚖" />
-              <StatCard label={t.bmi} value={metrics.bmi.toFixed(1)} icon="◈" />
+              <StatCard label={t.currentWeight} value={profile.weight + " " + t.kg} icon="↗" />
+              <StatCard label={t.bmi} value={metrics.bmi.toFixed(1)} icon="◌" />
+            </View>
+            <View style={styles.calorieHero}>
+              <View style={styles.heroTopline}>
+                <Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text>
+                <View style={styles.liveDot} />
+              </View>
+              <View style={styles.heroNumberRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.calorieNumber}>{metrics.calories.toLocaleString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text>
+                  <Text style={styles.heroSubline}>KCAL  /  DAILY TARGET</Text>
+                </View>
+                <View style={styles.calorieBadge}>
+                  <Text style={styles.badgeValue}>{dailyIntake.calories === null ? "—" : Math.round(dailyIntake.calories)}</Text>
+                  <Text style={styles.badgeCaption}>EATEN</Text>
+                </View>
+              </View>
+              <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${dailyIntake.calories === null ? 0 : Math.min(100, (dailyIntake.calories / metrics.calories) * 100)}%` }]} /></View>
+              <View style={styles.spaceBetween}><Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text><Text style={styles.greenText}>{dailyIntake.calories === null ? "—" : Math.round(metrics.calories - dailyIntake.calories)} {t.remaining}</Text></View>
             </View>
             <Card>
-              <Text style={styles.muted}>{t.calories}</Text>
-              <Text style={styles.calorieNumber}>{metrics.calories.toLocaleString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text>
-              <Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text>
-              <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${dailyIntake.calories === null ? 0 : Math.min(100, (dailyIntake.calories / metrics.calories) * 100)}%` }]} /></View>
-              <View style={styles.spaceBetween}><Text style={styles.muted}>{t.consumed}: {dailyIntake.calories === null ? "—" : Math.round(dailyIntake.calories)}</Text><Text style={styles.greenText}>{dailyIntake.calories === null ? "—" : Math.round(metrics.calories - dailyIntake.calories)} {t.remaining}</Text></View>
-            </Card>
-            <Card>
-              <Text style={styles.cardTitle}>{t.today} · MACROS</Text>
+              <View style={styles.sectionHeading}>
+                <Text style={styles.cardTitle}>MACRO BALANCE</Text>
+                <Text style={styles.sectionMeta}>DAILY GOALS</Text>
+              </View>
               <Macro label={t.protein} value={metrics.protein} consumed={dailyIntake.protein} color={GOLD} />
-              <Macro label={t.carbs} value={metrics.carbs} consumed={dailyIntake.carbs} color="#68A9E8" />
+              <Macro label={t.carbs} value={metrics.carbs} consumed={dailyIntake.carbs} color="#B8B7A9" />
               <Macro label={t.fats} value={metrics.fats} consumed={dailyIntake.fats} color={GREEN} />
             </Card>
             <View style={styles.statRow}>
@@ -280,30 +298,43 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
-  header: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14, borderBottomWidth: 1, borderBottomColor: "#20242C" },
-  brand: { flexDirection: "row", alignItems: "center", gap: 11 },
+  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#292B27" },
+  brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
-  logo: { width: 43, height: 43, borderRadius: 13, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
-  logoMark: { color: BG, fontWeight: "900", fontSize: 27 },
-  brandEyebrow: { color: GOLD, fontWeight: "800", fontSize: 10, letterSpacing: 4 },
-  brandName: { color: "#FFFFFF", fontWeight: "900", fontSize: 17, letterSpacing: 1.2, marginTop: 2 },
+  logo: { width: 42, height: 42, borderRadius: 21, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
+  logoMark: { color: BG, fontWeight: "900", fontSize: 25, letterSpacing: -2 },
+  brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
+  brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
   languageButton: { borderWidth: 1, borderColor: "#4B412D", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   languageText: { color: GOLD, fontSize: 12, fontWeight: "800" },
-  content: { padding: 20, paddingBottom: 30, gap: 14 },
-  greeting: { color: "#FFFFFF", fontSize: 25, fontWeight: "900", marginTop: 5 },
-  eyebrow: { color: GOLD, fontSize: 10, letterSpacing: 2.2, fontWeight: "800", marginBottom: 5 },
-  pageTitle: { color: "#FFFFFF", fontSize: 25, fontWeight: "900", marginBottom: 4 },
-  card: { backgroundColor: PANEL, borderRadius: 19, borderWidth: 1, borderColor: "#252A33", padding: 18, marginBottom: 2 },
-  cardTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "800", marginBottom: 7 },
-  muted: { color: MUTED, fontSize: 13, lineHeight: 19 },
-  calorieNumber: { color: GOLD, fontSize: 35, fontWeight: "900", marginVertical: 5 },
-  progressTrack: { height: 8, backgroundColor: "#2A3039", borderRadius: 10, marginTop: 18, marginBottom: 10, overflow: "hidden" },
-  progressFill: { height: 8, backgroundColor: GREEN, borderRadius: 10 },
+  content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
+  dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
+  greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
+  introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
+  eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
+  pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
+  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#2A2D28", padding: 19, marginBottom: 2 },
+  cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
+  muted: { color: MUTED, fontSize: 12, lineHeight: 19 },
+  calorieHero: { backgroundColor: "#20241F", borderRadius: 22, borderWidth: 1, borderColor: "#393A2F", padding: 21, marginBottom: 2 },
+  heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
+  heroLabel: { color: "#C9C4B6", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
+  heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
+  calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
+  heroSubline: { color: GOLD, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
+  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#777052", alignItems: "center", justifyContent: "center", marginLeft: 10 },
+  badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
+  badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
+  progressTrack: { height: 5, backgroundColor: "#3A3D35", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
+  progressFill: { height: 5, backgroundColor: GREEN, borderRadius: 10 },
+  sectionHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
+  sectionMeta: { color: GOLD, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
   spaceBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 5 },
-  greenText: { color: GREEN, fontSize: 12, fontWeight: "700" },
-  statRow: { flexDirection: "row", gap: 12 },
-  statIcon: { color: GOLD, fontSize: 20, marginBottom: 7 },
-  statValue: { color: "#FFFFFF", fontSize: 23, fontWeight: "900", marginBottom: 3 },
+  greenText: { color: GREEN, fontSize: 11, fontWeight: "700" },
+  statRow: { flexDirection: "row", gap: 11 },
+  statIcon: { color: GOLD, fontSize: 18, marginBottom: 10 },
+  statValue: { color: IVORY, fontSize: 23, fontWeight: "700", letterSpacing: -0.5, marginBottom: 4 },
   macroRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#292E37" },
   mealCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: PANEL, borderRadius: 16, padding: 15, borderWidth: 1, borderColor: "#252A33" },
   mealIcon: { width: 43, height: 43, borderRadius: 13, backgroundColor: "#242830", alignItems: "center", justifyContent: "center" },
@@ -320,9 +351,9 @@ const styles = StyleSheet.create({
   choiceText: { color: "#C4CAD3", fontSize: 12, fontWeight: "700" },
   goldButton: { backgroundColor: GOLD, borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
   goldButtonText: { color: "#111318", fontWeight: "900", fontSize: 14 },
-  tabBar: { flexDirection: "row", backgroundColor: "#12161D", borderTopWidth: 1, borderTopColor: "#252A33", paddingTop: 9, paddingBottom: Platform.OS === "ios" ? 20 : 10 },
-  tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 3 },
-  tabIcon: { color: "#7E8794", fontSize: 22, fontWeight: "700" },
-  tabLabel: { color: "#7E8794", fontSize: 10, fontWeight: "600" },
+  tabBar: { flexDirection: "row", backgroundColor: "#171A17", borderTopWidth: 1, borderTopColor: "#2A2D28", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
+  tabIcon: { color: "#777D74", fontSize: 21, fontWeight: "500" },
+  tabLabel: { color: "#858A81", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
   activeTab: { color: GOLD }
 });
