@@ -71,6 +71,7 @@ export default function App() {
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saved, setSaved] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [webStorageReady, setWebStorageReady] = useState(Platform.OS !== "web");
   const [weightLog, setWeightLog] = useState<{ id: number; recorded_at: string; weight_kg: number }[]>([]);
   const [weightInput, setWeightInput] = useState("");
@@ -143,7 +144,8 @@ export default function App() {
         setWeightLog(measurements);
       } catch (error) {
         console.warn("Could not load local fitness data", error);
-        Alert.alert("Storage error", "Your local database could not be opened. Please restart the app.");
+        setStorageError(error instanceof Error ? error.message : String(error));
+        Alert.alert("Storage error", "Your local database could not be opened. " + (error instanceof Error ? error.message : String(error)));
       } finally {
         if (active) setHydrated(true);
       }
@@ -174,6 +176,14 @@ export default function App() {
     setSaved(false);
   };
   const saveProfile = async () => {
+    if (!hydrated) {
+      Alert.alert("Please wait", "The food catalogue and local database are still being prepared.");
+      return;
+    }
+    if (storageError) {
+      Alert.alert("Storage unavailable", storageError);
+      return;
+    }
     if (!metrics || Number(profile.age) < 13 || Number(profile.age) > 110 ||
         Number(profile.height) < 80 || Number(profile.height) > 250 ||
         Number(profile.weight) <= 0 || Number(profile.targetWeight) <= 0) {
@@ -279,7 +289,11 @@ export default function App() {
           </>}
         </ScrollView>}
 
-        {tab === "diary" && <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />}
+        {tab === "diary" && (!hydrated
+          ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Preparing your food catalogue</Text><Text style={styles.muted}>Please wait while the verified food database is installed. Food search and categories will become available when this finishes.</Text></Card></ScrollView>
+          : storageError
+            ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Food database unavailable</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
+            : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />)}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.pageTitle, direction]}>{t.progress}</Text>
