@@ -259,61 +259,17 @@ export default function App() {
 
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
-          <View style={styles.dashboardIntro}>
-            <Text style={[styles.eyebrow, direction]}>{t.today}</Text>
-            <Text style={[styles.greeting, direction]}>{t.greeting}</Text>
-            <Text style={[styles.introNote, direction]}>A little better, every day.</Text>
-          </View>
-          {!hydrated ? <Card><Text style={styles.muted}>Loading your dashboard…</Text></Card> : !metrics ? <>
-            <Card>
-              <Text style={styles.cardTitle}>YOUR WELLNESS DASHBOARD</Text>
-              <Text style={styles.muted}>Your day starts here. Explore the food diary, track your progress, and add profile details only when you want personalized calculations.</Text>
-              <GoldButton title="OPEN FOOD DIARY" onPress={() => setTab("diary")} />
-            </Card>
-            <View style={styles.statRow}>
-              <StatCard label="MEALS LOGGED TODAY" value="0" icon="＋" />
-              <StatCard label="DAILY CALORIES" value="—" icon="◌" />
-            </View>
-          </> : <>
-            <View style={styles.statRow}>
-              <StatCard label={t.currentWeight} value={profile.weight + " " + t.kg} icon="↗" />
-              <StatCard label={t.bmi} value={metrics.bmi.toFixed(1)} icon="◌" />
-            </View>
-            <View style={styles.calorieHero}>
-              <View style={styles.heroTopline}>
-                <Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text>
-                <View style={styles.liveDot} />
-              </View>
-              <View style={styles.heroNumberRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.calorieNumber}>{metrics.calories.toLocaleString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text>
-                  <Text style={styles.heroSubline}>KCAL  /  DAILY TARGET</Text>
-                </View>
-                <View style={styles.calorieBadge}>
-                  <Text style={styles.badgeValue}>{dailyIntake.calories === null ? "—" : Math.round(dailyIntake.calories)}</Text>
-                  <Text style={styles.badgeCaption}>EATEN</Text>
-                </View>
-              </View>
-              <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${dailyIntake.calories === null ? 0 : Math.min(100, (dailyIntake.calories / metrics.calories) * 100)}%` }]} /></View>
-              <View style={styles.spaceBetween}><Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text><Text style={styles.greenText}>{dailyIntake.calories === null ? "—" : Math.round(metrics.calories - dailyIntake.calories)} {t.remaining}</Text></View>
-            </View>
-            <Card>
-              <View style={styles.sectionHeading}>
-                <Text style={styles.cardTitle}>MACRO BALANCE</Text>
-                <Text style={styles.sectionMeta}>DAILY GOALS</Text>
-              </View>
-              <Macro label={t.protein} value={metrics.protein} consumed={dailyIntake.protein} color={GOLD} />
-              <Macro label={t.carbs} value={metrics.carbs} consumed={dailyIntake.carbs} color="#B8B7A9" />
-              <Macro label={t.fats} value={metrics.fats} consumed={dailyIntake.fats} color={GREEN} />
-            </Card>
-            <View style={styles.statRow}>
-              <StatCard label={t.targetWeight} value={profile.targetWeight + " " + t.kg} icon="◎" />
-              <StatCard label={t.healthyRange} value={metrics.min.toFixed(1) + "–" + metrics.max.toFixed(1)} icon="✦" />
-            </View>
-          </>}
-        </ScrollView>}
-
-        {tab === "diary" && (!hydrated
+<View style={styles.dashboardIntro}><Text style={[styles.eyebrow,direction]}>{t.today}</Text><Text style={[styles.greeting,direction]}>{t.greeting}</Text><Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text></View>
+!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
+<View style={styles.calorieHero}><View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><View style={styles.liveDot}/></View>
+<View style={styles.heroNumberRow}><View style={{flex:1}}><Text style={styles.calorieNumber}>{metrics ? metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : "2,000"}</Text><Text style={styles.heroSubline}>{t.dailyTarget.toUpperCase()}</Text></View>
+<View style={styles.calorieBadge}><Text style={styles.badgeValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories)}</Text><Text style={styles.badgeCaption}>{t.consumed.toUpperCase()}</Text></View></View>
+<View style={styles.progressTrack}><View style={[styles.progressFill,{width:(Math.min(100,((dailyIntake.calories||0)/(metrics?.calories||2000))*100))+"%"}]}/></View>
+<View style={styles.spaceBetween}><Text style={styles.muted}>{t.dailyGoal}: {metrics?.calories||2000} kcal</Text><Text style={styles.greenText}>{dailyIntake.calories===null?"—":Math.max(0,Math.round((metrics?.calories||2000)-dailyIntake.calories))} {t.remaining}</Text></View></View>
+<Card><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
+<Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color="#8DA7C4"/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
+<View style={styles.statRow}><StatCard label={t.mealsLogged} value={dailyIntake.calories===null?"0":"1"} icon="＋"/><StatCard label={t.currentWeight} value={profile.weight?profile.weight+" "+t.kg:"—"} icon="↗"/></View>
+ {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<GoldButton title={t.openFoodDiary} onPress={()=>setTab("diary")}/></>}</ScrollView>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Preparing your food catalogue</Text><Text style={styles.muted}>Please wait while the verified food database is installed. Food search and categories will become available when this finishes.</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Food database unavailable</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -400,9 +356,7 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
   return <View style={[styles.card, { flex: 1 }]}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.muted}>{label}</Text></View>;
 }
 function MetricLine({ label, value }: { label: string; value: string }) { return <View style={styles.spaceBetween}><Text style={styles.muted}>{label}</Text><Text style={styles.valueText}>{value}</Text></View>; }
-function Macro({ label, value, consumed, color }: { label: string; value: number; consumed: number | null; color: string }) {
-  return <View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{ color, fontWeight: "800" }}>{consumed === null ? "—" : Math.round(consumed)} / {value} g</Text></View>;
-}
+function Macro({label,value,consumed,color}:{label:string;value:number;consumed:number|null;color:string}){const pct=Math.min(100,Math.max(0,(consumed??0)/Math.max(1,value)*100));return <View style={{paddingVertical:8}}><View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{color:"#26384D",fontWeight:"800"}}>{consumed===null?"0":Math.round(consumed)} / {value} g</Text></View><View style={styles.progressTrack}><View style={[styles.progressFill,{backgroundColor:color,width:pct+"%"}]}/></View></View>;}
 function GoldButton({ title, onPress }: { title: string; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.goldButton}><Text style={styles.goldButtonText}>{title}</Text></Pressable>;
 }
@@ -458,15 +412,15 @@ const styles = StyleSheet.create({
   addIcon: { color: GOLD, fontSize: 24, fontWeight: "700" },
   weightList: { gap: 9, marginTop: 8 },
   valueText: { color: GOLD, fontWeight: "800" },
-  input: { color: "#FFFFFF", backgroundColor: "#F7FAF8", borderWidth: 1, borderColor: "#D6E3DA", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
+  input: { color: "#172638", backgroundColor: "#F5F8FC", borderWidth: 1, borderColor: "#D6E3DA", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
   field: { marginBottom: 13 },
-  fieldLabel: { color: "#30463B", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
+  fieldLabel: { color: "#26384D", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
   optionRow: { flexDirection: "row", gap: 9, marginBottom: 12 },
   choiceWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 8 },
   choice: { borderWidth: 1, borderColor: "#EAF2ED", backgroundColor: "#FFFFFF", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   choiceActive: { borderColor: GOLD, backgroundColor: "#E1F2E9" },
   choiceText: { color: "#52665B", fontSize: 12, fontWeight: "700" },
-  goldButton: { backgroundColor: GOLD, borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
+  goldButton: { backgroundColor: "#3478B8", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
   goldButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14 },
   tabBar: { flexDirection: "row", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#E1EAE4", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
