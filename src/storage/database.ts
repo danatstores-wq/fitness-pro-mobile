@@ -11,6 +11,7 @@ export type StoredProfile = {
   formula_setting?: string;
   language?: string;
   unit_system?: string;
+  waist_cm?: number | null; hip_cm?: number | null; neck_cm?: number | null; body_fat_percent?: number | null; muscle_mass_kg?: number | null;
 };
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -34,7 +35,7 @@ async function database() {
           updated_at TEXT NOT NULL,
           formula_setting TEXT NOT NULL DEFAULT 'mifflin_st_jeor',
           language TEXT NOT NULL DEFAULT 'en',
-          unit_system TEXT NOT NULL DEFAULT 'metric'
+          unit_system TEXT NOT NULL DEFAULT 'metric', waist_cm REAL, hip_cm REAL, neck_cm REAL, body_fat_percent REAL, muscle_mass_kg REAL
         );
         CREATE TABLE IF NOT EXISTS seed_imports (
           seed_key TEXT PRIMARY KEY NOT NULL,
@@ -144,7 +145,7 @@ async function database() {
       const profileAdditions: Record<string, string> = {
         formula_setting: "TEXT NOT NULL DEFAULT 'mifflin_st_jeor'",
         language: "TEXT NOT NULL DEFAULT 'en'",
-        unit_system: "TEXT NOT NULL DEFAULT 'metric'"
+        unit_system: "TEXT NOT NULL DEFAULT 'metric'", waist_cm: "REAL", hip_cm: "REAL", neck_cm: "REAL", body_fat_percent: "REAL", muscle_mass_kg: "REAL"
       };
       for (const [column, type] of Object.entries(profileAdditions)) {
         if (!profileNames.has(column)) await db.execAsync("ALTER TABLE user_profile ADD COLUMN " + column + " " + type);
@@ -194,15 +195,15 @@ async function database() {
 
 export async function loadProfile(): Promise<StoredProfile | null> {
   const db = await database();
-  return db.getFirstAsync<StoredProfile>("SELECT age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, formula_setting, language, unit_system FROM user_profile WHERE id = 1");
+  return db.getFirstAsync<StoredProfile>("SELECT age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg FROM user_profile WHERE id = 1");
 }
 
 export async function saveProfile(profile: StoredProfile) {
   const db = await database();
   await db.runAsync(
     `INSERT INTO user_profile
-      (id, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at, formula_setting, language, unit_system)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
       age=excluded.age, sex=excluded.sex, height_cm=excluded.height_cm,
       current_weight_kg=excluded.current_weight_kg, target_weight_kg=excluded.target_weight_kg,
