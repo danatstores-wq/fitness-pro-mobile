@@ -73,7 +73,7 @@ function categoryFor(food) {
   return typeof category === "string" && category.trim() ? category.trim() : "Other";
 }
 function toFood(food) {
-  const sourceId = String(food.fdcId ?? food.foodCode ?? food.food_code ?? "");
+  const sourceId = String(isSurvey ? "FNDDS:" + (food.fdcId ?? food.foodCode ?? food.food_code ?? "") : (food.fdcId ?? food.foodCode ?? food.food_code ?? ""));
   if (!sourceId || !food.description) return null;
   const nutrients = Array.isArray(food.foodNutrients) ? food.foodNutrients : [];
   const macros = {};
