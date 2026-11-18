@@ -6,6 +6,8 @@ import {
 } from "react-native";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
+import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
+import { ensureFoundationFoodsImported } from "./src/storage/database";
 
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
@@ -57,6 +59,7 @@ export default function App() {
     let active = true;
     (async () => {
       try {
+        await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as any[]);
         const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
         if (!active) return;
         if (storedProfile) {
