@@ -123,6 +123,6 @@ const output: OutputFood[] = foods
   });
 const outPath = path.resolve("src/data/usda-foundation-foods.ts");
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, "export const USDA_FOUNDATION_FOODS = " + JSON.stringify(output) + " as const;\\n");
+fs.writeFileSync(outPath, "export const USDA_FOUNDATION_FOODS = " + JSON.stringify(output) + " as const;");
 console.log(`Prepared ${output.length} USDA Foundation Foods records at ${outPath}`);
 console.log("Nutrient gaps remain null/absent; no values were fabricated.");
