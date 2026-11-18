@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported } from "./src/storage/database";
+import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView,
@@ -52,6 +52,7 @@ export default function App() {
   const [hydrated, setHydrated] = useState(false);
   const [weightLog, setWeightLog] = useState<{ id: number; recorded_at: string; weight_kg: number }[]>([]);
   const [weightInput, setWeightInput] = useState("");
+  const [dailyIntake, setDailyIntake] = useState<{ calories: number | null; protein: number | null; carbs: number | null; fats: number | null }>({ calories: null, protein: null, carbs: null, fats: null });
   const t = translations[language];
   const isRTL = rtl(language);
   const metrics = useMemo(() => calculate(profile), [profile]);
@@ -85,6 +86,23 @@ export default function App() {
     })();
     return () => { active = false; };
   }, []);
+  useEffect(() => {
+    if (tab !== "dashboard") return;
+    let active = true;
+    getDailyMealFoods().then(items => {
+      const sumKnown = (values: (number | null)[]) => values.every(value => value === null)
+        ? null
+        : values.reduce<number>((total, value) => total + (value ?? 0), 0);
+      const totals = items.map(item => nutritionForQuantity(item, item.quantity_g));
+      if (active) setDailyIntake({
+        calories: sumKnown(totals.map(value => value.calories)),
+        protein: sumKnown(totals.map(value => value.protein_g)),
+        carbs: sumKnown(totals.map(value => value.carbs_g)),
+        fats: sumKnown(totals.map(value => value.fat_g))
+      });
+    }).catch(error => console.warn("Could not refresh dashboard nutrition", error));
+    return () => { active = false; };
+  }, [tab]);
   const direction = { writingDirection: isRTL ? "rtl" as const : "ltr" as const, textAlign: isRTL ? "right" as const : "left" as const };
 
   const change = <K extends keyof Profile>(key: K, value: Profile[K]) => {
@@ -162,14 +180,14 @@ export default function App() {
               <Text style={styles.muted}>{t.calories}</Text>
               <Text style={styles.calorieNumber}>{metrics.calories.toLocaleString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text>
               <Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text>
-              <View style={styles.progressTrack}><View style={[styles.progressFill, { width: "0%" }]} /></View>
-              <View style={styles.spaceBetween}><Text style={styles.muted}>{t.consumed}: 0</Text><Text style={styles.greenText}> {metrics.calories} {t.remaining}</Text></View>
+              <View style={styles.progressTrack}><View style={[styles.progressFill, { width: `${dailyIntake.calories === null ? 0 : Math.min(100, (dailyIntake.calories / metrics.calories) * 100)}%` }]} /></View>
+              <View style={styles.spaceBetween}><Text style={styles.muted}>{t.consumed}: {dailyIntake.calories === null ? "—" : Math.round(dailyIntake.calories)}</Text><Text style={styles.greenText}>{dailyIntake.calories === null ? "—" : Math.round(metrics.calories - dailyIntake.calories)} {t.remaining}</Text></View>
             </Card>
             <Card>
               <Text style={styles.cardTitle}>{t.today} · MACROS</Text>
-              <Macro label={t.protein} value={metrics.protein} color={GOLD} />
-              <Macro label={t.carbs} value={metrics.carbs} color="#68A9E8" />
-              <Macro label={t.fats} value={metrics.fats} color={GREEN} />
+              <Macro label={t.protein} value={metrics.protein} consumed={dailyIntake.protein} color={GOLD} />
+              <Macro label={t.carbs} value={metrics.carbs} consumed={dailyIntake.carbs} color="#68A9E8" />
+              <Macro label={t.fats} value={metrics.fats} consumed={dailyIntake.fats} color={GREEN} />
             </Card>
             <View style={styles.statRow}>
               <StatCard label={t.targetWeight} value={profile.targetWeight + " " + t.kg} icon="◎" />
@@ -247,8 +265,8 @@ function Card({ children }: { children: React.ReactNode }) {
 function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return <View style={[styles.card, { flex: 1 }]}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.muted}>{label}</Text></View>;
 }
-function Macro({ label, value, color }: { label: string; value: number; color: string }) {
-  return <View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{ color, fontWeight: "800" }}>{value} g</Text></View>;
+function Macro({ label, value, consumed, color }: { label: string; value: number; consumed: number | null; color: string }) {
+  return <View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{ color, fontWeight: "800" }}>{consumed === null ? "—" : Math.round(consumed)} / {value} g</Text></View>;
 }
 function GoldButton({ title, onPress }: { title: string; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.goldButton}><Text style={styles.goldButtonText}>{title}</Text></Pressable>;
