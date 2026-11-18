@@ -3,7 +3,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View 
 import { Language } from "../i18n";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
-  nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, getDailyNutrientTotals, FoodNutrientDetail
+  nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, getFoodServings, getDailyNutrientTotals, FoodNutrientDetail
 } from "./database";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
@@ -35,6 +35,7 @@ export default function FoodDiary({ language }: { language: Language }) {
   const [fiber, setFiber] = useState("");
   const [busy, setBusy] = useState(false);
   const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);
+  const [servings, setServings] = useState<{ id: number; label: string; grams: number }[]>([]);
   const [dailyMicros, setDailyMicros] = useState<FoodNutrientDetail[]>([]);
   const [microInputs, setMicroInputs] = useState<Record<string,string>>({});
   const load = useCallback(async () => setFoods(await getDailyMealFoods()), []);
@@ -47,8 +48,10 @@ export default function FoodDiary({ language }: { language: Language }) {
   }, [query]);
   useEffect(() => {
     let live = true;
-    if (selected) getFoodNutrients(selected.id).then(items => { if (live) setMicros(items); }).catch(e => console.warn("Nutrient details unavailable", e));
-    else setMicros([]);
+    if (selected) {
+      getFoodNutrients(selected.id).then(items => { if (live) setMicros(items); }).catch(e => console.warn("Nutrient details unavailable", e));
+      getFoodServings(selected.id).then(items => { if (live) setServings(items); }).catch(e => console.warn("Food servings unavailable", e));
+    } else { setMicros([]); setServings([]); }
     return () => { live = false; };
   }, [selected]);
   const totals = useMemo(() => ({
@@ -101,6 +104,7 @@ export default function FoodDiary({ language }: { language: Language }) {
       <Text style={s.sectionTitle}>Vitamins and minerals per 100 g</Text>
       {micros.map(n => <View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : n.amount + " " + n.unit}</Text></View>)}
       {field(t.grams,quantity,setQuantity,true)}
+      {servings.length > 0 && <View style={s.meals}>{servings.map(serving => <Pressable key={serving.id} onPress={() => setQuantity(String(serving.grams))} style={s.mealTab}><Text style={s.mealText}>{serving.label} · {serving.grams} g</Text></Pressable>)}</View>}
       <Pressable onPress={addSelected} disabled={busy} style={s.button}><Text style={s.buttonText}>{t.addMeal}</Text></Pressable>
       <Pressable onPress={()=>setSelected(null)} style={s.cancel}><Text style={s.muted}>{t.cancel}</Text></Pressable>
     </View> : <View style={s.card}>
