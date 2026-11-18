@@ -39,7 +39,92 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  verify-live-preview:
+    name: Verify live browser features
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install browser test runner
+        run: npm install --no-save playwright
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Test database, profile saving, food categories and search
+        env:
+          PREVIEW_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { chromium } from "playwright";
+
+          const browser = await chromium.launch({ headless: true });
+          const page = await browser.newPage();
+          const errors = [];
+          page.on("pageerror", error => errors.push(error.message));
+          page.on("console", message => {
+            if (message.type() === "error") errors.push(message.text());
+          });
+          page.on("dialog", dialog => dialog.accept());
+
+          try {
+            let isolated = false;
+            for (let attempt = 0; attempt < 4; attempt += 1) {
+              try {
+                await page.goto(process.env.PREVIEW_URL, { waitUntil: "domcontentloaded", timeout: 120000 });
+              } catch {}
+              await page.waitForTimeout(4000);
+              isolated = await page.evaluate(() => ({
+                isolated: window.crossOriginIsolated,
+                sharedArrayBuffer: typeof SharedArrayBuffer !== "undefined",
+                controlled: Boolean(navigator.serviceWorker?.controller)
+              }));
+              if (isolated.isolated && isolated.sharedArrayBuffer) break;
+              await page.reload({ waitUntil: "domcontentloaded", timeout: 120000 }).catch(() => {});
+            }
+            if (!isolated.isolated || !isolated.sharedArrayBuffer) {
+              throw new Error("Web SQLite prerequisites failed: " + JSON.stringify(isolated));
+            }
+
+            await page.getByText("Food diary", { exact: true }).last().click();
+            await page.getByText("BROWSE BY CATEGORY", { exact: true }).waitFor({ timeout: 30000 });
+            await page.getByText("Meat & poultry", { exact: true }).click();
+            await page.getByText(/chicken|beef|pork|turkey/i).first().waitFor({ timeout: 120000 });
+            await page.getByPlaceholder("Search saved foods").fill("chicken");
+            await page.getByText(/chicken/i).first().waitFor({ timeout: 30000 });
+            console.log("PASS: food categories and chicken search return catalogue results.");
+
+            await page.getByText("Profile", { exact: true }).last().click();
+            await page.getByPlaceholder("Age").fill("30");
+            await page.getByPlaceholder("Height (cm)").fill("170");
+            await page.getByPlaceholder("Weight (kg)").fill("70");
+            await page.getByPlaceholder("Goal weight (kg)").fill("65");
+            await page.getByText("Save profile", { exact: true }).click();
+            await page.waitForTimeout(1500);
+            await page.reload({ waitUntil: "domcontentloaded", timeout: 120000 });
+            await page.waitForTimeout(3000);
+            await page.getByText("Profile", { exact: true }).last().click();
+            const saved = await Promise.all([
+              page.getByPlaceholder("Age").inputValue(),
+              page.getByPlaceholder("Height (cm)").inputValue(),
+              page.getByPlaceholder("Weight (kg)").inputValue(),
+              page.getByPlaceholder("Goal weight (kg)").inputValue()
+            ]);
+            if (saved.join(",") !== "30,170,70,65") {
+              throw new Error("Profile values did not persist after reload: " + saved.join(","));
+            }
+            console.log("PASS: profile values save and persist after reload.");
+
+            if (errors.length) throw new Error("Browser console errors: " + errors.join(" | "));
+          } finally {
+            await browser.close();
+          }
+          NODE
