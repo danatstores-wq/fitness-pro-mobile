@@ -71,6 +71,7 @@ export default function App() {
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saved, setSaved] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [webStorageReady, setWebStorageReady] = useState(Platform.OS !== "web");
   const [weightLog, setWeightLog] = useState<{ id: number; recorded_at: string; weight_kg: number }[]>([]);
   const [weightInput, setWeightInput] = useState("");
   const [dailyIntake, setDailyIntake] = useState<{ calories: number | null; protein: number | null; carbs: number | null; fats: number | null }>({ calories: null, protein: null, carbs: null, fats: null });
@@ -79,17 +80,29 @@ export default function App() {
   const metrics = useMemo(() => calculate(profile), [profile]);
 
   // GitHub Pages cannot set COOP/COEP response headers itself. Register a
-  // same-origin service worker that adds them to document navigations so
-  // expo-sqlite can initialize its WebAssembly database in the browser.
+  // same-origin service worker and wait for its isolated document reload
+  // before opening expo-sqlite's WebAssembly database.
   useEffect(() => {
-    if (Platform.OS !== "web") return;
+    if (Platform.OS !== "web") { setWebStorageReady(true); return; }
     const browser = globalThis as any;
     const nav = browser.navigator;
-    if (!nav?.serviceWorker || browser.crossOriginIsolated) return;
+    if (browser.crossOriginIsolated) {
+      browser.sessionStorage?.removeItem("fitness-pro-coi-reload");
+      setWebStorageReady(true);
+      return;
+    }
+    if (!nav?.serviceWorker) { setWebStorageReady(true); return; }
+    const reloadKey = "fitness-pro-coi-reload";
+    if (browser.sessionStorage?.getItem(reloadKey) === "1") {
+      console.error("The browser did not enable cross-origin isolation after service worker activation.");
+      setWebStorageReady(true);
+      return;
+    }
     let reloading = false;
     const reloadWhenControlled = () => {
       if (reloading || !nav.serviceWorker.controller) return;
       reloading = true;
+      browser.sessionStorage?.setItem(reloadKey, "1");
       browser.location.reload();
     };
     nav.serviceWorker.addEventListener("controllerchange", reloadWhenControlled);
@@ -99,11 +112,13 @@ export default function App() {
       if (nav.serviceWorker.controller) reloadWhenControlled();
     }).catch((error: unknown) => {
       console.error("Could not enable isolated web storage", error);
+      setWebStorageReady(true);
     });
     return () => nav.serviceWorker.removeEventListener("controllerchange", reloadWhenControlled);
   }, []);
 
   useEffect(() => {
+    if (!webStorageReady) return;
     let active = true;
     (async () => {
       try {
