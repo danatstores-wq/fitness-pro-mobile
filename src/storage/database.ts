@@ -345,6 +345,18 @@ export async function addFoodToMeal(
   });
 }
 
+export async function getFoodBySourceId(source: string, sourceId: string): Promise<FoodRecord | null> {
+  const db = await database();
+  return (await db.getFirstAsync<FoodRecord>(
+    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g,
+      COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g,
+      trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g,
+      starch_g, cholesterol_mg, water_g, data_quality
+     FROM foods WHERE source = ? AND source_id = ? LIMIT 1`,
+    source, sourceId
+  )) ?? null;
+}
+
 export async function getMealPlannerFoods(): Promise<FoodRecord[]> {
   const db = await database();
   return db.getAllAsync<FoodRecord>(
