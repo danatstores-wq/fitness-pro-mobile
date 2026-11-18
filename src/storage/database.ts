@@ -8,6 +8,9 @@ export type StoredProfile = {
   target_weight_kg: number;
   activity_level: string;
   fitness_objective: string;
+  formula_setting?: string;
+  language?: string;
+  unit_system?: string;
 };
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
@@ -90,7 +93,10 @@ async function database() {
         CREATE TABLE IF NOT EXISTS measurements (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           recorded_at TEXT NOT NULL,
-          weight_kg REAL NOT NULL CHECK (weight_kg > 0)
+          weight_kg REAL NOT NULL CHECK (weight_kg > 0),
+          measurement_type TEXT NOT NULL DEFAULT 'weight',
+          value REAL,
+          unit TEXT NOT NULL DEFAULT 'kg'
         );
         CREATE TABLE IF NOT EXISTS translations (
           language TEXT NOT NULL,
@@ -133,6 +139,12 @@ async function database() {
       const foodColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(foods)");
       const existingColumns = new Set(foodColumns.map(column => column.name));
       if (!existingColumns.has("category_id")) await db.execAsync("ALTER TABLE foods ADD COLUMN category_id INTEGER REFERENCES food_categories(id)");
+      const measurementColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(measurements)");
+      const measurementNames = new Set(measurementColumns.map(column => column.name));
+      if (!measurementNames.has("measurement_type")) await db.execAsync("ALTER TABLE measurements ADD COLUMN measurement_type TEXT NOT NULL DEFAULT 'weight'");
+      if (!measurementNames.has("value")) await db.execAsync("ALTER TABLE measurements ADD COLUMN value REAL");
+      if (!measurementNames.has("unit")) await db.execAsync("ALTER TABLE measurements ADD COLUMN unit TEXT NOT NULL DEFAULT 'kg'");
+      await db.runAsync("UPDATE measurements SET value = weight_kg WHERE value IS NULL");
       const activityColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(activity_logs)");
       const activityNames = new Set(activityColumns.map(column => column.name));
       if (!activityNames.has("calories_burned")) await db.execAsync("ALTER TABLE activity_logs ADD COLUMN calories_burned REAL");
@@ -169,29 +181,31 @@ async function database() {
 
 export async function loadProfile(): Promise<StoredProfile | null> {
   const db = await database();
-  return db.getFirstAsync<StoredProfile>("SELECT age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective FROM user_profile WHERE id = 1");
+  return db.getFirstAsync<StoredProfile>("SELECT age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, formula_setting, language, unit_system FROM user_profile WHERE id = 1");
 }
 
 export async function saveProfile(profile: StoredProfile) {
   const db = await database();
   await db.runAsync(
     `INSERT INTO user_profile
-      (id, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at, formula_setting, language, unit_system)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
       age=excluded.age, sex=excluded.sex, height_cm=excluded.height_cm,
       current_weight_kg=excluded.current_weight_kg, target_weight_kg=excluded.target_weight_kg,
       activity_level=excluded.activity_level, fitness_objective=excluded.fitness_objective,
-      updated_at=excluded.updated_at`,
+      updated_at=excluded.updated_at, formula_setting=excluded.formula_setting,
+      language=excluded.language, unit_system=excluded.unit_system`,
     profile.age, profile.sex, profile.height_cm, profile.current_weight_kg,
     profile.target_weight_kg, profile.activity_level, profile.fitness_objective,
-    new Date().toISOString()
+    new Date().toISOString(), profile.formula_setting ?? "mifflin_st_jeor",
+    profile.language ?? "en", profile.unit_system ?? "metric"
   );
 }
 
 export async function addWeightMeasurement(weightKg: number) {
   const db = await database();
-  await db.runAsync("INSERT INTO measurements (recorded_at, weight_kg) VALUES (?, ?)", new Date().toISOString(), weightKg);
+  await db.runAsync("INSERT INTO measurements (recorded_at, weight_kg, measurement_type, value, unit) VALUES (?, ?, 'weight', ?, 'kg')", new Date().toISOString(), weightKg, weightKg);
 }
 
 export async function getWeightMeasurements(): Promise<{ id: number; recorded_at: string; weight_kg: number }[]> {
@@ -456,4 +470,17 @@ export async function logActivity(activity: string, durationMinutes: number, cal
   const db = await database();
   await db.runAsync("INSERT INTO activity_logs (logged_at, activity, duration_minutes, calories_burned, notes) VALUES (?, ?, ?, ?, ?)",
     new Date().toISOString(), activity.trim(), durationMinutes, caloriesBurned, notes ?? null);
+}
+
+
+export async function addBodyMeasurement(type: string, value: number, unit: string) {
+  if (!type.trim() || !unit.trim() || !Number.isFinite(value) || value <= 0) {
+    throw new Error("Enter a measurement type, unit and positive value.");
+  }
+  const db = await database();
+  const weightKg = type.toLowerCase() === "weight" && unit.toLowerCase() === "kg" ? value : 0.001;
+  await db.runAsync(
+    "INSERT INTO measurements (recorded_at, weight_kg, measurement_type, value, unit) VALUES (?, ?, ?, ?, ?)",
+    new Date().toISOString(), weightKg, type.trim().toLowerCase(), value, unit.trim()
+  );
 }
