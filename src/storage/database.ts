@@ -467,7 +467,7 @@ export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
          total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g,
          monounsaturated_fat_g, polyunsaturated_fat_g, water_g, data_quality, category_id)
         VALUES ${batch.map(() => tuple).join(",")}
-        ON CONFLICT(source, source_id) DO UPDATE SET
+        ON CONFLICT(source, source_id) WHERE source_id IS NOT NULL DO UPDATE SET
          name=excluded.name, calories=excluded.calories, protein_g=excluded.protein_g,
          carbs_g=excluded.carbs_g, fat_g=excluded.fat_g, fiber_g=excluded.fiber_g,
          total_sugars_g=excluded.total_sugars_g, starch_g=excluded.starch_g,
