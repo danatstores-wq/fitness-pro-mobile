@@ -44,3 +44,17 @@ Still to implement: import and validate the USDA FoodData Central catalogue, com
 ## Security
 
 Do not commit API keys, service-account files, signing credentials or production secrets.
+
+
+## Importing the USDA Foundation Foods catalogue
+
+Download the latest Foundation Foods JSON archive from the official [USDA FoodData Central downloads page](https://fdc.nal.usda.gov/download-datasets/). The importer accepts the ZIP archive directly and converts its official nutrient records, source IDs, categories and gram-based portion weights into the app's bundled TypeScript catalogue.
+
+Place the downloaded archive anywhere accessible on your development computer, then run:
+
+```bash
+npm run import:usda -- /path/to/FoodData_Central_foundation_food_json_YYYY-MM-DD.zip
+npm run typecheck
+```
+
+The generated `src/data/usda-foundation-foods.ts` is loaded into SQLite once on first launch. The import is repeat-safe for each catalogue release key. USDA values absent from a food record remain absent; the importer does not fill nutrient gaps with estimates. Foundation Foods is an analytical dataset and is not a substitute for branded product labels or every prepared meal. FNDDS can be added as a separate dataset in a later catalogue expansion.
