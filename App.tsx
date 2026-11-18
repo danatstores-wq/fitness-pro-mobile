@@ -54,7 +54,15 @@ function calculate(profile: Profile) {
   const waistHeight = validWaist ? waist / height : null;
   const waistHip = validWaist && validHip ? waist / hip : null;
   const waterMl = Math.round(weight * 35), ideal = (min + max) / 2;
-  return { bmr: Math.round(bmr), tdee: Math.round(tdee), calories, protein, carbs, fats, bmi, min, max, ideal, bodyFat, leanMass, waistHeight, waistHip, waterMl, muscleMass: Number(profile.muscleMass) > 0 ? Number(profile.muscleMass) : null };
+  // Educational age-equivalent: compare the Mifflin-St Jeor estimate with
+  // the independent revised Harris-Benedict reference equation, then solve
+  // for the age that would produce the same BMR. This is not a clinical measure.
+  const metabolicAgeRaw = profile.sex === "male"
+    ? (88.362 + 13.397 * weight + 4.799 * height - bmr) / 5.677
+    : (447.593 + 9.247 * weight + 3.098 * height - bmr) / 4.330;
+  const metabolicAge = age >= 18 && age <= 90 && Number.isFinite(metabolicAgeRaw) && metabolicAgeRaw >= 18 && metabolicAgeRaw <= 90
+    ? Math.round(metabolicAgeRaw) : null;
+  return { bmr: Math.round(bmr), tdee: Math.round(tdee), calories, protein, carbs, fats, bmi, min, max, ideal, bodyFat, leanMass, waistHeight, waistHip, waterMl, metabolicAge, muscleMass: Number(profile.muscleMass) > 0 ? Number(profile.muscleMass) : null };
 }
 
 export default function App() {
@@ -286,7 +294,7 @@ export default function App() {
               <MetricLine label={t.bodyFat} value={metrics.bodyFat === null ? "—" : metrics.bodyFat.toFixed(1) + "%"} /><MetricLine label={t.leanMass} value={metrics.leanMass === null ? "—" : metrics.leanMass.toFixed(1) + " kg"} />
               <MetricLine label={t.muscleMass} value={metrics.muscleMass === null ? "—" : metrics.muscleMass.toFixed(1) + " kg"} /><MetricLine label={t.waistHeight} value={metrics.waistHeight === null ? "—" : metrics.waistHeight.toFixed(2)} />
               <MetricLine label={t.waistHip} value={metrics.waistHip === null ? "—" : metrics.waistHip.toFixed(2)} /><MetricLine label={t.waterNeeds} value={(metrics.waterMl / 1000).toFixed(2) + " L / day"} />
-              <MetricLine label={t.metabolicAge} value={t.notAvailable} /><Text style={styles.muted}>{t.metricsDisclaimer}</Text>
+              <MetricLine label={t.metabolicAge} value={metrics.metabolicAge === null ? t.notAvailable : metrics.metabolicAge + " " + t.years} /><Text style={styles.muted}>{t.metabolicAgeHint}</Text><Text style={styles.muted}>{t.metricsDisclaimer}</Text>
             </Card>}
           </ScrollView>
         </KeyboardAvoidingView>}
