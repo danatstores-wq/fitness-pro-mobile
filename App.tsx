@@ -131,7 +131,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" backgroundColor={BG} />
+      <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <View style={styles.logo}><Text style={styles.logoMark}>D</Text></View>
