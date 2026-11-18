@@ -88,6 +88,15 @@ export default function FoodDiary({ language }: { language: Language }) {
     <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:GOLD}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
       <Text style={s.cardTitle}>{selected.name}</Text>
+      <Text style={s.sectionTitle}>Nutrition per 100 g</Text>
+      {[
+        ["Energy", selected.calories, "kcal"], ["Protein", selected.protein_g, "g"],
+        ["Carbohydrates", selected.carbs_g, "g"], ["Total fat", selected.fat_g, "g"],
+        ["Fiber", selected.fiber_g, "g"], ["Total sugars", selected.sugar_g, "g"],
+        ["Saturated fat", selected.saturated_fat_g, "g"]
+      ].map(([label, amount, unit]) => <View key={String(label)} style={s.nutrientRow}><Text style={s.muted}>{label}</Text><Text style={s.nutrientValue}>{amount === null ? "—" : amount} {unit}</Text></View>)}
+      <Text style={s.sectionTitle}>Vitamins and minerals per 100 g</Text>
+      {micros.map(n => <View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : n.amount + " " + n.unit}</Text></View>)}
       {field(t.grams,quantity,setQuantity,true)}
       <Pressable onPress={addSelected} disabled={busy} style={s.button}><Text style={s.buttonText}>{t.addMeal}</Text></Pressable>
       <Pressable onPress={()=>setSelected(null)} style={s.cancel}><Text style={s.muted}>{t.cancel}</Text></Pressable>
