@@ -1,4 +1,4 @@
-# Fitness Pro by Danat
+# FITNESS PRO BY DANAT
 
 Premium fitness and nutrition app for Android and iOS, built with Expo, React Native and TypeScript.
 
@@ -8,53 +8,76 @@ Premium fitness and nutrition app for Android and iOS, built with Expo, React Na
 - Dashboard, food diary, progress and profile tabs.
 - English, Arabic (RTL) and French language switching.
 - Profile inputs and Mifflin–St Jeor BMR, TDEE, BMI, healthy-weight and macro calculations.
-- Offline SQLite database for profile and weight history.
-- Offline food diary with food search, user-entered foods, meal logging by gram quantity, removal of entries and daily calorie/macronutrient totals.
-- SQLite schema for foods, nutrients, servings, meals, meal items, daily goals and activity logs.
+- Offline SQLite database for profile, food catalogue, meals and weight history.
+- Food search, manual food entry, meal logging by gram quantity, removal of entries and daily calorie/macronutrient totals.
+- Detailed food nutrient profile per 100 g, including recorded vitamins, minerals, fatty acids and portion weights.
+- USDA Foundation Foods and FNDDS catalogues bundled locally and imported into SQLite once per device.
+
+## USDA food catalogue
+
+The current bundled source catalogues contain:
+
+- **424 USDA Foundation Foods** records.
+- **5,432 USDA FNDDS 2021–2023** food and beverage records.
+- **5,856 source records combined**, before any future cross-source deduplication.
+- **353,015 detailed nutrient values** in the FNDDS catalogue.
+- USDA portion weights for gram-based serving calculations.
+
+FNDDS source: USDA FoodData Central, FNDDS 2021–2023 JSON release dated October 31, 2024. Foundation Foods are maintained as a separate USDA source. FNDDS source IDs are namespaced to prevent collisions with Foundation Foods IDs.
+
+Official dataset information: https://fdc.nal.usda.gov/download-datasets/
+
+Unknown nutrient values remain unknown; the importer does not invent values or replace missing data with zero. Nutrient records retain their USDA-reported names and units. The app scales nutrient amounts from the per-100-g basis to the logged gram quantity.
+
+The FNDDS data file is gzip-compressed in the repository and decompressed only when the local catalogue needs its first import. SQLite seed markers prevent repeated imports on subsequent launches.
 
 ## Requirements and setup
 
-Use the Expo SDK version pinned in `package.json`, with a compatible Node.js LTS release.
+Use the Node.js LTS release and package versions pinned in `package.json`.
 
 ```bash
 npm install
+npm run typecheck
+npx expo install --check
 npx expo start
 ```
 
-If your local Expo environment reports a native package version mismatch, run:
-
-```bash
-npx expo install expo-sqlite
-```
-
-Then rebuild the native development client when using a custom development build.
+For a physical Android or iOS device, follow Expo's development-build workflow if the selected native modules require a development client. A successful TypeScript check does not by itself mean a native device build has been completed.
 
 ## Data storage
 
-The app stores profile and weight measurements in a local SQLite database on the device. The database is created automatically on first launch. No account or paid cloud service is required for this local MVP.
-
-Each food record supports energy, protein, carbohydrate, total fat, fiber, sugars, starch, cholesterol, saturated/trans/mono/polyunsaturated fats, and water per 100 g. The normalized nutrient catalogue covers vitamins A, C, D, E, K and B-complex vitamins, plus calcium, iron, magnesium, phosphorus, potassium, sodium, zinc, copper, manganese, selenium, iodine, choline and fluoride. Food nutrient detail screens show the recorded values and units. Values can be entered per 100 g and scaled by serving quantity. Unknown nutrient values remain SQL NULL and display as unavailable, never as zero.\n\nUSDA FoodData Central is the planned primary source for the verified food catalogue. The app now has the schema and manual entry/detail support for the full nutrient profile, but the bulk USDA food dataset has not yet been imported; do not treat the catalogue as populated until that import is completed.
+The MVP stores profile, food catalogue, meal diary and weight measurements in a local SQLite database on the device. The local MVP does not require a paid cloud database or account service.
 
 ## Current development status
 
-Implemented: app shell, dashboard UI, language switching and Arabic RTL, profile form, health calculations, SQLite schema, profile persistence and weight-history persistence.
+Implemented in the repository:
+- Expo / React Native app shell and premium dark styling.
+- English, Arabic RTL and French language switching.
+- Profile form and BMI, healthy-weight range, Mifflin–St Jeor BMR, TDEE and macro calculations.
+- SQLite schema and local profile / weight persistence.
+- USDA Foundation Foods and FNDDS seed catalogues.
+- Food search, food details, manual food creation, gram-based meal logging and daily nutrient totals.
+- GitHub Actions validation for TypeScript and Expo package compatibility.
 
-Still to implement: import and validate the USDA FoodData Central catalogue, complete serving/category selection and target-versus-consumed micronutrient progress in the UI, add/edit meal entries, progress charts and reports, automated tests, and Android/iOS device verification.
+Still to complete:
+- Full end-to-end testing on Android and iOS devices.
+- Improve search ranking, category filters and serving selection.
+- Connect dashboard calorie/macronutrient progress to the food diary.
+- Add/edit existing meal entries and complete nutrient target comparisons.
+- Progress charts, reports and automated functional tests.
+- Future features such as barcode scanning, exercise tracking, meal plans, cloud sync and subscriptions.
 
-## Security
+## Import tooling
 
-Do not commit API keys, service-account files, signing credentials or production secrets.
+The repository includes `scripts/import-usda-foundation.mjs` and GitHub Actions automation for regenerating the FNDDS catalogue from the official USDA archive. The FNDDS workflow downloads the USDA 2021–2023 JSON archive, generates the compressed catalogue and commits it to this repository.
 
-
-## Importing the USDA Foundation Foods catalogue
-
-Download the latest Foundation Foods JSON archive from the official [USDA FoodData Central downloads page](https://fdc.nal.usda.gov/download-datasets/). The importer accepts the ZIP archive directly and converts its official nutrient records, source IDs, categories and gram-based portion weights into the app's bundled TypeScript catalogue.
-
-Place the downloaded archive anywhere accessible on your development computer, then run:
+To regenerate Foundation Foods manually:
 
 ```bash
 npm run import:usda -- /path/to/FoodData_Central_foundation_food_json_YYYY-MM-DD.zip
 npm run typecheck
 ```
 
-The generated `src/data/usda-foundation-foods.ts` is loaded into SQLite once on first launch. The import is repeat-safe for each catalogue release key. The October 29, 2026 Foundation Foods archive supplied for this project contains 424 records. Its generated app seed preserves source IDs, reported macro values, recorded vitamin/mineral values and portion gram weights; missing values remain null or absent. USDA values absent from a food record remain absent; the importer does not fill nutrient gaps with estimates. Foundation Foods is an analytical dataset and is not a substitute for branded product labels or every prepared meal. FNDDS can be added as a separate dataset in a later catalogue expansion.
+## Security
+
+Do not commit API keys, service-account files, signing credentials or production secrets.
