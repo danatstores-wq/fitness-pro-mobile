@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ImportedFoodRecord } from "./src/storage/database";
+import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported } from "./src/storage/database";
+import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
