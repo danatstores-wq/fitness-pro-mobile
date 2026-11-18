@@ -15,13 +15,13 @@ const words: Record<Language, Record<string, string>> = {
 };
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
-  { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"%Meat%" },
-  { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"%Seafood%" },
+  { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"Meat|Poultry|Sausage" },
+  { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"Fish|Finfish|Seafood|Shellfish" },
   { id:"vegetables", en:"Vegetables", ar:"الخضروات", fr:"Légumes", pattern:"%Vegetable%" },
   { id:"fruits", en:"Fruits", ar:"الفواكه", fr:"Fruits", pattern:"%Fruit%" },
-  { id:"dairy", en:"Dairy & eggs", ar:"الألبان والبيض", fr:"Produits laitiers", pattern:"%Dairy%" },
-  { id:"grains", en:"Grains & cereals", ar:"الحبوب", fr:"Céréales", pattern:"%Cereal%" },
-  { id:"legumes", en:"Beans, nuts & seeds", ar:"البقوليات والمكسرات والبذور", fr:"Légumineuses", pattern:"%Legume%" },
+  { id:"dairy", en:"Dairy & eggs", ar:"الألبان والبيض", fr:"Produits laitiers", pattern:"Dairy|Egg" },
+  { id:"grains", en:"Grains & cereals", ar:"الحبوب", fr:"Céréales", pattern:"Cereal|Grain|Pasta|Rice" },
+  { id:"legumes", en:"Beans, nuts & seeds", ar:"البقوليات والمكسرات والبذور", fr:"Légumineuses", pattern:"Legume|Nut|Seed|Bean" },
   { id:"other", en:"Other foods", ar:"أطعمة أخرى", fr:"Autres aliments", pattern:"%" }
 ];
 const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace(",", "."));
