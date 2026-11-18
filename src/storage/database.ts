@@ -209,11 +209,15 @@ export async function saveProfile(profile: StoredProfile) {
       current_weight_kg=excluded.current_weight_kg, target_weight_kg=excluded.target_weight_kg,
       activity_level=excluded.activity_level, fitness_objective=excluded.fitness_objective,
       updated_at=excluded.updated_at, formula_setting=excluded.formula_setting,
-      language=excluded.language, unit_system=excluded.unit_system`,
+      language=excluded.language, unit_system=excluded.unit_system,
+      waist_cm=excluded.waist_cm, hip_cm=excluded.hip_cm, neck_cm=excluded.neck_cm,
+      body_fat_percent=excluded.body_fat_percent, muscle_mass_kg=excluded.muscle_mass_kg`,
     profile.age, profile.sex, profile.height_cm, profile.current_weight_kg,
     profile.target_weight_kg, profile.activity_level, profile.fitness_objective,
     new Date().toISOString(), profile.formula_setting ?? "mifflin_st_jeor",
-    profile.language ?? "en", profile.unit_system ?? "metric"
+    profile.language ?? "en", profile.unit_system ?? "metric",
+    profile.waist_cm ?? null, profile.hip_cm ?? null, profile.neck_cm ?? null,
+    profile.body_fat_percent ?? null, profile.muscle_mass_kg ?? null
   );
 }
 
