@@ -108,7 +108,7 @@ export default function FoodDiary({ language }: { language: Language }) {
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
       <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
     </View>}
-    <View style={s.card}><Text style={s.cardTitle}>Daily vitamins and minerals</Text>{dailyMicros.length === 0 ? <Text style={s.muted}>No recorded vitamin or mineral values for today yet.</Text> : dailyMicros.map(n=><View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{Number(n.amount.toFixed(2))} {n.unit}</Text></View>)}</View>
+    <View style={s.card}><Text style={s.cardTitle}>Daily vitamins and minerals</Text>{dailyMicros.length === 0 ? <Text style={s.muted}>No recorded vitamin or mineral values for today yet.</Text> : dailyMicros.map(n=><View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : Number(n.amount.toFixed(2)) + " " + n.unit}</Text></View>)}</View>
     {mealTypes.map(m=><View key={m} style={s.card}>
       <Text style={[s.cardTitle,{textAlign}]}>{t[m]}</Text>
       {foods.filter(f=>f.meal_type===m).length===0 ? <Text style={[s.muted,{textAlign}]}>{t.empty}</Text> :
@@ -135,7 +135,7 @@ const s=StyleSheet.create({
  meals:{flexDirection:"row",gap:7,flexWrap:"wrap"},mealTab:{paddingVertical:10,paddingHorizontal:12,borderRadius:10,backgroundColor:PANEL,borderWidth:1,borderColor:"#303641"},mealActive:{borderColor:GOLD,backgroundColor:"#30291D"},mealText:{color:"#C4CAD3",fontSize:12,fontWeight:"700"},
  result:{flexDirection:"row",alignItems:"center",paddingVertical:12,borderBottomWidth:1,borderBottomColor:"#292E37"},foodName:{color:"#FFF",fontSize:14,fontWeight:"700"},muted:{color:MUTED,fontSize:12,lineHeight:18},plus:{color:GOLD,fontSize:22,paddingHorizontal:8},
  outline:{borderWidth:1,borderColor:GOLD,borderRadius:11,padding:12,alignItems:"center",marginTop:14},outlineText:{color:GOLD,fontWeight:"800"},
- cardTitle:{color:"#FFF",fontSize:16,fontWeight:"800",marginBottom:9},logged:{flexDirection:"row",alignItems:"center",paddingVertical:10,borderTopWidth:1,borderTopColor:"#292E37"},remove:{color:"#F08A8A",fontSize:23,paddingHorizontal:10},
+ cardTitle:{color:"#FFF",fontSize:16,fontWeight:"800",marginBottom:9},sectionTitle:{color:GOLD,fontSize:13,fontWeight:"800",marginTop:12,marginBottom:6},nutrientRow:{flexDirection:"row",justifyContent:"space-between",gap:12,paddingVertical:7,borderBottomWidth:1,borderBottomColor:"#292E37"},nutrientValue:{color:"#FFF",fontSize:12,fontWeight:"700",textAlign:"right"},logged:{flexDirection:"row",alignItems:"center",paddingVertical:10,borderTopWidth:1,borderTopColor:"#292E37"},remove:{color:"#F08A8A",fontSize:23,paddingHorizontal:10},
  field:{marginTop:9},button:{backgroundColor:GOLD,borderRadius:11,padding:14,alignItems:"center",marginTop:13},buttonText:{color:"#111318",fontWeight:"900"},cancel:{alignItems:"center",padding:12},
  overlay:{flex:1,backgroundColor:"#000B",justifyContent:"center",padding:16},modalWrap:{flexGrow:1,justifyContent:"center"},modal:{backgroundColor:PANEL,borderRadius:18,padding:18,borderWidth:1,borderColor:"#45403A"}
 });
