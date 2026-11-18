@@ -14,6 +14,16 @@ const words: Record<Language, Record<string, string>> = {
   fr: { title:"Journal alimentaire", calories:"Calories", protein:"Protéines", carbs:"Glucides", fats:"Lipides", breakfast:"Petit-déjeuner", lunch:"Déjeuner", dinner:"Dîner", snacks:"Collations", add:"Ajouter", search:"Rechercher les aliments enregistrés", empty:"Aucun aliment enregistré pour ce repas.", create:"Créer un aliment", name:"Nom de l'aliment", kcal:"Calories / 100 g", protein100:"Protéines / 100 g", carbs100:"Glucides / 100 g", fat100:"Lipides / 100 g", fiber100:"Fibres / 100 g (facultatif)", grams:"Quantité en grammes", save:"Enregistrer", addMeal:"Ajouter au repas", cancel:"Annuler", noResults:"Aucun aliment enregistré. Créez-en un à partir de son étiquette nutritionnelle.", unknown:"—", remove:"Supprimer", entered:"Valeurs pour 100 g. Laissez vides les valeurs inconnues." }
 };
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
+const foodCategories = [
+  { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"%Meat%" },
+  { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"%Seafood%" },
+  { id:"vegetables", en:"Vegetables", ar:"الخضروات", fr:"Légumes", pattern:"%Vegetable%" },
+  { id:"fruits", en:"Fruits", ar:"الفواكه", fr:"Fruits", pattern:"%Fruit%" },
+  { id:"dairy", en:"Dairy & eggs", ar:"الألبان والبيض", fr:"Produits laitiers", pattern:"%Dairy%" },
+  { id:"grains", en:"Grains & cereals", ar:"الحبوب", fr:"Céréales", pattern:"%Cereal%" },
+  { id:"legumes", en:"Beans, nuts & seeds", ar:"البقوليات والمكسرات والبذور", fr:"Légumineuses", pattern:"%Legume%" },
+  { id:"other", en:"Other foods", ar:"أطعمة أخرى", fr:"Autres aliments", pattern:"%" }
+];
 const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace(",", "."));
 const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
@@ -22,6 +32,7 @@ export default function FoodDiary({ language }: { language: Language }) {
   const t = words[language], rtl = language === "ar";
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [query, setQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<typeof foodCategories[number] | null>(null);
   const [results, setResults] = useState<FoodRecord[]>([]);
   const [meal, setMeal] = useState<MealType>("breakfast");
   const [modal, setModal] = useState(false);
@@ -43,9 +54,16 @@ export default function FoodDiary({ language }: { language: Language }) {
   useEffect(() => { getDailyNutrientTotals().then(setDailyMicros).catch(e => console.warn("Daily nutrient totals unavailable", e)); }, [foods]);
   useEffect(() => {
     let live = true;
-    searchFoods(query).then(items => { if (live) setResults(items); }).catch(e => console.warn("Food search failed", e));
+    if (!selectedCategory && !query.trim()) { setResults([]); return () => { live = false; }; }
+    searchFoods(query, selectedCategory?.pattern).then(items => {
+      if (!live) return;
+      const filtered = selectedCategory?.id === "other"
+        ? items.filter(item => true)
+        : items;
+      setResults(filtered);
+    }).catch(e => console.warn("Food search failed", e));
     return () => { live = false; };
-  }, [query]);
+  }, [query, selectedCategory]);
   useEffect(() => {
     let live = true;
     if (selected) {
@@ -90,6 +108,8 @@ export default function FoodDiary({ language }: { language: Language }) {
       <Text style={[s.label,{textAlign}]}>{t.calories}</Text><Text style={s.calorie}>{fmt(totals.calories)} kcal</Text>
       <View style={s.macros}><Text style={s.macro}>{t.protein}: {fmt(totals.protein)} g</Text><Text style={s.macro}>{t.carbs}: {fmt(totals.carbs)} g</Text><Text style={s.macro}>{t.fats}: {fmt(totals.fat)} g</Text></View>
     </View>
+    <Text style={[s.sectionTitle,{marginTop:4}]}>{language==="ar" ? "اختر فئة الطعام" : language==="fr" ? "Choisir une catégorie" : "BROWSE BY CATEGORY"}</Text>
+    <View style={s.categoryGrid}>{foodCategories.map(category=><Pressable key={category.id} onPress={()=>{setSelectedCategory(category);setQuery("");setSelected(null);}} style={[s.categoryCard,selectedCategory?.id===category.id&&s.categorySelected]}><Text style={[s.categoryText,selectedCategory?.id===category.id&&{color:GOLD}]}>{category[language]}</Text></Pressable>)}</View>
     <TextInput value={query} onChangeText={setQuery} placeholder={t.search} placeholderTextColor={MUTED} style={[s.input,{textAlign,marginBottom:10}]} />
     <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:GOLD}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
@@ -108,6 +128,7 @@ export default function FoodDiary({ language }: { language: Language }) {
       <Pressable onPress={addSelected} disabled={busy} style={s.button}><Text style={s.buttonText}>{t.addMeal}</Text></Pressable>
       <Pressable onPress={()=>setSelected(null)} style={s.cancel}><Text style={s.muted}>{t.cancel}</Text></Pressable>
     </View> : <View style={s.card}>
+      {!selectedCategory && !query.trim() && <Text style={s.muted}>{language==="ar" ? "اختر فئة لعرض الأطعمة." : language==="fr" ? "Choisissez une catégorie pour afficher les aliments." : "Choose a category above to browse foods."}</Text>}
       {results.map(item=><Pressable key={item.id} onPress={()=>setSelected(item)} style={s.result}><View style={{flex:1}}><Text style={s.foodName}>{item.name}</Text><Text style={s.muted}>{item.calories===null?t.unknown:Math.round(item.calories)+" kcal"} / 100 g</Text></View><Text style={s.plus}>＋</Text></Pressable>)}
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
       <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
