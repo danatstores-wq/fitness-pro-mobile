@@ -239,7 +239,7 @@ export default function App() {
           </>}
         </ScrollView>}
 
-        {tab === "diary" && <FoodDiary language={language} />}
+        {tab === "diary" && <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.pageTitle, direction]}>{t.progress}</Text>
