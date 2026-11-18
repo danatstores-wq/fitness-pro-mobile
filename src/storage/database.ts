@@ -165,14 +165,14 @@ async function database() {
       const categories = ["Fruits","Vegetables","Grains and cereals","Meat and poultry","Fish and seafood","Dairy and eggs","Legumes and nuts","Oils and fats","Beverages","Prepared foods","Snacks","Other"];
       for (const category of categories) await db.runAsync("INSERT OR IGNORE INTO food_categories (name) VALUES (?)", category);
 
-      const existingColumns = new Set(foodColumns.map(column => column.name));
+      const optionalFoodColumnNames = new Set(foodColumns.map(column => column.name));
       const optionalColumns: Record<string, string> = {
         total_sugars_g: "REAL", starch_g: "REAL", cholesterol_mg: "REAL",
         trans_fat_g: "REAL", monounsaturated_fat_g: "REAL",
         polyunsaturated_fat_g: "REAL", water_g: "REAL"
       };
       for (const [column, type] of Object.entries(optionalColumns)) {
-        if (!existingColumns.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
+        if (!optionalFoodColumnNames.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
       }
       await db.execAsync("PRAGMA user_version = 3");
       const nutrientDefinitions: [string, string][] = [
