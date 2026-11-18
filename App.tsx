@@ -15,6 +15,7 @@ type Profile = {
   age: string; sex: "male" | "female"; height: string; weight: string;
   targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive";
   objective: "lose" | "maintain" | "gain";
+  waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
 };
 
 const GOLD = "#C5A46D";
@@ -25,7 +26,7 @@ const MUTED = "#9A9D96";
 const IVORY = "#F2F0E9";
 const initialProfile: Profile = {
   age: "", sex: "male", height: "", weight: "", targetWeight: "",
-  activity: "moderate", objective: "maintain"
+  activity: "moderate", objective: "maintain", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
 };
 const activityFactor: Record<Profile["activity"], number> = {
   sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9
@@ -42,7 +43,18 @@ function calculate(profile: Profile) {
   const carbs = Math.max(0, Math.round((calories - protein * 4 - fats * 9) / 4));
   const bmi = weight / Math.pow(height / 100, 2);
   const min = 18.5 * Math.pow(height / 100, 2), max = 24.9 * Math.pow(height / 100, 2);
-  return { bmr: Math.round(bmr), tdee: Math.round(tdee), calories, protein, carbs, fats, bmi, min, max };
+  const waist = Number(profile.waist), hip = Number(profile.hip), neck = Number(profile.neck);
+  const validWaist = waist > 0, validHip = hip > 0, validNeck = neck > 0;
+  const inches = (cm: number) => cm / 2.54;
+  let bodyFat: number | null = Number(profile.bodyFat) > 0 && Number(profile.bodyFat) < 75 ? Number(profile.bodyFat) : null;
+  if (bodyFat === null && validWaist && validNeck && profile.sex === "male" && waist > neck) bodyFat = 86.010 * Math.log10(inches(waist - neck)) - 70.041 * Math.log10(inches(height)) + 36.76;
+  else if (bodyFat === null && validWaist && validHip && validNeck && profile.sex === "female" && waist + hip > neck) bodyFat = 163.205 * Math.log10(inches(waist + hip - neck)) - 97.684 * Math.log10(inches(height)) - 78.387;
+  if (bodyFat !== null && (!Number.isFinite(bodyFat) || bodyFat < 2 || bodyFat > 70)) bodyFat = null;
+  const leanMass = bodyFat === null ? null : weight * (1 - bodyFat / 100);
+  const waistHeight = validWaist ? waist / height : null;
+  const waistHip = validWaist && validHip ? waist / hip : null;
+  const waterMl = Math.round(weight * 35), ideal = (min + max) / 2;
+  return { bmr: Math.round(bmr), tdee: Math.round(tdee), calories, protein, carbs, fats, bmi, min, max, ideal, bodyFat, leanMass, waistHeight, waistHip, waterMl, muscleMass: Number(profile.muscleMass) > 0 ? Number(profile.muscleMass) : null };
 }
 
 export default function App() {
@@ -73,7 +85,10 @@ export default function App() {
             weight: String(storedProfile.current_weight_kg),
             targetWeight: String(storedProfile.target_weight_kg),
             activity: storedProfile.activity_level as Profile["activity"],
-            objective: storedProfile.fitness_objective as Profile["objective"]
+            objective: storedProfile.fitness_objective as Profile["objective"],
+            waist: storedProfile.waist_cm == null ? "" : String(storedProfile.waist_cm), hip: storedProfile.hip_cm == null ? "" : String(storedProfile.hip_cm),
+            neck: storedProfile.neck_cm == null ? "" : String(storedProfile.neck_cm), bodyFat: storedProfile.body_fat_percent == null ? "" : String(storedProfile.body_fat_percent),
+            muscleMass: storedProfile.muscle_mass_kg == null ? "" : String(storedProfile.muscle_mass_kg)
           });
           setSaved(true);
         }
@@ -122,7 +137,9 @@ export default function App() {
         age: Number(profile.age), sex: profile.sex,
         height_cm: Number(profile.height), current_weight_kg: Number(profile.weight),
         target_weight_kg: Number(profile.targetWeight),
-        activity_level: profile.activity, fitness_objective: profile.objective
+        activity_level: profile.activity, fitness_objective: profile.objective,
+        waist_cm: Number(profile.waist) || null, hip_cm: Number(profile.hip) || null, neck_cm: Number(profile.neck) || null,
+        body_fat_percent: Number(profile.bodyFat) || null, muscle_mass_kg: Number(profile.muscleMass) || null
       });
       const existingMeasurements = await getWeightMeasurements();
       if (existingMeasurements.length === 0) await addWeightMeasurement(Number(profile.weight));
@@ -242,6 +259,12 @@ export default function App() {
               <Field label={t.height} value={profile.height} onChangeText={v => change("height", v)} keyboardType="decimal-pad" />
               <Field label={t.weight} value={profile.weight} onChangeText={v => change("weight", v)} keyboardType="decimal-pad" />
               <Field label={t.goalWeight} value={profile.targetWeight} onChangeText={v => change("targetWeight", v)} keyboardType="decimal-pad" />
+              <Text style={styles.fieldLabel}>{t.bodyMeasurements}</Text><Text style={styles.muted}>{t.measurementHint}</Text>
+              <Field label={t.waistCm} value={profile.waist} onChangeText={v => change("waist", v)} keyboardType="decimal-pad" />
+              <Field label={t.hipCm} value={profile.hip} onChangeText={v => change("hip", v)} keyboardType="decimal-pad" />
+              <Field label={t.neckCm} value={profile.neck} onChangeText={v => change("neck", v)} keyboardType="decimal-pad" />
+              <Field label={t.bodyFatInput} value={profile.bodyFat} onChangeText={v => change("bodyFat", v)} keyboardType="decimal-pad" />
+              <Field label={t.muscleMassInput} value={profile.muscleMass} onChangeText={v => change("muscleMass", v)} keyboardType="decimal-pad" />
               <Text style={styles.fieldLabel}>{t.activity}</Text>
               <View style={styles.choiceWrap}>
                 {(["sedentary", "light", "moderate", "active", "veryActive"] as const).map(v => <Choice key={v} title={t[v]} active={profile.activity === v} onPress={() => change("activity", v)} />)}
@@ -256,7 +279,14 @@ export default function App() {
             {metrics && <Card>
               <Text style={styles.cardTitle}>{t.tdee}</Text>
               <Text style={styles.calorieNumber}>{metrics.calories} kcal</Text>
-              <Text style={styles.muted}>{t.bmr}: {metrics.bmr} kcal</Text>
+              <Text style={styles.muted}>{t.bmr}: {metrics.bmr} kcal</Text><Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text><Text style={styles.muted}>{t.protein}: {metrics.protein} g / day</Text>
+            </Card>}
+            {metrics && <Card><Text style={styles.cardTitle}>{t.bodyMetrics}</Text>
+              <MetricLine label={t.idealWeight} value={metrics.ideal.toFixed(1) + " kg"} /><MetricLine label={t.healthyRange} value={metrics.min.toFixed(1) + "–" + metrics.max.toFixed(1) + " kg"} />
+              <MetricLine label={t.bodyFat} value={metrics.bodyFat === null ? "—" : metrics.bodyFat.toFixed(1) + "%"} /><MetricLine label={t.leanMass} value={metrics.leanMass === null ? "—" : metrics.leanMass.toFixed(1) + " kg"} />
+              <MetricLine label={t.muscleMass} value={metrics.muscleMass === null ? "—" : metrics.muscleMass.toFixed(1) + " kg"} /><MetricLine label={t.waistHeight} value={metrics.waistHeight === null ? "—" : metrics.waistHeight.toFixed(2)} />
+              <MetricLine label={t.waistHip} value={metrics.waistHip === null ? "—" : metrics.waistHip.toFixed(2)} /><MetricLine label={t.waterNeeds} value={(metrics.waterMl / 1000).toFixed(2) + " L / day"} />
+              <MetricLine label={t.metabolicAge} value={t.notAvailable} /><Text style={styles.muted}>{t.metricsDisclaimer}</Text>
             </Card>}
           </ScrollView>
         </KeyboardAvoidingView>}
@@ -283,6 +313,7 @@ function Card({ children }: { children: React.ReactNode }) {
 function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return <View style={[styles.card, { flex: 1 }]}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.muted}>{label}</Text></View>;
 }
+function MetricLine({ label, value }: { label: string; value: string }) { return <View style={styles.spaceBetween}><Text style={styles.muted}>{label}</Text><Text style={styles.valueText}>{value}</Text></View>; }
 function Macro({ label, value, consumed, color }: { label: string; value: number; consumed: number | null; color: string }) {
   return <View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{ color, fontWeight: "800" }}>{consumed === null ? "—" : Math.round(consumed)} / {value} g</Text></View>;
 }
