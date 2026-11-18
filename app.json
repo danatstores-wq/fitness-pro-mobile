@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Fitness Pro by Danat",
+    "slug": "fitness-pro-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.danat.fitnesspro"
+    },
+    "android": {
+      "package": "com.danat.fitnesspro"
+    }
+  }
+}
