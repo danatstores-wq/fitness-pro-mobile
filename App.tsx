@@ -8,7 +8,7 @@ import {
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
-import { USDA_FNDDS_FOODS } from "./src/data/usda-fndds-foods";
+import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
@@ -61,7 +61,7 @@ export default function App() {
     (async () => {
       try {
         await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as unknown as ImportedFoodRecord[]);
-        await ensureFnddsFoodsImported(USDA_FNDDS_FOODS as unknown as ImportedFoodRecord[]);
+        await ensureFnddsFoodsImported(await loadFnddsFoods());
         const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
         if (!active) return;
         if (storedProfile) {
