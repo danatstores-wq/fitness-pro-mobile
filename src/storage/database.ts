@@ -250,7 +250,7 @@ export async function createFood(food: {
   monounsaturated_fat_g?: number | null;
   polyunsaturated_fat_g?: number | null;
   water_g?: number | null;
-  nutrients?: { name: string; amount: number | null }[];
+  nutrients?: { name: string; unit: string; amount: number | null }[];
 }) {
   const db = await database();
   const name = food.name.trim();
@@ -270,7 +270,7 @@ export async function createFood(food: {
   for (const nutrient of food.nutrients ?? []) {
     if (nutrient.amount === null) continue;
     if (!Number.isFinite(nutrient.amount) || nutrient.amount < 0) throw new Error("Nutrient amounts must be non-negative or unknown");
-    await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, 'mg')", nutrient.name);
+    await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", nutrient.name, nutrient.unit);
     await db.runAsync(
       "INSERT OR REPLACE INTO food_nutrients (food_id, nutrient_id, amount) SELECT ?, id, ? FROM nutrients WHERE name = ?",
       foodId, nutrient.amount, nutrient.name
