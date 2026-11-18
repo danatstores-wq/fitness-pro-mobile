@@ -99,7 +99,7 @@ async function database() {
         );
         CREATE INDEX IF NOT EXISTS idx_measurements_date ON measurements(recorded_at);
         CREATE INDEX IF NOT EXISTS idx_meals_date ON meals(eaten_at);
-        CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);
+        CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);\n        CREATE UNIQUE INDEX IF NOT EXISTS idx_foods_source_id ON foods(source, source_id) WHERE source_id IS NOT NULL;
       `);
 
       const foodColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(foods)");
@@ -313,4 +313,67 @@ export async function getFoodNutrients(foodId: number): Promise<FoodNutrientDeta
      ORDER BY n.id`,
     foodId
   );
+}
+
+
+export type ImportedFoodRecord = {
+  name: string;
+  sourceId: string;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g: number | null;
+  total_sugars_g?: number | null;
+  starch_g?: number | null;
+  cholesterol_mg?: number | null;
+  saturated_fat_g?: number | null;
+  trans_fat_g?: number | null;
+  monounsaturated_fat_g?: number | null;
+  polyunsaturated_fat_g?: number | null;
+  water_g?: number | null;
+  nutrients: { name: string; unit: string; amount: number | null }[];
+};
+
+export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
+  const db = await database();
+  let imported = 0;
+  await db.withTransactionAsync(async () => {
+    for (const food of records) {
+      const result = await db.runAsync(
+        `INSERT INTO foods
+          (name, source, source_id, calories, protein_g, carbs_g, fat_g, fiber_g,
+           total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g,
+           monounsaturated_fat_g, polyunsaturated_fat_g, water_g, data_quality)
+         VALUES (?, 'USDA FoodData Central', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'verified_source')
+         ON CONFLICT(source, source_id) DO UPDATE SET
+           name=excluded.name, calories=excluded.calories, protein_g=excluded.protein_g,
+           carbs_g=excluded.carbs_g, fat_g=excluded.fat_g, fiber_g=excluded.fiber_g,
+           total_sugars_g=excluded.total_sugars_g, starch_g=excluded.starch_g,
+           cholesterol_mg=excluded.cholesterol_mg, saturated_fat_g=excluded.saturated_fat_g,
+           trans_fat_g=excluded.trans_fat_g, monounsaturated_fat_g=excluded.monounsaturated_fat_g,
+           polyunsaturated_fat_g=excluded.polyunsaturated_fat_g, water_g=excluded.water_g,
+           data_quality='verified_source'`,
+        food.name, food.sourceId, food.calories, food.protein_g, food.carbs_g, food.fat_g,
+        food.fiber_g, food.total_sugars_g ?? null, food.starch_g ?? null,
+        food.cholesterol_mg ?? null, food.saturated_fat_g ?? null, food.trans_fat_g ?? null,
+        food.monounsaturated_fat_g ?? null, food.polyunsaturated_fat_g ?? null, food.water_g ?? null
+      );
+      const stored = await db.getFirstAsync<{ id: number }>(
+        "SELECT id FROM foods WHERE source = 'USDA FoodData Central' AND source_id = ?",
+        food.sourceId
+      );
+      if (!stored) continue;
+      for (const nutrient of food.nutrients) {
+        await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", nutrient.name, nutrient.unit);
+        if (nutrient.amount === null) continue;
+        await db.runAsync(
+          "INSERT OR REPLACE INTO food_nutrients (food_id, nutrient_id, amount) SELECT ?, id, ? FROM nutrients WHERE name = ?",
+          stored.id, nutrient.amount, nutrient.name
+        );
+      }
+      imported += 1;
+    }
+  });
+  return imported;
 }
