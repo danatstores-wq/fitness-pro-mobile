@@ -17,8 +17,8 @@ const words: Record<Language, Record<string, string>> = {
 };
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
-  { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"Meat|Poultry|Sausage" },
-  { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"Fish|Finfish|Seafood|Shellfish" },
+  { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"Meat|Poultry|Sausage|Beef|Pork|Lamb|Veal|Game|Chicken|Turkey|Duck" },
+  { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"Fish|Finfish|Seafood|Shellfish|Crustacean|Mollusk" },
   { id:"vegetables", en:"Vegetables", ar:"الخضروات", fr:"Légumes", pattern:"%Vegetable%" },
   { id:"fruits", en:"Fruits", ar:"الفواكه", fr:"Fruits", pattern:"%Fruit%" },
   { id:"dairy", en:"Dairy & eggs", ar:"الألبان والبيض", fr:"Produits laitiers", pattern:"Dairy|Egg" },
