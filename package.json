@@ -10,14 +10,17 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "import:usda": "node scripts/import-usda-foundation.mjs",
-    "import:fndds": "node scripts/import-usda-foundation.mjs"
+    "import:fndds": "node scripts/import-usda-foundation.mjs",
+    "web:build": "expo export --platform web"
   },
   "dependencies": {
     "expo": "~58.0.0",
     "react": "19.3.0",
     "react-native": "0.88.1",
     "expo-sqlite": "~58.0.18",
-    "fflate": "^0.8.2"
+    "fflate": "^0.8.2",
+    "react-dom": "19.3.0",
+    "react-native-web": "^0.21.0"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
