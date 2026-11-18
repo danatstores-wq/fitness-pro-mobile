@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported } from "./src/storage/database";
+import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView,
@@ -8,6 +8,7 @@ import {
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
+import { USDA_FNDDS_FOODS } from "./src/data/usda-fndds-foods";
 
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
@@ -60,6 +61,7 @@ export default function App() {
     (async () => {
       try {
         await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as unknown as ImportedFoodRecord[]);
+        await ensureFnddsFoodsImported(USDA_FNDDS_FOODS as unknown as ImportedFoodRecord[]);
         const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
         if (!active) return;
         if (storedProfile) {
