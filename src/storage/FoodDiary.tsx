@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
+import MealPlanner from "./MealPlanner";
+import BarcodeScanner from "./BarcodeScanner";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
   nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, getFoodServings, getDailyNutrientTotals, FoodNutrientDetail
@@ -28,9 +30,9 @@ const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace("
 const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
 
-export default function FoodDiary({ language }: { language: Language }) {
+export default function FoodDiary({ language, targetCalories = 2000 }: { language: Language; targetCalories?: number }) {
   const t = words[language], rtl = language === "ar";
-  const [foods, setFoods] = useState<MealFoodRecord[]>([]);
+  const [foods, setFoods] = useState<MealFoodRecord[]>([]);\n  const [plannerMode, setPlannerMode] = useState(false);\n  const [scannerVisible, setScannerVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<typeof foodCategories[number] | null>(null);
   const [results, setResults] = useState<FoodRecord[]>([]);
@@ -101,9 +103,18 @@ export default function FoodDiary({ language }: { language: Language }) {
     catch (e) { Alert.alert("Error", String(e)); }
   };
   const textAlign = rtl ? "right" as const : "left" as const;
+  if (plannerMode) return <ScrollView contentContainerStyle={s.content}>
+    <Pressable onPress={()=>setPlannerMode(false)} style={s.outline}><Text style={s.outlineText}>{language==="ar"?"العودة إلى المفكرة":language==="fr"?"Retour au journal":"← Back to food diary"}</Text></Pressable>
+    <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} />
+  </ScrollView>;
   const field = (label: string, value: string, set: (v:string)=>void, numeric=false) => <View style={s.field}><Text style={[s.label,{textAlign}]}>{label}</Text><TextInput value={value} onChangeText={set} keyboardType={numeric ? "decimal-pad" : "default"} placeholder="—" placeholderTextColor={MUTED} style={[s.input,{textAlign}]} /></View>;
   return <ScrollView contentContainerStyle={s.content}>
     <Text style={[s.title,{textAlign}]}>{t.title}</Text>
+    <View style={s.meals}>
+      <Pressable onPress={()=>setPlannerMode(true)} style={s.mealTab}><Text style={s.mealText}>{language==="ar"?"مخطط الوجبات":language==="fr"?"Planificateur":"Meal planner"}</Text></Pressable>
+      <Pressable onPress={()=>setScannerVisible(true)} style={s.mealTab}><Text style={s.mealText}>{language==="ar"?"مسح باركود":language==="fr"?"Scanner":"Scan barcode"}</Text></Pressable>
+    </View>
+    <BarcodeScanner visible={scannerVisible} onClose={()=>setScannerVisible(false)} onFound={food=>{setSelected(food);setSelectedCategory(null);setQuery("");setQuantity("100");}} language={language} />
     <View style={s.card}>
       <Text style={[s.label,{textAlign}]}>{t.calories}</Text><Text style={s.calorie}>{fmt(totals.calories)} kcal</Text>
       <View style={s.macros}><Text style={s.macro}>{t.protein}: {fmt(totals.protein)} g</Text><Text style={s.macro}>{t.carbs}: {fmt(totals.carbs)} g</Text><Text style={s.macro}>{t.fats}: {fmt(totals.fat)} g</Text></View>
