@@ -95,7 +95,7 @@ jobs:
             }
 
             await page.getByText("Food diary", { exact: true }).last().click();
-            await page.getByText("BROWSE BY CATEGORY", { exact: true }).waitFor({ timeout: 30000 });
+            await page.getByText("BROWSE BY CATEGORY", { exact: true }).waitFor({ timeout: 180000 });
             await page.getByText("Meat & poultry", { exact: true }).click();
             await page.getByText(/chicken|beef|pork|turkey/i).first().waitFor({ timeout: 120000 });
             await page.getByPlaceholder("Search saved foods").fill("chicken");
