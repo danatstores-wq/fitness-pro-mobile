@@ -3,7 +3,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View 
 import { Language } from "../i18n";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
-  nutritionForQuantity, removeMealFood, searchFoods
+  nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, FoodNutrientDetail
 } from "./database";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
@@ -32,7 +32,7 @@ export default function FoodDiary({ language }: { language: Language }) {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [fiber, setFiber] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);\n  const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);\n  const [microInputs, setMicroInputs] = useState<Record<string,string>>({});
   const load = useCallback(async () => setFoods(await getDailyMealFoods()), []);
   useEffect(() => { load().catch(e => console.warn("Food diary load failed", e)); }, [load]);
   useEffect(() => {
@@ -40,6 +40,12 @@ export default function FoodDiary({ language }: { language: Language }) {
     searchFoods(query).then(items => { if (live) setResults(items); }).catch(e => console.warn("Food search failed", e));
     return () => { live = false; };
   }, [query]);
+  useEffect(() => {
+    let live = true;
+    if (selected) getFoodNutrients(selected.id).then(items => { if (live) setMicros(items); }).catch(e => console.warn("Nutrient details unavailable", e));
+    else setMicros([]);
+    return () => { live = false; };
+  }, [selected]);
   const totals = useMemo(() => ({
     calories: sumKnown(foods.map(f => nutritionForQuantity(f, f.quantity_g).calories)),
     protein: sumKnown(foods.map(f => nutritionForQuantity(f, f.quantity_g).protein_g)),
@@ -58,9 +64,9 @@ export default function FoodDiary({ language }: { language: Language }) {
     if (!name.trim() || nums.some(n => n !== null && (!Number.isFinite(n) || n < 0))) { Alert.alert("Check the food name and nutrition values."); return; }
     try {
       setBusy(true);
-      const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4] });
+      const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, amount: parseOptional(value) }));\n      const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], nutrients });
       const food: FoodRecord = { id, name: name.trim(), calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], data_quality: "user_entered" };
-      setSelected(food); setModal(false); setName(""); setCalories(""); setProtein(""); setCarbs(""); setFat(""); setFiber("");
+      setSelected(food); setModal(false); setName(""); setCalories(""); setProtein(""); setCarbs(""); setFat(""); setFiber(""); setMicroInputs({});
     } catch (e) { Alert.alert("Error", String(e)); } finally { setBusy(false); }
   };
   const addRow = async (item: MealFoodRecord) => {
@@ -96,6 +102,8 @@ export default function FoodDiary({ language }: { language: Language }) {
       <View style={s.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.modalWrap}><View style={s.modal}>
         <Text style={s.cardTitle}>{t.create}</Text><Text style={s.muted}>{t.entered}</Text>
         {field(t.name,name,setName)}{field(t.kcal,calories,setCalories,true)}{field(t.protein100,protein,setProtein,true)}{field(t.carbs100,carbs,setCarbs,true)}{field(t.fat100,fat,setFat,true)}{field(t.fiber100,fiber,setFiber,true)}
+        <Text style={s.sectionTitle}>Vitamins and minerals (per 100 g)</Text>
+        {["Vitamin A","Vitamin C","Vitamin D","Vitamin E","Vitamin K","Thiamin (B1)","Riboflavin (B2)","Niacin (B3)","Pantothenic acid (B5)","Vitamin B6","Biotin (B7)","Folate (B9)","Vitamin B12","Calcium","Iron","Magnesium","Phosphorus","Potassium","Sodium","Zinc","Copper","Manganese","Selenium","Iodine","Choline"].map(n => field(n,microInputs[n] ?? "",v=>setMicroInputs(old=>({...old,[n]:v})),true))}
         <Pressable onPress={saveNewFood} disabled={busy} style={s.button}><Text style={s.buttonText}>{t.save}</Text></Pressable>
         <Pressable onPress={()=>setModal(false)} style={s.cancel}><Text style={s.muted}>{t.cancel}</Text></Pressable>
       </View></ScrollView></View>
