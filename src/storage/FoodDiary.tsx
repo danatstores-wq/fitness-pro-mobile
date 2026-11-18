@@ -32,7 +32,9 @@ const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? 
 
 export default function FoodDiary({ language, targetCalories = 2000 }: { language: Language; targetCalories?: number }) {
   const t = words[language], rtl = language === "ar";
-  const [foods, setFoods] = useState<MealFoodRecord[]>([]);\n  const [plannerMode, setPlannerMode] = useState(false);\n  const [scannerVisible, setScannerVisible] = useState(false);
+  const [foods, setFoods] = useState<MealFoodRecord[]>([]);
+  const [plannerMode, setPlannerMode] = useState(false);
+  const [scannerVisible, setScannerVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<typeof foodCategories[number] | null>(null);
   const [results, setResults] = useState<FoodRecord[]>([]);
