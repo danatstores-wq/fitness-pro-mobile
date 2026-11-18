@@ -18,12 +18,12 @@ type Profile = {
   waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
 };
 
-const GOLD = "#C5A46D";
-const GREEN = "#9BC6A5";
-const BG = "#101110";
-const PANEL = "#191C19";
-const MUTED = "#9A9D96";
-const IVORY = "#F2F0E9";
+const GOLD = "#258F72";
+const GREEN = "#54B88B";
+const BG = "#F4F8F5";
+const PANEL = "#FFFFFF";
+const MUTED = "#718078";
+const IVORY = "#20352D";
 const initialProfile: Profile = {
   age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
@@ -399,14 +399,14 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: BG },
-  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#292B27" },
+  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#E3ECE6" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
   logo: { width: 42, height: 42, borderRadius: 21, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
   logoMark: { color: BG, fontWeight: "900", fontSize: 25, letterSpacing: -2 },
   brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
-  languageButton: { borderWidth: 1, borderColor: "#4B412D", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
+  languageButton: { borderWidth: 1, borderColor: "#CFE2D8", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
   languageText: { color: GOLD, fontSize: 12, fontWeight: "800" },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
@@ -414,20 +414,20 @@ const styles = StyleSheet.create({
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
-  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#2A2D28", padding: 19, marginBottom: 2 },
+  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#E1EAE4", padding: 19, marginBottom: 2 },
   cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
   muted: { color: MUTED, fontSize: 12, lineHeight: 19 },
-  calorieHero: { backgroundColor: "#20241F", borderRadius: 22, borderWidth: 1, borderColor: "#393A2F", padding: 21, marginBottom: 2 },
+  calorieHero: { backgroundColor: "#EAF5EF", borderRadius: 22, borderWidth: 1, borderColor: "#D7E9DE", padding: 21, marginBottom: 2 },
   heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heroLabel: { color: "#C9C4B6", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
+  heroLabel: { color: "#53685D", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
   heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
   heroSubline: { color: GOLD, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
-  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#777052", alignItems: "center", justifyContent: "center", marginLeft: 10 },
+  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#9CCBB7", alignItems: "center", justifyContent: "center", marginLeft: 10 },
   badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
   badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
-  progressTrack: { height: 5, backgroundColor: "#3A3D35", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
+  progressTrack: { height: 5, backgroundColor: "#E0EBE4", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: GREEN, borderRadius: 10 },
   sectionHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
   sectionMeta: { color: GOLD, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
@@ -436,25 +436,25 @@ const styles = StyleSheet.create({
   statRow: { flexDirection: "row", gap: 11 },
   statIcon: { color: GOLD, fontSize: 18, marginBottom: 10 },
   statValue: { color: IVORY, fontSize: 23, fontWeight: "700", letterSpacing: -0.5, marginBottom: 4 },
-  macroRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#292E37" },
+  macroRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#E6EEE9" },
   mealCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: PANEL, borderRadius: 16, padding: 15, borderWidth: 1, borderColor: "#252A33" },
   mealIcon: { width: 43, height: 43, borderRadius: 13, backgroundColor: "#242830", alignItems: "center", justifyContent: "center" },
   addIcon: { color: GOLD, fontSize: 24, fontWeight: "700" },
   weightList: { gap: 9, marginTop: 8 },
   valueText: { color: GOLD, fontWeight: "800" },
-  input: { color: "#FFFFFF", backgroundColor: "#0E1117", borderWidth: 1, borderColor: "#303641", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
+  input: { color: "#FFFFFF", backgroundColor: "#F7FAF8", borderWidth: 1, borderColor: "#D6E3DA", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
   field: { marginBottom: 13 },
-  fieldLabel: { color: "#D7DBE2", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
+  fieldLabel: { color: "#30463B", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
   optionRow: { flexDirection: "row", gap: 9, marginBottom: 12 },
   choiceWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 8 },
-  choice: { borderWidth: 1, borderColor: "#343B47", backgroundColor: "#10141A", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
-  choiceActive: { borderColor: GOLD, backgroundColor: "#30291D" },
-  choiceText: { color: "#C4CAD3", fontSize: 12, fontWeight: "700" },
+  choice: { borderWidth: 1, borderColor: "#EAF2ED", backgroundColor: "#FFFFFF", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
+  choiceActive: { borderColor: GOLD, backgroundColor: "#E1F2E9" },
+  choiceText: { color: "#52665B", fontSize: 12, fontWeight: "700" },
   goldButton: { backgroundColor: GOLD, borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
-  goldButtonText: { color: "#111318", fontWeight: "900", fontSize: 14 },
-  tabBar: { flexDirection: "row", backgroundColor: "#171A17", borderTopWidth: 1, borderTopColor: "#2A2D28", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  goldButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14 },
+  tabBar: { flexDirection: "row", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#E1EAE4", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
-  tabIcon: { color: "#777D74", fontSize: 21, fontWeight: "500" },
-  tabLabel: { color: "#858A81", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
+  tabIcon: { color: "#82958A", fontSize: 21, fontWeight: "500" },
+  tabLabel: { color: "#718078", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
   activeTab: { color: GOLD }
 });
