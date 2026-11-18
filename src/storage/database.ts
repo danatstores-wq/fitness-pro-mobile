@@ -519,18 +519,25 @@ export async function getBodyMeasurements() {
 }
 
 
-export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[]) {
+export async function ensureFoodCatalogueImported(seedKey: string, records: ImportedFoodRecord[]) {
   if (!records.length) return { imported: 0, skipped: true };
   const db = await database();
-  const key = "usda_foundation_foods_2026_10";
   const existing = await db.getFirstAsync<{ imported_count: number }>(
-    "SELECT imported_count FROM seed_imports WHERE seed_key = ?", key
+    "SELECT imported_count FROM seed_imports WHERE seed_key = ?", seedKey
   );
   if (existing) return { imported: existing.imported_count, skipped: true };
   const imported = await importFoodCatalogue(records);
   await db.runAsync(
     "INSERT OR REPLACE INTO seed_imports (seed_key, imported_count, imported_at) VALUES (?, ?, ?)",
-    key, imported, new Date().toISOString()
+    seedKey, imported, new Date().toISOString()
   );
   return { imported, skipped: false };
+}
+
+export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[]) {
+  return ensureFoodCatalogueImported("usda_foundation_foods_2026_10", records);
+}
+
+export async function ensureFnddsFoodsImported(records: ImportedFoodRecord[]) {
+  return ensureFoodCatalogueImported("usda_fndds_2021_2023", records);
 }
