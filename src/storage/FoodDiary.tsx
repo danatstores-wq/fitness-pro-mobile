@@ -71,7 +71,7 @@ export default function FoodDiary({ language }: { language: Language }) {
       setBusy(true);
       const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, unit: nutrientUnit(nutrientName), amount: parseOptional(value) }));
       const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], nutrients });
-      const food: FoodRecord = { id, name: name.trim(), calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], sugar_g: null, saturated_fat_g: null, data_quality: "user_entered" };
+      const food: FoodRecord = { id, name: name.trim(), calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], sugar_g: null, saturated_fat_g: null, trans_fat_g: null, monounsaturated_fat_g: null, polyunsaturated_fat_g: null, starch_g: null, cholesterol_mg: null, water_g: null, data_quality: "user_entered" };
       setSelected(food); setModal(false); setName(""); setCalories(""); setProtein(""); setCarbs(""); setFat(""); setFiber(""); setMicroInputs({});
     } catch (e) { Alert.alert("Error", String(e)); } finally { setBusy(false); }
   };
@@ -96,7 +96,7 @@ export default function FoodDiary({ language }: { language: Language }) {
         ["Energy", selected.calories, "kcal"], ["Protein", selected.protein_g, "g"],
         ["Carbohydrates", selected.carbs_g, "g"], ["Total fat", selected.fat_g, "g"],
         ["Fiber", selected.fiber_g, "g"], ["Total sugars", selected.sugar_g, "g"],
-        ["Saturated fat", selected.saturated_fat_g, "g"]
+        ["Saturated fat", selected.saturated_fat_g, "g"], ["Trans fat", selected.trans_fat_g, "g"], ["Monounsaturated fat", selected.monounsaturated_fat_g, "g"], ["Polyunsaturated fat", selected.polyunsaturated_fat_g, "g"], ["Starch", selected.starch_g, "g"], ["Cholesterol", selected.cholesterol_mg, "mg"], ["Water", selected.water_g, "g"]
       ].map(([label, amount, unit]) => <View key={String(label)} style={s.nutrientRow}><Text style={s.muted}>{label}</Text><Text style={s.nutrientValue}>{amount === null ? "—" : amount} {unit}</Text></View>)}
       <Text style={s.sectionTitle}>Vitamins and minerals per 100 g</Text>
       {micros.map(n => <View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : n.amount + " " + n.unit}</Text></View>)}
