@@ -12,6 +12,12 @@
     },
     "android": {
       "package": "com.danat.fitnesspro"
+    },
+    "web": {
+      "output": "single"
+    },
+    "experiments": {
+      "baseUrl": "/fitness-pro-mobile"
     }
   }
 }
