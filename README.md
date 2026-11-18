@@ -33,13 +33,13 @@ Then rebuild the native development client when using a custom development build
 
 The app stores profile and weight measurements in a local SQLite database on the device. The database is created automatically on first launch. No account or paid cloud service is required for this local MVP.
 
-Nutrition fields that are not known are stored as SQL NULL rather than being treated as zero. USDA FoodData Central is planned as the primary source for the verified food catalogue; the repository does not yet contain the promised 500-entry catalogue.
+Each food record supports energy, protein, carbohydrate, total fat, fiber, sugars, starch, cholesterol, saturated/trans/mono/polyunsaturated fats, and water per 100 g. The normalized nutrient catalogue covers vitamins A, C, D, E, K and B-complex vitamins, plus calcium, iron, magnesium, phosphorus, potassium, sodium, zinc, copper, manganese, selenium, iodine, choline and fluoride. Food nutrient detail screens show the recorded values and units. Values can be entered per 100 g and scaled by serving quantity. Unknown nutrient values remain SQL NULL and display as unavailable, never as zero.\n\nUSDA FoodData Central is the planned primary source for the verified food catalogue. The app now has the schema and manual entry/detail support for the full nutrient profile, but the bulk USDA food dataset has not yet been imported; do not treat the catalogue as populated until that import is completed.
 
 ## Current development status
 
 Implemented: app shell, dashboard UI, language switching and Arabic RTL, profile form, health calculations, SQLite schema, profile persistence and weight-history persistence.
 
-Still to implement: searchable food catalogue and import, add/edit meal entries, daily nutrient totals, progress charts and reports, automated tests, and Android/iOS device verification.
+Still to implement: import and validate the USDA FoodData Central catalogue, expose complete nutrient totals in the daily summary, add/edit meal entries, progress charts and reports, automated tests, and Android/iOS device verification.
 
 ## Security
 
