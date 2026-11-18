@@ -1,24 +1,45 @@
 # Fitness Pro by Danat
 
-Private Expo / React Native application for Android and iOS.
+Premium fitness and nutrition app for Android and iOS, built with Expo, React Native and TypeScript.
 
-## Stack
+## Current foundation
 
-- Expo SDK 58
-- React 19.3
-- React Native 0.88
-- TypeScript
+- Premium dark interface with DANAT gold and green progress accents.
+- Dashboard, food diary, progress and profile tabs.
+- English, Arabic (RTL) and French language switching.
+- Profile inputs and Mifflin–St Jeor BMR, TDEE, BMI, healthy-weight and macro calculations.
+- Offline SQLite database for profile and weight history.
+- SQLite schema prepared for foods, nutrients, servings, meals, meal items, daily goals and activity logs.
 
-## Getting started
+## Requirements and setup
 
-1. Install Node.js 22.13+.
-2. Install dependencies: `npm install`
-3. Start the development server: `npx expo start`
+Use the Expo SDK version pinned in `package.json`, with a compatible Node.js LTS release.
 
-## Project status
+```bash
+npm install
+npx expo start
+```
 
-The initial mobile application foundation is in place. Product features, authentication, data services, and native integrations will be added after their requirements are defined.
+If your local Expo environment reports a native package version mismatch, run:
+
+```bash
+npx expo install expo-sqlite
+```
+
+Then rebuild the native development client when using a custom development build.
+
+## Data storage
+
+The app stores profile and weight measurements in a local SQLite database on the device. The database is created automatically on first launch. No account or paid cloud service is required for this local MVP.
+
+Nutrition fields that are not known are stored as SQL NULL rather than being treated as zero. USDA FoodData Central is planned as the primary source for the verified food catalogue; the repository does not yet contain the promised 500-entry catalogue.
+
+## Current development status
+
+Implemented: app shell, dashboard UI, language switching and Arabic RTL, profile form, health calculations, SQLite schema, profile persistence and weight-history persistence.
+
+Still to implement: searchable food catalogue and import, add/edit meal entries, daily nutrient totals, progress charts and reports, automated tests, and Android/iOS device verification.
 
 ## Security
 
-Do not commit API keys, service-account files, signing credentials, or production secrets. Use environment variables and secure build secrets.
+Do not commit API keys, service-account files, signing credentials or production secrets.
