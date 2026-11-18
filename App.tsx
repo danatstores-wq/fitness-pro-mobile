@@ -61,7 +61,7 @@ export default function App() {
     (async () => {
       try {
         await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as unknown as ImportedFoodRecord[]);
-        await ensureFnddsFoodsImported(await loadFnddsFoods());
+        await ensureFnddsFoodsImported(loadFnddsFoods);
         const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
         if (!active) return;
         if (storedProfile) {
