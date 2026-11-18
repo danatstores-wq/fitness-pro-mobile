@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import { createFood, FoodRecord, getFoodBySourceId } from "./database";
@@ -8,7 +8,7 @@ const styles=StyleSheet.create({overlay:{flex:1,backgroundColor:"#080A08",justif
 export default function BarcodeScanner({visible,onClose,onFound,language}:Props){
  const [permission,requestPermission]=useCameraPermissions();
  const [loading,setLoading]=useState(false);
- const scanned=useRef(false);
+ const scanned=useRef(false);\n useEffect(()=>{if(visible)scanned.current=false;},[visible]);
  const ar=language==="ar",fr=language==="fr";
  const title=ar?"امسح الباركود":fr?"Scanner le code-barres":"Scan product barcode";
  const instruction=ar?"وجّه الكاميرا إلى الرمز الشريطي على العبوة.":fr?"Pointez la caméra vers le code-barres du produit.":"Point the camera at the barcode on the package.";
@@ -43,7 +43,7 @@ export default function BarcodeScanner({visible,onClose,onFound,language}:Props)
   finally{setLoading(false);}
  };
  return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-  <View style={styles.overlay}><Text style={styles.title}>{title}</Text><Text style={styles.muted}>{instruction}</Text>
+  <View style={styles.overlay}><Text style={styles.title}>{title}</Text><Text style={styles.muted}>{instruction}</Text><Text style={styles.muted}>Nutrition data from Open Food Facts. Product coverage and label completeness vary.</Text>
    {!permission?<ActivityIndicator/>:!permission.granted?<><Text style={styles.muted}>{ar?"يلزم السماح باستخدام الكاميرا لمسح المنتجات.":fr?"L’autorisation de la caméra est nécessaire.":"Camera permission is needed to scan products."}</Text><Pressable style={styles.button} onPress={requestPermission}><Text style={styles.buttonText}>{ar?"السماح بالكاميرا":fr?"Autoriser la caméra":"Allow camera"}</Text></Pressable></>:<CameraView style={styles.camera} facing="back" barcodeScannerSettings={{barcodeTypes:["ean13","ean8","upc_a","upc_e","code128","code39","itf14"]}} onBarcodeScanned={lookup}/>}
    {loading&&<Text style={styles.loading}>{ar?"جارٍ البحث عن المنتج…":fr?"Recherche du produit…":"Looking up product…"}</Text>}
    <Pressable style={styles.close} onPress={onClose}><Text style={styles.muted}>{close}</Text></Pressable>
