@@ -36,6 +36,11 @@ async function database() {
           language TEXT NOT NULL DEFAULT 'en',
           unit_system TEXT NOT NULL DEFAULT 'metric'
         );
+        CREATE TABLE IF NOT EXISTS seed_imports (
+          seed_key TEXT PRIMARY KEY NOT NULL,
+          imported_count INTEGER NOT NULL,
+          imported_at TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS food_categories (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL UNIQUE
@@ -397,6 +402,8 @@ export type ImportedFoodRecord = {
   polyunsaturated_fat_g?: number | null;
   water_g?: number | null;
   nutrients: { name: string; unit: string; amount: number | null }[];
+  category?: string;
+  servings?: { label: string; grams: number }[];
 };
 
 export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
@@ -423,11 +430,18 @@ export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
         food.cholesterol_mg ?? null, food.saturated_fat_g ?? null, food.trans_fat_g ?? null,
         food.monounsaturated_fat_g ?? null, food.polyunsaturated_fat_g ?? null, food.water_g ?? null
       );
+      if (food.category) {
+        await db.runAsync("INSERT OR IGNORE INTO food_categories (name) VALUES (?)", food.category);
+        await db.runAsync("UPDATE foods SET category_id = (SELECT id FROM food_categories WHERE name = ?) WHERE source = 'USDA FoodData Central' AND source_id = ?", food.category, food.sourceId);
+      }
       const stored = await db.getFirstAsync<{ id: number }>(
         "SELECT id FROM foods WHERE source = 'USDA FoodData Central' AND source_id = ?",
         food.sourceId
       );
       if (!stored) continue;
+      for (const serving of food.servings ?? []) {
+        await db.runAsync("INSERT INTO food_servings (food_id, label, grams) SELECT ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM food_servings WHERE food_id = ? AND label = ? AND grams = ?)", stored.id, serving.label, serving.grams, stored.id, serving.label, serving.grams);
+      }
       for (const nutrient of food.nutrients) {
         await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", nutrient.name, nutrient.unit);
         if (nutrient.amount === null) continue;
@@ -502,4 +516,21 @@ export async function getBodyMeasurements() {
   return db.getAllAsync<{ id: number; recorded_at: string; measurement_type: string; value: number; unit: string }>(
     "SELECT id, recorded_at, measurement_type, value, unit FROM body_measurements ORDER BY recorded_at DESC LIMIT 200"
   );
+}
+
+
+export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[]) {
+  if (!records.length) return { imported: 0, skipped: true };
+  const db = await database();
+  const key = "usda_foundation_foods_2026_10";
+  const existing = await db.getFirstAsync<{ imported_count: number }>(
+    "SELECT imported_count FROM seed_imports WHERE seed_key = ?", key
+  );
+  if (existing) return { imported: existing.imported_count, skipped: true };
+  const imported = await importFoodCatalogue(records);
+  await db.runAsync(
+    "INSERT OR REPLACE INTO seed_imports (seed_key, imported_count, imported_at) VALUES (?, ?, ?)",
+    key, imported, new Date().toISOString()
+  );
+  return { imported, skipped: false };
 }
