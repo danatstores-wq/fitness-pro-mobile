@@ -8,7 +8,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.danat.fitnesspro"
+      "bundleIdentifier": "com.danat.fitnesspro",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Fitness Pro uses the camera to scan packaged food barcodes and retrieve nutrition information."
+      }
     },
     "android": {
       "package": "com.danat.fitnesspro"
@@ -18,6 +21,17 @@
     },
     "experiments": {
       "baseUrl": "/fitness-pro-mobile"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Fitness Pro to scan packaged food barcodes.",
+          "microphonePermission": "Allow Fitness Pro to use the microphone only when recording video.",
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ]
+    ]
   }
 }
