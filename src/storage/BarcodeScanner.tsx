@@ -8,7 +8,8 @@ const styles=StyleSheet.create({overlay:{flex:1,backgroundColor:"#080A08",justif
 export default function BarcodeScanner({visible,onClose,onFound,language}:Props){
  const [permission,requestPermission]=useCameraPermissions();
  const [loading,setLoading]=useState(false);
- const scanned=useRef(false);\n useEffect(()=>{if(visible)scanned.current=false;},[visible]);
+ const scanned=useRef(false);
+ useEffect(()=>{if(visible)scanned.current=false;},[visible]);
  const ar=language==="ar",fr=language==="fr";
  const title=ar?"امسح الباركود":fr?"Scanner le code-barres":"Scan product barcode";
  const instruction=ar?"وجّه الكاميرا إلى الرمز الشريطي على العبوة.":fr?"Pointez la caméra vers le code-barres du produit.":"Point the camera at the barcode on the package.";
