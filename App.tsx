@@ -260,7 +260,7 @@ export default function App() {
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
 <View style={styles.dashboardIntro}><Text style={[styles.eyebrow,direction]}>{t.today}</Text><Text style={[styles.greeting,direction]}>{t.greeting}</Text><Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text></View>
-!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
+{!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
 <View style={styles.calorieHero}><View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><View style={styles.liveDot}/></View>
 <View style={styles.heroNumberRow}><View style={{flex:1}}><Text style={styles.calorieNumber}>{metrics ? metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : "2,000"}</Text><Text style={styles.heroSubline}>{t.dailyTarget.toUpperCase()}</Text></View>
 <View style={styles.calorieBadge}><Text style={styles.badgeValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories)}</Text><Text style={styles.badgeCaption}>{t.consumed.toUpperCase()}</Text></View></View>
