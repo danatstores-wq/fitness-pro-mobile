@@ -258,13 +258,15 @@ export type MealFoodRecord = FoodRecord & {
   meal_type: "breakfast" | "lunch" | "dinner" | "snacks";
 };
 
-export async function searchFoods(searchText: string): Promise<FoodRecord[]> {
+export async function searchFoods(searchText: string, categoryPattern?: string): Promise<FoodRecord[]> {
   const db = await database();
   const term = `%${searchText.trim()}%`;
+  const categoryClause = categoryPattern ? " AND fc.name LIKE ? COLLATE NOCASE" : "";
   return db.getAllAsync<FoodRecord>(
-    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g, COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, starch_g, cholesterol_mg, water_g, data_quality
-     FROM foods WHERE name LIKE ? COLLATE NOCASE ORDER BY name LIMIT 50`,
-    term
+    `SELECT f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality
+     FROM foods f LEFT JOIN food_categories fc ON fc.id = f.category_id
+     WHERE f.name LIKE ? COLLATE NOCASE${categoryClause} ORDER BY f.name LIMIT 100`,
+    ...(categoryPattern ? [term, categoryPattern] : [term])
   );
 }
 
