@@ -28,7 +28,14 @@ async function database() {
           target_weight_kg REAL NOT NULL,
           activity_level TEXT NOT NULL,
           fitness_objective TEXT NOT NULL,
-          updated_at TEXT NOT NULL
+          updated_at TEXT NOT NULL,
+          formula_setting TEXT NOT NULL DEFAULT 'mifflin_st_jeor',
+          language TEXT NOT NULL DEFAULT 'en',
+          unit_system TEXT NOT NULL DEFAULT 'metric'
+        );
+        CREATE TABLE IF NOT EXISTS food_categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE
         );
         CREATE TABLE IF NOT EXISTS foods (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +56,8 @@ async function database() {
           trans_fat_g REAL,
           monounsaturated_fat_g REAL,
           polyunsaturated_fat_g REAL,
-          water_g REAL
+          water_g REAL,
+          category_id INTEGER REFERENCES food_categories(id)
         );
         CREATE TABLE IF NOT EXISTS nutrients (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +92,12 @@ async function database() {
           recorded_at TEXT NOT NULL,
           weight_kg REAL NOT NULL CHECK (weight_kg > 0)
         );
+        CREATE TABLE IF NOT EXISTS translations (
+          language TEXT NOT NULL,
+          translation_key TEXT NOT NULL,
+          translation_value TEXT NOT NULL,
+          PRIMARY KEY(language, translation_key)
+        );
         CREATE TABLE IF NOT EXISTS daily_goals (
           day TEXT PRIMARY KEY NOT NULL,
           calories REAL,
@@ -95,7 +109,9 @@ async function database() {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           logged_at TEXT NOT NULL,
           activity TEXT NOT NULL,
-          duration_minutes INTEGER
+          duration_minutes INTEGER,
+          calories_burned REAL,
+          notes TEXT
         );
         CREATE INDEX IF NOT EXISTS idx_measurements_date ON measurements(recorded_at);
         CREATE INDEX IF NOT EXISTS idx_meals_date ON meals(eaten_at);
@@ -103,7 +119,27 @@ async function database() {
         CREATE UNIQUE INDEX IF NOT EXISTS idx_foods_source_id ON foods(source, source_id) WHERE source_id IS NOT NULL;
       `);
 
+      // Additive migrations preserve data already stored on users' devices.
+      const profileColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(user_profile)");
+      const profileNames = new Set(profileColumns.map(column => column.name));
+      const profileAdditions: Record<string, string> = {
+        formula_setting: "TEXT NOT NULL DEFAULT 'mifflin_st_jeor'",
+        language: "TEXT NOT NULL DEFAULT 'en'",
+        unit_system: "TEXT NOT NULL DEFAULT 'metric'"
+      };
+      for (const [column, type] of Object.entries(profileAdditions)) {
+        if (!profileNames.has(column)) await db.execAsync("ALTER TABLE user_profile ADD COLUMN " + column + " " + type);
+      }
       const foodColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(foods)");
+      const existingColumns = new Set(foodColumns.map(column => column.name));
+      if (!existingColumns.has("category_id")) await db.execAsync("ALTER TABLE foods ADD COLUMN category_id INTEGER REFERENCES food_categories(id)");
+      const activityColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(activity_logs)");
+      const activityNames = new Set(activityColumns.map(column => column.name));
+      if (!activityNames.has("calories_burned")) await db.execAsync("ALTER TABLE activity_logs ADD COLUMN calories_burned REAL");
+      if (!activityNames.has("notes")) await db.execAsync("ALTER TABLE activity_logs ADD COLUMN notes TEXT");
+      const categories = ["Fruits","Vegetables","Grains and cereals","Meat and poultry","Fish and seafood","Dairy and eggs","Legumes and nuts","Oils and fats","Beverages","Prepared foods","Snacks","Other"];
+      for (const category of categories) await db.runAsync("INSERT OR IGNORE INTO food_categories (name) VALUES (?)", category);
+
       const existingColumns = new Set(foodColumns.map(column => column.name));
       const optionalColumns: Record<string, string> = {
         total_sugars_g: "REAL", starch_g: "REAL", cholesterol_mg: "REAL",
@@ -113,7 +149,7 @@ async function database() {
       for (const [column, type] of Object.entries(optionalColumns)) {
         if (!existingColumns.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
       }
-      await db.execAsync("PRAGMA user_version = 2");
+      await db.execAsync("PRAGMA user_version = 3");
       const nutrientDefinitions: [string, string][] = [
         ["Vitamin A","µg RAE"],["Vitamin C","mg"],["Vitamin D","µg"],["Vitamin E","mg"],["Vitamin K","µg"],
         ["Thiamin (B1)","mg"],["Riboflavin (B2)","mg"],["Niacin (B3)","mg"],["Pantothenic acid (B5)","mg"],
@@ -377,4 +413,47 @@ export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
     }
   });
   return imported;
+}
+
+
+export async function getDailyNutrientTotals(date = new Date()) {
+  const db = await database();
+  const day = date.toISOString().slice(0, 10);
+  return db.getAllAsync<{ name: string; unit: string; amount: number }>(
+    `SELECT n.name, n.unit, SUM(fn.amount * mi.quantity_g / 100.0) AS amount
+     FROM meal_items mi
+     JOIN meals m ON m.id = mi.meal_id
+     JOIN food_nutrients fn ON fn.food_id = mi.food_id
+     JOIN nutrients n ON n.id = fn.nutrient_id
+     WHERE m.eaten_at LIKE ?
+     GROUP BY n.id, n.name, n.unit
+     ORDER BY n.name`,
+    `${day}%`
+  );
+}
+
+export async function getFoodServings(foodId: number) {
+  const db = await database();
+  return db.getAllAsync<{ id: number; label: string; grams: number }>(
+    "SELECT id, label, grams FROM food_servings WHERE food_id = ? ORDER BY grams", foodId
+  );
+}
+
+export async function saveFoodServing(foodId: number, label: string, grams: number) {
+  if (!label.trim() || !Number.isFinite(grams) || grams <= 0) throw new Error("Enter a serving name and a positive gram amount.");
+  const db = await database();
+  await db.runAsync("INSERT INTO food_servings (food_id, label, grams) VALUES (?, ?, ?)", foodId, label.trim(), grams);
+}
+
+export async function getFoodCategories() {
+  const db = await database();
+  return db.getAllAsync<{ id: number; name: string }>("SELECT id, name FROM food_categories ORDER BY name");
+}
+
+export async function logActivity(activity: string, durationMinutes: number, caloriesBurned: number | null, notes?: string) {
+  if (!activity.trim() || !Number.isFinite(durationMinutes) || durationMinutes < 0) throw new Error("Enter a valid activity and duration.");
+  if (caloriesBurned !== null && (!Number.isFinite(caloriesBurned) || caloriesBurned < 0)) throw new Error("Calories burned must be non-negative or unknown.");
+  const db = await database();
+  await db.runAsync("INSERT INTO activity_logs (logged_at, activity, duration_minutes, calories_burned, notes) VALUES (?, ?, ?, ?, ?)",
+    new Date().toISOString(), activity.trim(), durationMinutes, caloriesBurned, notes ?? null);
 }
