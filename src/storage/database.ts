@@ -263,12 +263,12 @@ export async function searchFoods(searchText: string, categoryPattern?: string):
   const db = await database();
   const term = `%${searchText.trim()}%`;
   const patterns = categoryPattern?.split("|") ?? [];
-  const categoryClause = patterns.length ? ` AND (${patterns.map(() => "fc.name LIKE ? COLLATE NOCASE").join(" OR ")})` : "";
+  const categoryClause = patterns.length ? ` AND (${patterns.flatMap(() => ["fc.name LIKE ? COLLATE NOCASE", "f.name LIKE ? COLLATE NOCASE"]).join(" OR ")})` : "";
   return db.getAllAsync<FoodRecord>(
     `SELECT f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality
      FROM foods f LEFT JOIN food_categories fc ON fc.id = f.category_id
      WHERE f.name LIKE ? COLLATE NOCASE${categoryClause} ORDER BY f.name LIMIT 100`,
-    ...(patterns.length ? [term, ...patterns.map(pattern => `%${pattern}%`)] : [term])
+    ...(patterns.length ? [term, ...patterns.flatMap(pattern => [`%${pattern}%`, `%${pattern}%`])] : [term])
   );
 }
 
