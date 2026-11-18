@@ -121,8 +121,8 @@ const output: OutputFood[] = foods
       water_g: get("water_g"), nutrients, servings
     };
   });
-const outPath = path.resolve("src/data/usda-foundation-foods.json");
+const outPath = path.resolve("src/data/usda-foundation-foods.ts");
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
-fs.writeFileSync(outPath, JSON.stringify(output));
+fs.writeFileSync(outPath, "export const USDA_FOUNDATION_FOODS = " + JSON.stringify(output) + " as const;\\n");
 console.log(`Prepared ${output.length} USDA Foundation Foods records at ${outPath}`);
 console.log("Nutrient gaps remain null/absent; no values were fabricated.");
