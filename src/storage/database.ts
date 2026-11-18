@@ -237,6 +237,12 @@ export type FoodRecord = {
   fiber_g: number | null;
   sugar_g: number | null;
   saturated_fat_g: number | null;
+  trans_fat_g: number | null;
+  monounsaturated_fat_g: number | null;
+  polyunsaturated_fat_g: number | null;
+  starch_g: number | null;
+  cholesterol_mg: number | null;
+  water_g: number | null;
   data_quality: string;
 };
 
@@ -250,7 +256,7 @@ export async function searchFoods(searchText: string): Promise<FoodRecord[]> {
   const db = await database();
   const term = `%${searchText.trim()}%`;
   return db.getAllAsync<FoodRecord>(
-    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g, sugar_g, saturated_fat_g, data_quality
+    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g, COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, starch_g, cholesterol_mg, water_g, data_quality
      FROM foods WHERE name LIKE ? COLLATE NOCASE ORDER BY name LIMIT 50`,
     term
   );
@@ -333,7 +339,7 @@ export async function getDailyMealFoods(date = new Date()): Promise<MealFoodReco
   const day = date.toISOString().slice(0, 10);
   return db.getAllAsync<MealFoodRecord>(
     `SELECT mi.id AS meal_item_id, mi.quantity_g, m.meal_type,
-      f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, f.sugar_g, f.saturated_fat_g, f.data_quality
+      f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality
      FROM meal_items mi
      JOIN meals m ON m.id = mi.meal_id
      JOIN foods f ON f.id = mi.food_id
