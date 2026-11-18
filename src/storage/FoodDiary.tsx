@@ -32,7 +32,9 @@ export default function FoodDiary({ language }: { language: Language }) {
   const [carbs, setCarbs] = useState("");
   const [fat, setFat] = useState("");
   const [fiber, setFiber] = useState("");
-  const [busy, setBusy] = useState(false);\n  const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);\n  const [microInputs, setMicroInputs] = useState<Record<string,string>>({});
+  const [busy, setBusy] = useState(false);
+  const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);
+  const [microInputs, setMicroInputs] = useState<Record<string,string>>({});
   const load = useCallback(async () => setFoods(await getDailyMealFoods()), []);
   useEffect(() => { load().catch(e => console.warn("Food diary load failed", e)); }, [load]);
   useEffect(() => {
@@ -64,7 +66,8 @@ export default function FoodDiary({ language }: { language: Language }) {
     if (!name.trim() || nums.some(n => n !== null && (!Number.isFinite(n) || n < 0))) { Alert.alert("Check the food name and nutrition values."); return; }
     try {
       setBusy(true);
-      const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, amount: parseOptional(value) }));\n      const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], nutrients });
+      const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, amount: parseOptional(value) }));
+      const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], nutrients });
       const food: FoodRecord = { id, name: name.trim(), calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], sugar_g: null, saturated_fat_g: null, data_quality: "user_entered" };
       setSelected(food); setModal(false); setName(""); setCalories(""); setProtein(""); setCarbs(""); setFat(""); setFiber(""); setMicroInputs({});
     } catch (e) { Alert.alert("Error", String(e)); } finally { setBusy(false); }
