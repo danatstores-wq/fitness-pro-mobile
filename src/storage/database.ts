@@ -464,7 +464,6 @@ export async function importFoodCatalogue(records: ImportedFoodRecord[]) {
       for (const row of rows) foodIds.set(row.source_id, row.id);
     }
 
-    const nutrientNames = [...new Set(records.flatMap(food => food.nutrients.map(nutrient => nutrient.name)))];
     const nutrientDefinitions = new Map<string, string>();
     for (const food of records) {
       for (const nutrient of food.nutrients) {
@@ -589,13 +588,17 @@ export async function getBodyMeasurements() {
 }
 
 
-export async function ensureFoodCatalogueImported(seedKey: string, records: ImportedFoodRecord[]) {
-  if (!records.length) return { imported: 0, skipped: true };
+export async function ensureFoodCatalogueImported(
+  seedKey: string,
+  source: ImportedFoodRecord[] | (() => Promise<ImportedFoodRecord[]>)
+) {
   const db = await database();
   const existing = await db.getFirstAsync<{ imported_count: number }>(
     "SELECT imported_count FROM seed_imports WHERE seed_key = ?", seedKey
   );
   if (existing) return { imported: existing.imported_count, skipped: true };
+  const records = typeof source === "function" ? await source() : source;
+  if (!records.length) return { imported: 0, skipped: true };
   const imported = await importFoodCatalogue(records);
   await db.runAsync(
     "INSERT OR REPLACE INTO seed_imports (seed_key, imported_count, imported_at) VALUES (?, ?, ?)",
@@ -608,6 +611,6 @@ export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[
   return ensureFoodCatalogueImported("usda_foundation_foods_2026_10", records);
 }
 
-export async function ensureFnddsFoodsImported(records: ImportedFoodRecord[]) {
-  return ensureFoodCatalogueImported("usda_fndds_2021_2023", records);
+export async function ensureFnddsFoodsImported(source: ImportedFoodRecord[] | (() => Promise<ImportedFoodRecord[]>)) {
+  return ensureFoodCatalogueImported("usda_fndds_2021_2023", source);
 }
