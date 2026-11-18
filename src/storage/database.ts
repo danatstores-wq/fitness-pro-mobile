@@ -137,3 +137,113 @@ export async function getDatabaseStatus() {
   const row = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
   return row?.user_version ?? 0;
 }
+
+
+export type FoodRecord = {
+  id: number;
+  name: string;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g: number | null;
+  data_quality: string;
+};
+
+export type MealFoodRecord = FoodRecord & {
+  meal_item_id: number;
+  quantity_g: number;
+  meal_type: "breakfast" | "lunch" | "dinner" | "snacks";
+};
+
+export async function searchFoods(searchText: string): Promise<FoodRecord[]> {
+  const db = await database();
+  const term = `%${searchText.trim()}%`;
+  return db.getAllAsync<FoodRecord>(
+    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g, data_quality
+     FROM foods WHERE name LIKE ? COLLATE NOCASE ORDER BY name LIMIT 50`,
+    term
+  );
+}
+
+export async function createFood(food: {
+  name: string;
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g?: number | null;
+}) {
+  const db = await database();
+  const name = food.name.trim();
+  if (!name) throw new Error("Food name is required");
+  const values = [food.calories, food.protein_g, food.carbs_g, food.fat_g, food.fiber_g ?? null];
+  if (values.some(value => value !== null && (!Number.isFinite(value) || value < 0))) {
+    throw new Error("Nutrition values must be non-negative numbers or unknown");
+  }
+  const result = await db.runAsync(
+    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, source, data_quality)
+     VALUES (?, ?, ?, ?, ?, ?, 'user_entry', 'user_entered')`,
+    name, ...values
+  );
+  return result.lastInsertRowId;
+}
+
+export async function addFoodToMeal(
+  foodId: number,
+  mealType: "breakfast" | "lunch" | "dinner" | "snacks",
+  quantityGrams: number,
+  date = new Date()
+) {
+  if (!Number.isFinite(quantityGrams) || quantityGrams <= 0) throw new Error("Quantity must be greater than zero");
+  const db = await database();
+  const day = date.toISOString().slice(0, 10);
+  await db.withTransactionAsync(async () => {
+    let meal = await db.getFirstAsync<{ id: number }>(
+      "SELECT id FROM meals WHERE eaten_at LIKE ? AND meal_type = ? ORDER BY id LIMIT 1",
+      `${day}%`, mealType
+    );
+    if (!meal) {
+      const created = await db.runAsync(
+        "INSERT INTO meals (eaten_at, meal_type) VALUES (?, ?)",
+        date.toISOString(), mealType
+      );
+      meal = { id: created.lastInsertRowId };
+    }
+    await db.runAsync(
+      "INSERT INTO meal_items (meal_id, food_id, quantity_g) VALUES (?, ?, ?)",
+      meal.id, foodId, quantityGrams
+    );
+  });
+}
+
+export async function getDailyMealFoods(date = new Date()): Promise<MealFoodRecord[]> {
+  const db = await database();
+  const day = date.toISOString().slice(0, 10);
+  return db.getAllAsync<MealFoodRecord>(
+    `SELECT mi.id AS meal_item_id, mi.quantity_g, m.meal_type,
+      f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, f.data_quality
+     FROM meal_items mi
+     JOIN meals m ON m.id = mi.meal_id
+     JOIN foods f ON f.id = mi.food_id
+     WHERE m.eaten_at LIKE ?
+     ORDER BY m.id, mi.id`,
+    `${day}%`
+  );
+}
+
+export async function removeMealFood(mealItemId: number) {
+  const db = await database();
+  await db.runAsync("DELETE FROM meal_items WHERE id = ?", mealItemId);
+}
+
+export function nutritionForQuantity(food: FoodRecord, quantityGrams: number) {
+  const factor = quantityGrams / 100;
+  return {
+    calories: food.calories === null ? null : food.calories * factor,
+    protein_g: food.protein_g === null ? null : food.protein_g * factor,
+    carbs_g: food.carbs_g === null ? null : food.carbs_g * factor,
+    fat_g: food.fat_g === null ? null : food.fat_g * factor,
+    fiber_g: food.fiber_g === null ? null : food.fiber_g * factor
+  };
+}
