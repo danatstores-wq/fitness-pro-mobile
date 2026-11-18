@@ -149,7 +149,7 @@ export default function App() {
       }
     })();
     return () => { active = false; };
-  }, []);
+  }, [webStorageReady]);
   useEffect(() => {
     if (tab !== "dashboard") return;
     let active = true;
