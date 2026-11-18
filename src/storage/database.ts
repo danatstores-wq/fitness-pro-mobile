@@ -42,7 +42,14 @@ async function database() {
           fiber_g REAL,
           sugar_g REAL,
           saturated_fat_g REAL,
-          data_quality TEXT NOT NULL DEFAULT 'unknown'
+          data_quality TEXT NOT NULL DEFAULT 'unknown',
+          total_sugars_g REAL,
+          starch_g REAL,
+          cholesterol_mg REAL,
+          trans_fat_g REAL,
+          monounsaturated_fat_g REAL,
+          polyunsaturated_fat_g REAL,
+          water_g REAL
         );
         CREATE TABLE IF NOT EXISTS nutrients (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,6 +101,29 @@ async function database() {
         CREATE INDEX IF NOT EXISTS idx_meals_date ON meals(eaten_at);
         CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);
       `);
+
+      const foodColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(foods)");
+      const existingColumns = new Set(foodColumns.map(column => column.name));
+      const optionalColumns: Record<string, string> = {
+        total_sugars_g: "REAL", starch_g: "REAL", cholesterol_mg: "REAL",
+        trans_fat_g: "REAL", monounsaturated_fat_g: "REAL",
+        polyunsaturated_fat_g: "REAL", water_g: "REAL"
+      };
+      for (const [column, type] of Object.entries(optionalColumns)) {
+        if (!existingColumns.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
+      }
+      await db.execAsync("PRAGMA user_version = 2");
+      const nutrientDefinitions: [string, string][] = [
+        ["Vitamin A","µg RAE"],["Vitamin C","mg"],["Vitamin D","µg"],["Vitamin E","mg"],["Vitamin K","µg"],
+        ["Thiamin (B1)","mg"],["Riboflavin (B2)","mg"],["Niacin (B3)","mg"],["Pantothenic acid (B5)","mg"],
+        ["Vitamin B6","mg"],["Biotin (B7)","µg"],["Folate (B9)","µg"],["Vitamin B12","µg"],
+        ["Calcium","mg"],["Iron","mg"],["Magnesium","mg"],["Phosphorus","mg"],["Potassium","mg"],
+        ["Sodium","mg"],["Zinc","mg"],["Copper","mg"],["Manganese","mg"],["Selenium","µg"],
+        ["Iodine","µg"],["Choline","mg"],["Fluoride","mg"]
+      ];
+      for (const [name, unit] of nutrientDefinitions) {
+        await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", name, unit);
+      }
       return db;
     })();
   }
@@ -147,6 +177,8 @@ export type FoodRecord = {
   carbs_g: number | null;
   fat_g: number | null;
   fiber_g: number | null;
+  sugar_g: number | null;
+  saturated_fat_g: number | null;
   data_quality: string;
 };
 
@@ -173,6 +205,15 @@ export async function createFood(food: {
   carbs_g: number | null;
   fat_g: number | null;
   fiber_g?: number | null;
+  total_sugars_g?: number | null;
+  starch_g?: number | null;
+  cholesterol_mg?: number | null;
+  saturated_fat_g?: number | null;
+  trans_fat_g?: number | null;
+  monounsaturated_fat_g?: number | null;
+  polyunsaturated_fat_g?: number | null;
+  water_g?: number | null;
+  nutrients?: { name: string; amount: number | null }[];
 }) {
   const db = await database();
   const name = food.name.trim();
@@ -182,11 +223,23 @@ export async function createFood(food: {
     throw new Error("Nutrition values must be non-negative numbers or unknown");
   }
   const result = await db.runAsync(
-    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, source, data_quality)
-     VALUES (?, ?, ?, ?, ?, ?, 'user_entry', 'user_entered')`,
-    name, ...values
+    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, data_quality)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user_entry', 'user_entered')`,
+    name, ...values, food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
+    food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
+    food.polyunsaturated_fat_g ?? null, food.water_g ?? null
   );
-  return result.lastInsertRowId;
+  const foodId = result.lastInsertRowId;
+  for (const nutrient of food.nutrients ?? []) {
+    if (nutrient.amount === null) continue;
+    if (!Number.isFinite(nutrient.amount) || nutrient.amount < 0) throw new Error("Nutrient amounts must be non-negative or unknown");
+    await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, 'mg')", nutrient.name);
+    await db.runAsync(
+      "INSERT OR REPLACE INTO food_nutrients (food_id, nutrient_id, amount) SELECT ?, id, ? FROM nutrients WHERE name = ?",
+      foodId, nutrient.amount, nutrient.name
+    );
+  }
+  return foodId;
 }
 
 export async function addFoodToMeal(
@@ -246,4 +299,18 @@ export function nutritionForQuantity(food: FoodRecord, quantityGrams: number) {
     fat_g: food.fat_g === null ? null : food.fat_g * factor,
     fiber_g: food.fiber_g === null ? null : food.fiber_g * factor
   };
+}
+
+
+export type FoodNutrientDetail = { name: string; unit: string; amount: number | null };
+
+export async function getFoodNutrients(foodId: number): Promise<FoodNutrientDetail[]> {
+  const db = await database();
+  return db.getAllAsync<FoodNutrientDetail>(
+    `SELECT n.name, n.unit, fn.amount
+     FROM nutrients n LEFT JOIN food_nutrients fn
+       ON fn.nutrient_id = n.id AND fn.food_id = ?
+     ORDER BY n.id`,
+    foodId
+  );
 }
