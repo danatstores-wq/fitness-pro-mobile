@@ -152,7 +152,7 @@ export default function FoodDiary({ language }: { language: Language }) {
   </ScrollView>;
 }
 const s=StyleSheet.create({
- content:{padding:20,paddingBottom:32,gap:12},title:{color:"#FFF",fontSize:25,fontWeight:"900",marginBottom:4},
+ content:{padding:20,paddingBottom:32,gap:12},categoryGrid:{flexDirection:"row",flexWrap:"wrap",gap:9},categoryCard:{width:"48%",minHeight:76,justifyContent:"center",backgroundColor:"#20241F",borderWidth:1,borderColor:"#343B34",borderRadius:14,padding:12},categorySelected:{borderColor:GOLD,backgroundColor:"#30291D"},categoryText:{color:"#E7E5DD",fontSize:12,fontWeight:"800"},title:{color:"#FFF",fontSize:25,fontWeight:"900",marginBottom:4},
  card:{backgroundColor:PANEL,borderRadius:18,borderWidth:1,borderColor:"#252A33",padding:16,marginBottom:2},
  label:{color:"#D7DBE2",fontSize:13,fontWeight:"700"},calorie:{color:GOLD,fontSize:32,fontWeight:"900",marginVertical:5},
  macros:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},macro:{color:GREEN,fontSize:12,fontWeight:"700"},
