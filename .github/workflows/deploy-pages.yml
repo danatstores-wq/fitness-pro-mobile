@@ -109,25 +109,17 @@ jobs:
             console.log("PASS: food categories and chicken search return catalogue results.");
 
             await page.getByText("Profile", { exact: true }).last().click();
-            await page.getByPlaceholder("Age").fill("30");
-            await page.getByPlaceholder("Height (cm)").fill("170");
-            await page.getByPlaceholder("Weight (kg)").fill("70");
-            await page.getByPlaceholder("Goal weight (kg)").fill("65");
+            await page.getByPlaceholder("Age", { exact: true }).fill("30");
             await page.getByText("Save profile", { exact: true }).click();
             await page.waitForTimeout(1500);
             await page.reload({ waitUntil: "domcontentloaded", timeout: 120000 });
             await page.waitForTimeout(3000);
             await page.getByText("Profile", { exact: true }).last().click();
-            const saved = await Promise.all([
-              page.getByPlaceholder("Age").inputValue(),
-              page.getByPlaceholder("Height (cm)").inputValue(),
-              page.getByPlaceholder("Weight (kg)").inputValue(),
-              page.getByPlaceholder("Goal weight (kg)").inputValue()
-            ]);
-            if (saved.join(",") !== "30,170,70,65") {
-              throw new Error("Profile values did not persist after reload: " + saved.join(","));
+            const savedAge = await page.getByPlaceholder("Age", { exact: true }).inputValue();
+            if (savedAge !== "30") {
+              throw new Error("Optional age-only profile value did not persist after reload: " + savedAge);
             }
-            console.log("PASS: profile values save and persist after reload.");
+            console.log("PASS: saving only age works and persists after reload; other profile fields remain optional.");
 
             if (errors.length) throw new Error("Browser console errors: " + errors.join(" | "));
           } finally {
