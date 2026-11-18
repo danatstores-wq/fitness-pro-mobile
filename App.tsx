@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { addWeightMeasurement, getWeightMeasurements, loadProfile, saveProfile as saveProfileToDatabase } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
@@ -44,33 +45,81 @@ export default function App() {
   const [tab, setTab] = useState<Tab>("dashboard");
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saved, setSaved] = useState(false);
-  const [weightLog, setWeightLog] = useState<number[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [weightLog, setWeightLog] = useState<{ id: number; recorded_at: string; weight_kg: number }[]>([]);
   const [weightInput, setWeightInput] = useState("");
   const t = translations[language];
   const isRTL = rtl(language);
   const metrics = useMemo(() => calculate(profile), [profile]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
+        if (!active) return;
+        if (storedProfile) {
+          setProfile({
+            age: String(storedProfile.age), sex: storedProfile.sex,
+            height: String(storedProfile.height_cm),
+            weight: String(storedProfile.current_weight_kg),
+            targetWeight: String(storedProfile.target_weight_kg),
+            activity: storedProfile.activity_level as Profile["activity"],
+            objective: storedProfile.fitness_objective as Profile["objective"]
+          });
+          setSaved(true);
+        }
+        setWeightLog(measurements);
+      } catch (error) {
+        console.warn("Could not load local fitness data", error);
+        Alert.alert("Storage error", "Your local database could not be opened. Please restart the app.");
+      } finally {
+        if (active) setHydrated(true);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
   const direction = { writingDirection: isRTL ? "rtl" as const : "ltr" as const, textAlign: isRTL ? "right" as const : "left" as const };
 
   const change = <K extends keyof Profile>(key: K, value: Profile[K]) => {
     setProfile(old => ({ ...old, [key]: value }));
     setSaved(false);
   };
-  const saveProfile = () => {
+  const saveProfile = async () => {
     if (!metrics || Number(profile.age) < 13 || Number(profile.age) > 110 ||
         Number(profile.height) < 80 || Number(profile.height) > 250 ||
         Number(profile.weight) <= 0 || Number(profile.targetWeight) <= 0) {
       Alert.alert(t.invalid);
       return;
     }
-    setSaved(true);
-    setWeightLog(old => old.length ? old : [Number(profile.weight)]);
-    Alert.alert(t.saved);
+    try {
+      await saveProfileToDatabase({
+        age: Number(profile.age), sex: profile.sex,
+        height_cm: Number(profile.height), current_weight_kg: Number(profile.weight),
+        target_weight_kg: Number(profile.targetWeight),
+        activity_level: profile.activity, fitness_objective: profile.objective
+      });
+      const existingMeasurements = await getWeightMeasurements();
+      if (existingMeasurements.length === 0) await addWeightMeasurement(Number(profile.weight));
+      setWeightLog(await getWeightMeasurements());
+      setSaved(true);
+      Alert.alert(t.saved);
+    } catch (error) {
+      console.warn("Could not save profile", error);
+      Alert.alert("Save failed", "Your profile could not be saved locally. Please try again.");
+    }
   };
-  const addWeight = () => {
+  const addWeight = async () => {
     const value = Number(weightInput);
     if (value > 0 && Number.isFinite(value)) {
-      setWeightLog(old => [...old, value]);
-      setWeightInput("");
+      try {
+        await addWeightMeasurement(value);
+        setWeightLog(await getWeightMeasurements());
+        setWeightInput("");
+      } catch (error) {
+        console.warn("Could not save weight", error);
+        Alert.alert("Save failed", "The weight entry could not be saved.");
+      }
     }
   };
 
@@ -94,7 +143,7 @@ export default function App() {
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.greeting, direction]}>{t.greeting}</Text>
           <Text style={[styles.eyebrow, direction]}>{t.today}</Text>
-          {!metrics ? <Card>
+          {!hydrated ? <Card><Text style={styles.muted}>Loading your saved fitness data…</Text></Card> : !metrics ? <Card>
             <Text style={styles.cardTitle}>{t.startProfile}</Text>
             <Text style={styles.muted}>{t.profileHint}</Text>
             <GoldButton title={t.profile} onPress={() => setTab("profile")} />
@@ -139,7 +188,7 @@ export default function App() {
           <Text style={[styles.pageTitle, direction]}>{t.progress}</Text>
           <Card>
             <Text style={styles.cardTitle}>{t.weightTrend}</Text>
-            {weightLog.length ? <View style={styles.weightList}>{weightLog.map((w, i) => <View key={i} style={styles.spaceBetween}><Text style={styles.muted}>{new Date().toLocaleDateString()}</Text><Text style={styles.valueText}>{w} {t.kg}</Text></View>)}</View> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
+            {weightLog.length ? <View style={styles.weightList}>{weightLog.map((entry) => <View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
           </Card>
           <Card>
             <Text style={styles.cardTitle}>{t.logWeight}</Text>
