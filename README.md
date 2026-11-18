@@ -39,7 +39,7 @@ Each food record supports energy, protein, carbohydrate, total fat, fiber, sugar
 
 Implemented: app shell, dashboard UI, language switching and Arabic RTL, profile form, health calculations, SQLite schema, profile persistence and weight-history persistence.
 
-Still to implement: import and validate the USDA FoodData Central catalogue, expose complete nutrient totals in the daily summary, add/edit meal entries, progress charts and reports, automated tests, and Android/iOS device verification.
+Still to implement: import and validate the USDA FoodData Central catalogue, complete serving/category selection in the UI, expose target-versus-consumed micronutrient progress, add/edit meal entries, progress charts and reports, automated tests, and Android/iOS device verification.
 
 ## Security
 
