@@ -288,6 +288,7 @@ export async function createFood(food: {
   polyunsaturated_fat_g?: number | null;
   water_g?: number | null;
   nutrients?: { name: string; unit: string; amount: number | null }[];
+  source?: string; sourceId?: string; dataQuality?: string;
 }) {
   const db = await database();
   const name = food.name.trim();
@@ -298,10 +299,10 @@ export async function createFood(food: {
   }
   const result = await db.runAsync(
     `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, data_quality)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'user_entry', 'user_entered')`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     name, ...values, food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
     food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
-    food.polyunsaturated_fat_g ?? null, food.water_g ?? null
+    food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.source ?? 'user_entry', food.sourceId ?? null, food.dataQuality ?? 'user_entered'
   );
   const foodId = result.lastInsertRowId;
   for (const nutrient of food.nutrients ?? []) {
@@ -342,6 +343,20 @@ export async function addFoodToMeal(
       meal.id, foodId, quantityGrams
     );
   });
+}
+
+export async function getMealPlannerFoods(): Promise<FoodRecord[]> {
+  const db = await database();
+  return db.getAllAsync<FoodRecord>(
+    `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g,
+      COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g,
+      trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g,
+      starch_g, cholesterol_mg, water_g, data_quality
+     FROM foods
+     WHERE calories IS NOT NULL AND calories > 0
+       AND protein_g IS NOT NULL AND carbs_g IS NOT NULL AND fat_g IS NOT NULL
+     ORDER BY RANDOM() LIMIT 500`
+  );
 }
 
 export async function getDailyMealFoods(date = new Date()): Promise<MealFoodRecord[]> {
