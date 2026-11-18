@@ -5,6 +5,7 @@ import {
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
 } from "react-native";
 import { Language, translations, rtl } from "./src/i18n";
+import FoodDiary from "./src/storage/FoodDiary";
 
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
@@ -172,17 +173,7 @@ export default function App() {
           </>}
         </ScrollView>}
 
-        {tab === "diary" && <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.pageTitle, direction]}>{t.diary}</Text>
-          <Card><Text style={styles.cardTitle}>{t.calories}</Text><Text style={styles.calorieNumber}>0 kcal</Text><Text style={styles.muted}>{t.noMeals}</Text></Card>
-          {(["breakfast", "lunch", "dinner", "snacks"] as const).map((meal, i) =>
-            <Pressable key={meal} style={[styles.mealCard, isRTL && styles.rowReverse]} onPress={() => Alert.alert(t.addFood, t.noMeals)}>
-              <View style={styles.mealIcon}><Text style={{ fontSize: 20 }}>{["☀", "◉", "☾", "＋"][i]}</Text></View>
-              <View style={{ flex: 1 }}><Text style={styles.cardTitle}>{t[meal]}</Text><Text style={styles.muted}>0 kcal</Text></View>
-              <Text style={styles.addIcon}>＋</Text>
-            </Pressable>
-          )}
-        </ScrollView>}
+        {tab === "diary" && <FoodDiary language={language} />}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
           <Text style={[styles.pageTitle, direction]}>{t.progress}</Text>
