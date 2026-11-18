@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
-import { createFood, FoodRecord } from "./database";
+import { createFood, FoodRecord, getFoodBySourceId } from "./database";
 
 type Props={visible:boolean;onClose:()=>void;onFound:(food:FoodRecord)=>void;language:"en"|"ar"|"fr"};
 const styles=StyleSheet.create({overlay:{flex:1,backgroundColor:"#080A08",justifyContent:"center",padding:18},title:{color:"#F2F0E9",fontSize:20,fontWeight:"900",textAlign:"center",marginBottom:12},camera:{height:390,borderRadius:18,overflow:"hidden"},muted:{color:"#B0B4AA",fontSize:13,textAlign:"center",marginVertical:12},button:{backgroundColor:"#D7B66D",borderRadius:11,padding:13,alignItems:"center",marginTop:12},buttonText:{color:"#171813",fontWeight:"900"},close:{padding:12,alignItems:"center"},loading:{color:"#D7B66D",textAlign:"center",marginTop:12}});
@@ -18,6 +18,8 @@ export default function BarcodeScanner({visible,onClose,onFound,language}:Props)
   scanned.current=true;setLoading(true);
   try{
    const barcode=result.data.trim();
+   const cached=await getFoodBySourceId("open_food_facts",barcode);
+   if(cached){onFound(cached);onClose();return;}
    const response=await fetch("https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(barcode)+".json",{headers:{"User-Agent":"FitnessProByDanat/1.0 (nutrition barcode lookup)"}});
    if(!response.ok)throw new Error("Product database request failed.");
    const payload=await response.json();
