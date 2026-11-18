@@ -78,6 +78,31 @@ export default function App() {
   const isRTL = rtl(language);
   const metrics = useMemo(() => calculate(profile), [profile]);
 
+  // GitHub Pages cannot set COOP/COEP response headers itself. Register a
+  // same-origin service worker that adds them to document navigations so
+  // expo-sqlite can initialize its WebAssembly database in the browser.
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    const browser = globalThis as any;
+    const nav = browser.navigator;
+    if (!nav?.serviceWorker || browser.crossOriginIsolated) return;
+    let reloading = false;
+    const reloadWhenControlled = () => {
+      if (reloading || !nav.serviceWorker.controller) return;
+      reloading = true;
+      browser.location.reload();
+    };
+    nav.serviceWorker.addEventListener("controllerchange", reloadWhenControlled);
+    nav.serviceWorker.register(new URL("sw.js", browser.document.baseURI), {
+      scope: new URL("./", browser.document.baseURI).pathname
+    }).then(() => {
+      if (nav.serviceWorker.controller) reloadWhenControlled();
+    }).catch((error: unknown) => {
+      console.error("Could not enable isolated web storage", error);
+    });
+    return () => nav.serviceWorker.removeEventListener("controllerchange", reloadWhenControlled);
+  }, []);
+
   useEffect(() => {
     let active = true;
     (async () => {
