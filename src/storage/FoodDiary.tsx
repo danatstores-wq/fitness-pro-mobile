@@ -3,7 +3,7 @@ import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View 
 import { Language } from "../i18n";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
-  nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, FoodNutrientDetail
+  nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, getDailyNutrientTotals, FoodNutrientDetail
 } from "./database";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
@@ -15,6 +15,7 @@ const words: Record<Language, Record<string, string>> = {
 };
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace(",", "."));
+const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
 
 export default function FoodDiary({ language }: { language: Language }) {
@@ -33,10 +34,10 @@ export default function FoodDiary({ language }: { language: Language }) {
   const [fat, setFat] = useState("");
   const [fiber, setFiber] = useState("");
   const [busy, setBusy] = useState(false);
-  const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);
+  const [micros, setMicros] = useState<FoodNutrientDetail[]>([]);\n  const [dailyMicros, setDailyMicros] = useState<FoodNutrientDetail[]>([]);
   const [microInputs, setMicroInputs] = useState<Record<string,string>>({});
   const load = useCallback(async () => setFoods(await getDailyMealFoods()), []);
-  useEffect(() => { load().catch(e => console.warn("Food diary load failed", e)); }, [load]);
+  useEffect(() => { load().catch(e => console.warn("Food diary load failed", e)); }, [load]);\n  useEffect(() => { getDailyNutrientTotals().then(setDailyMicros).catch(e => console.warn("Daily nutrient totals unavailable", e)); }, [foods]);
   useEffect(() => {
     let live = true;
     searchFoods(query).then(items => { if (live) setResults(items); }).catch(e => console.warn("Food search failed", e));
@@ -66,7 +67,7 @@ export default function FoodDiary({ language }: { language: Language }) {
     if (!name.trim() || nums.some(n => n !== null && (!Number.isFinite(n) || n < 0))) { Alert.alert("Check the food name and nutrition values."); return; }
     try {
       setBusy(true);
-      const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, amount: parseOptional(value) }));
+      const nutrients = Object.entries(microInputs).map(([nutrientName, value]) => ({ name: nutrientName, unit: nutrientUnit(nutrientName), amount: parseOptional(value) }));
       const id = await createFood({ name, calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], nutrients });
       const food: FoodRecord = { id, name: name.trim(), calories: nums[0], protein_g: nums[1], carbs_g: nums[2], fat_g: nums[3], fiber_g: nums[4], sugar_g: null, saturated_fat_g: null, data_quality: "user_entered" };
       setSelected(food); setModal(false); setName(""); setCalories(""); setProtein(""); setCarbs(""); setFat(""); setFiber(""); setMicroInputs({});
@@ -105,7 +106,7 @@ export default function FoodDiary({ language }: { language: Language }) {
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
       <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
     </View>}
-    {mealTypes.map(m=><View key={m} style={s.card}>
+    <View style={s.card}><Text style={s.cardTitle}>Daily vitamins and minerals</Text>{dailyMicros.length === 0 ? <Text style={s.muted}>No recorded vitamin or mineral values for today yet.</Text> : dailyMicros.map(n=><View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{n.name}</Text><Text style={s.nutrientValue}>{Number(n.amount.toFixed(2))} {n.unit}</Text></View>)}</View>\n    {mealTypes.map(m=><View key={m} style={s.card}>
       <Text style={[s.cardTitle,{textAlign}]}>{t[m]}</Text>
       {foods.filter(f=>f.meal_type===m).length===0 ? <Text style={[s.muted,{textAlign}]}>{t.empty}</Text> :
         foods.filter(f=>f.meal_type===m).map(item=><View key={item.meal_item_id} style={s.logged}><View style={{flex:1}}><Text style={s.foodName}>{item.name}</Text><Text style={s.muted}>{item.quantity_g} g · {fmt(nutritionForQuantity(item,item.quantity_g).calories)} kcal</Text></View><Pressable onPress={()=>addRow(item)}><Text style={s.remove}>×</Text></Pressable></View>)}
