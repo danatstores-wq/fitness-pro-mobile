@@ -751,8 +751,7 @@ const foodWords: Record<string, [string, string]> = {
   "cured": ["معالج", "salé"],
   "thawed": ["مذاب", "décongelé"],
   "ripe": ["ناضج", "mûr"],
-  "unripe": ["غير ناضج", "pas mûr"]
-
+  "unripe": ["غير ناضج", "pas mûr"],
   "oranges": ["برتقال","oranges"],
   "pears": ["كمثرى","poires"],
   "grains": ["حبوب","céréales"],
