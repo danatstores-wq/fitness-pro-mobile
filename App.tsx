@@ -362,7 +362,7 @@ export default function App() {
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
-            : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />)}
+            : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} targetProtein={metrics?.protein} targetCarbs={metrics?.carbs} targetFat={metrics?.fats} />)}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
   <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={[styles.introNote,direction]}>{t.weightTrend}</Text></View>
