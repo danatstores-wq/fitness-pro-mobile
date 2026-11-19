@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
-import { localizeFoodName, localizeNutrientName } from "../i18n-food";
+import { localizeFoodName, localizeNutrientName, normalizeFoodSearch } from "../i18n-food";
 import MealPlanner from "./MealPlanner";
 import BarcodeScanner from "./BarcodeScanner";
 import {
@@ -68,7 +68,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   useEffect(() => {
     let live = true;
     if (!selectedCategory && !query.trim()) { setResults([]); return () => { live = false; }; }
-    searchFoods(query, selectedCategory?.pattern).then(items => {
+    searchFoods(normalizeFoodSearch(query, language), selectedCategory?.pattern).then(items => {
       if (!live) return;
       const filtered = selectedCategory?.id === "other"
         ? items.filter(item => true)
@@ -76,7 +76,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       setResults(filtered);
     }).catch(e => console.warn("Food search failed", e));
     return () => { live = false; };
-  }, [query, selectedCategory]);
+  }, [query, selectedCategory, language]);
   useEffect(() => {
     let live = true;
     if (selected) {
