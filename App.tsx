@@ -302,19 +302,23 @@ export default function App() {
             : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />)}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
-          <Text style={[styles.pageTitle, direction]}>{t.progress}</Text>
-          <Card>
-            <Text style={styles.cardTitle}>{t.weightTrend}</Text>
-            {weightLog.length ? <View style={styles.weightList}>{weightLog.map((entry) => <View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language === "fr" ? "fr-FR" : language === "ar" ? "ar" : "en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
-          </Card>
-          <Card>
-            <Text style={styles.cardTitle}>{t.logWeight}</Text>
-            <TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input, direction]} />
-            <GoldButton title={t.logWeight} onPress={addWeight} />
-          </Card>
-        </ScrollView>}
-
-        {tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={[styles.introNote,direction]}>{t.weightTrend}</Text></View>
+  <View style={styles.progressHero}>
+    <Text style={styles.heroLabel}>{t.currentWeight.toUpperCase()}</Text>
+    <View style={styles.spaceBetween}><Text style={styles.progressWeight}>{weightLog.length ? weightLog[weightLog.length-1].weight_kg+" "+t.kg : (profile.weight ? profile.weight+" "+t.kg : "—")}</Text><Text style={styles.progressTrendMark}>↗</Text></View>
+    <Text style={styles.muted}>{weightLog.length ? new Date(weightLog[weightLog.length-1].recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : t.emptyProgress}</Text>
+    {profile.targetWeight ? <View style={styles.targetWeightPill}><Text style={styles.targetWeightText}>{t.targetWeight}: {profile.targetWeight} {t.kg}</Text></View> : null}
+  </View>
+  <Card>
+    <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.weightTrend}</Text><Text style={styles.sectionMeta}>{weightLog.length} {t.logWeight.toUpperCase()}</Text></View>
+    {weightLog.length ? <>
+      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:index===arr.length-1?"#EFFF00":"#4FA66B"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
+      <View style={styles.weightList}>{weightLog.slice(-5).reverse().map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View>
+    </> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
+  </Card>
+  <Card><Text style={styles.cardTitle}>{t.logWeight}</Text><TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/><GoldButton title={t.logWeight} onPress={addWeight}/></Card>
+</ScrollView>}
+{tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
             <Card>
@@ -465,6 +469,17 @@ const styles = StyleSheet.create({
   mealIcon: { width: 43, height: 43, borderRadius: 13, backgroundColor: "#202920", alignItems: "center", justifyContent: "center" },
   addIcon: { color: GOLD, fontSize: 24, fontWeight: "700" },
   weightList: { gap: 9, marginTop: 8 },
+  progressHero: { backgroundColor: "#18231B", borderRadius: 22, borderWidth: 1, borderColor: "#344B37", padding: 20 },
+  progressWeight: { color: IVORY, fontSize: 36, fontWeight: "900", marginVertical: 8 },
+  progressTrendMark: { color: "#EFFF00", fontSize: 28, fontWeight: "900" },
+  targetWeightPill: { alignSelf: "flex-start", backgroundColor: "#263A2B", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, marginTop: 12 },
+  targetWeightText: { color: "#EFFF00", fontSize: 10, fontWeight: "800" },
+  chartBars: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", minHeight: 145, paddingTop: 12, paddingBottom: 6, gap: 5 },
+  chartColumn: { flex: 1, alignItems: "center", justifyContent: "flex-end", minWidth: 0 },
+  chartValue: { color: "#E8E8DC", fontSize: 9, fontWeight: "800", marginBottom: 5 },
+  chartBar: { width: "58%", minWidth: 9, borderRadius: 7 },
+  chartDate: { color: MUTED, fontSize: 8, marginTop: 6 },
+
   valueText: { color: GOLD, fontWeight: "800" },
   input: { color: "#F2F0E8", backgroundColor: "#101712", borderWidth: 1, borderColor: "#485347", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
   field: { marginBottom: 13 },
