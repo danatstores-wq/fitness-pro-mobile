@@ -125,6 +125,6 @@ export default function ReminderSettings({language}:{language:Language}) {
       </View>
     </View>
     {Platform.OS==="web"&&<Text style={{color:MUTED,fontSize:11,lineHeight:17,marginTop:12}}>{t.web}</Text>}
-    <Pressable onPress={save} disabled={busy||!loaded} style={{backgroundColor:GOLD,borderRadius:11,padding:13,alignItems:"center",marginTop:16,opacity:busy||!loaded?0.55:1}}><Text style={{color:"#F7F9F5",fontWeight:"900"}}>{busy?"…":t.save}</Text></Pressable>
+    <Pressable onPress={save} disabled={busy||!loaded} style={{backgroundColor:"#263A2C",borderRadius:11,padding:13,alignItems:"center",marginTop:16,borderWidth:1,borderColor:"#263A2C",opacity:busy||!loaded?0.55:1}}><Text style={{color:"#FFFFFF",fontWeight:"900"}}>{busy?"…":t.save}</Text></Pressable>
   </View>;
 }
