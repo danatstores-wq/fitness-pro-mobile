@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
-  SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView,
+  SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
 } from "react-native";
 import { Language, translations, rtl } from "./src/i18n";
@@ -253,7 +253,7 @@ export default function App() {
       <View style={styles.appFrame}>
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
-          <View style={styles.logo}><Text style={styles.logoMark}>d.</Text></View>
+          <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
           <View style={{ flex: 1 }}>
             <Text style={[styles.brandEyebrow, direction]}>DANAT / WELLNESS</Text>
             <Text style={[styles.brandName, direction]}>FITNESS PRO</Text>
@@ -421,8 +421,7 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#343B32" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
-  logo: { width: 42, height: 42, borderRadius: 21, backgroundColor: GOLD, alignItems: "center", justifyContent: "center" },
-  logoMark: { color: BG, fontWeight: "900", fontSize: 25, letterSpacing: -2 },
+  logoImage: { width: 46, height: 46 },
   brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
   languageSelector: { flexDirection: "row", alignItems: "center", gap: 5 },
