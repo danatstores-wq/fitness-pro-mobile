@@ -96,6 +96,17 @@ async function database() {
           food_id INTEGER NOT NULL REFERENCES foods(id),
           quantity_g REAL NOT NULL CHECK (quantity_g > 0)
         );
+        CREATE TABLE IF NOT EXISTS custom_meals (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS custom_meal_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          custom_meal_id INTEGER NOT NULL REFERENCES custom_meals(id) ON DELETE CASCADE,
+          food_id INTEGER NOT NULL REFERENCES foods(id),
+          quantity_g REAL NOT NULL CHECK (quantity_g > 0)
+        );
         CREATE TABLE IF NOT EXISTS measurements (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           recorded_at TEXT NOT NULL,
@@ -356,6 +367,51 @@ export async function addFoodToMeal(
       meal.id, foodId, quantityGrams
     );
   });
+}
+
+
+export type CustomMealSummary = { id: number; name: string; ingredient_count: number };
+export type CustomMealItem = { food_id: number; name: string; quantity_g: number; calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
+
+export async function saveCustomMeal(name: string, items: { foodId: number; quantityGrams: number }[]) {
+  const cleanName = name.trim();
+  if (!cleanName) throw new Error("Enter a meal name.");
+  if (!items.length) throw new Error("Add at least one ingredient.");
+  if (items.some(item => !Number.isFinite(item.quantityGrams) || item.quantityGrams <= 0)) throw new Error("Ingredient quantities must be greater than zero.");
+  const db = await database();
+  return db.withTransactionAsync(async () => {
+    const result = await db.runAsync("INSERT INTO custom_meals (name, created_at) VALUES (?, ?)", cleanName, new Date().toISOString());
+    const mealId = result.lastInsertRowId;
+    for (const item of items) {
+      await db.runAsync("INSERT INTO custom_meal_items (custom_meal_id, food_id, quantity_g) VALUES (?, ?, ?)", mealId, item.foodId, item.quantityGrams);
+    }
+  });
+}
+
+export async function getCustomMeals(): Promise<CustomMealSummary[]> {
+  const db = await database();
+  return db.getAllAsync<CustomMealSummary>(
+    "SELECT m.id, m.name, COUNT(i.id) AS ingredient_count FROM custom_meals m LEFT JOIN custom_meal_items i ON i.custom_meal_id=m.id GROUP BY m.id ORDER BY m.name COLLATE NOCASE"
+  );
+}
+
+export async function getCustomMealItems(mealId: number): Promise<CustomMealItem[]> {
+  const db = await database();
+  return db.getAllAsync<CustomMealItem>(
+    `SELECT f.id AS food_id, f.name, i.quantity_g, f.calories, f.protein_g, f.carbs_g, f.fat_g
+     FROM custom_meal_items i JOIN foods f ON f.id=i.food_id WHERE i.custom_meal_id=? ORDER BY i.id`, mealId
+  );
+}
+
+export async function addCustomMealToDiary(mealId: number, mealType: "breakfast" | "lunch" | "dinner" | "snacks") {
+  const items = await getCustomMealItems(mealId);
+  if (!items.length) throw new Error("This saved meal has no ingredients.");
+  for (const item of items) await addFoodToMeal(item.food_id, mealType, item.quantity_g);
+}
+
+export async function deleteCustomMeal(mealId: number) {
+  const db = await database();
+  await db.runAsync("DELETE FROM custom_meals WHERE id=?", mealId);
 }
 
 export async function getFoodBySourceId(source: string, sourceId: string): Promise<FoodRecord | null> {
