@@ -7,14 +7,14 @@ import { addCustomMealToDiary, CustomMealSummary, FoodNutrientDetail, FoodRecord
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
 type Ingredient = { food: FoodRecord; grams: string; nutrients: FoodNutrientDetail[] };
 const styles = StyleSheet.create({
- wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#141A16",borderColor:"#343A32",borderWidth:1,borderRadius:16,padding:14,gap:10},
- title:{color:"#F2F0E8",fontSize:20,fontWeight:"900"},muted:{color:"#A7B0A7",fontSize:12,lineHeight:18},
- input:{backgroundColor:"#090D0B",borderColor:"#39443B",borderWidth:1,borderRadius:10,padding:11,color:"#F2F0E8"},
+ wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#DDE6D9",borderWidth:1,borderRadius:16,padding:14,gap:10},
+ title:{color:"#1C281E",fontSize:20,fontWeight:"900"},muted:{color:"#667366",fontSize:12,lineHeight:18},
+ input:{backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:10,padding:11,color:"#1C281E"},
  row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- button:{backgroundColor:"#EFFF00",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#10150F",fontWeight:"900"},
- outline:{borderWidth:1,borderColor:"#71806C",padding:11,borderRadius:10,alignItems:"center"},
- outlineText:{color:"#EFFF00",fontWeight:"800"},food:{color:"#F2F0E8",fontSize:13,fontWeight:"700",flex:1},
- line:{borderTopWidth:1,borderColor:"#303A31",paddingTop:9,gap:5},chip:{padding:9,borderRadius:9,backgroundColor:"#202A21"}
+ button:{backgroundColor:"#D8F500",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#10150F",fontWeight:"900"},
+ outline:{borderWidth:1,borderColor:"#758274",padding:11,borderRadius:10,alignItems:"center"},
+ outlineText:{color:"#D8F500",fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700",flex:1},
+ line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:9,gap:5},chip:{padding:9,borderRadius:9,backgroundColor:"#E7EEE3"}
 });
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
@@ -60,9 +60,9 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
   <Pressable style={styles.outline} onPress={onBack}><Text style={styles.outlineText}>{w.back}</Text></Pressable>
   <View style={styles.card}>
    <Text style={styles.title}>{w.title}</Text><Text style={styles.muted}>{w.empty}</Text>
-   <TextInput value={name} onChangeText={setName} placeholder={w.name} placeholderTextColor="#899389" style={styles.input}/>
-   <TextInput value={query} onChangeText={setQuery} placeholder={w.search} placeholderTextColor="#899389" style={styles.input}/>
-   <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder={w.grams} placeholderTextColor="#899389" style={styles.input}/>
+   <TextInput value={name} onChangeText={setName} placeholder={w.name} placeholderTextColor="#758274" style={styles.input}/>
+   <TextInput value={query} onChangeText={setQuery} placeholder={w.search} placeholderTextColor="#758274" style={styles.input}/>
+   <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder={w.grams} placeholderTextColor="#758274" style={styles.input}/>
    {results.map(food=><Pressable key={food.id} onPress={()=>addIngredient(food)} disabled={loadingFood} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(food.name,language)}</Text><Text style={styles.outlineText}>＋</Text></View><Text style={styles.muted}>{food.calories==null?"—":Math.round(food.calories)+" kcal"} / 100 g</Text></Pressable>)}
    {items.length===0?<Text style={styles.muted}>{w.empty}</Text>:items.map((item,index)=><View key={index} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(item.food.name,language)}</Text><Text style={styles.muted}>{item.grams} g</Text><Pressable onPress={()=>setItems(old=>old.filter((_,i)=>i!==index))}><Text style={styles.outlineText}>×</Text></Pressable></View></View>)}
    {items.length>0&&<Text style={styles.muted}>{Math.round(totals.calories)} kcal · {totals.protein.toFixed(1)} g protein · {totals.carbs.toFixed(1)} g carbs · {totals.fat.toFixed(1)} g fat</Text>}
