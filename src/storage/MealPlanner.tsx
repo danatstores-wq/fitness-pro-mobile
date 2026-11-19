@@ -85,7 +85,8 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
    dinner:{groups:[new RegExp(meat.source+"|"+dairyEgg.source+"|"+plantProtein.source,"i"),starch,vegetable],base:[120,110,150]},
    snacks:{groups:[new RegExp(dairyEgg.source+"|"+fruit.source+"|"+plantProtein.source,"i"),new RegExp(fruit.source+"|"+plantProtein.source+"|"+dairyEgg.source,"i")],base:[100,60]}
   };
-  const mealTargetMacros={protein:targetProtein??targetCalories*.20/4,carbs:targetCarbs??targetCalories*.50/4,fat:targetFat??targetCalories*.30/9};\n  const macroShares={protein:mealTargetMacros.protein*4/Math.max(1,targetCalories),carbs:mealTargetMacros.carbs*4/Math.max(1,targetCalories),fat:mealTargetMacros.fat*9/Math.max(1,targetCalories)};
+  const mealTargetMacros={protein:targetProtein??targetCalories*.20/4,carbs:targetCarbs??targetCalories*.50/4,fat:targetFat??targetCalories*.30/9};
+  const macroShares={protein:mealTargetMacros.protein*4/Math.max(1,targetCalories),carbs:mealTargetMacros.carbs*4/Math.max(1,targetCalories),fat:mealTargetMacros.fat*9/Math.max(1,targetCalories)};
   for(let day=0;day<7;day++){
    const used=new Set<number>();const items:PlanItem[]=[];
    for(let slot=0;slot<meals.length;slot++){
