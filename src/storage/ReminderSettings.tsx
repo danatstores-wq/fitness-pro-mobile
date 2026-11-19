@@ -25,7 +25,41 @@ export default function ReminderSettings({language}:{language:Language}) {
   const [p,setP]=useState<ReminderPreferences>(defaults);
   const [loaded,setLoaded]=useState(false);
   const [busy,setBusy]=useState(false);
+  const [webNotificationsReady,setWebNotificationsReady]=useState(false);
   useEffect(()=>{getReminderPreferences().then(value=>{setP(value);setLoaded(true);}).catch(()=>setLoaded(true));},[]);
+  useEffect(()=>{
+    if(Platform.OS!=="web"||!loaded)return;
+    const browser=globalThis as any;
+    if("Notification" in browser && browser.Notification.permission==="granted")setWebNotificationsReady(true);
+  },[loaded]);
+  useEffect(()=>{
+    if(Platform.OS!=="web"||!webNotificationsReady)return;
+    const browser=globalThis as any;
+    const send=(key:string,time:string,title:string,body:string)=>{
+      if(!time||!validTime(time))return;
+      const now=new Date();
+      if(now.getHours()!==Number(time.slice(0,2))||now.getMinutes()!==Number(time.slice(3,5)))return;
+      const stamp=now.getFullYear()+"-"+now.getMonth()+"-"+now.getDate()+"-"+key;
+      const storageKey="fitness-pro-reminder-fired-"+stamp;
+      if(browser.localStorage?.getItem(storageKey))return;
+      new browser.Notification(title,{body,tag:"fitness-pro-"+key});
+      browser.localStorage?.setItem(storageKey,"1");
+    };
+    const tick=()=>{
+      const title=language==="ar"?"دانات فتنس برو":"Fitness Pro by Danat";
+      if(p.breakfast_enabled)send("breakfast",p.breakfast_time,title,language==="ar"?"حان وقت الفطور. سجّل وجبتك.":language==="fr"?"C’est l’heure du petit-déjeuner. Enregistrez votre repas.":"Breakfast time. Log your meal.");
+      if(p.lunch_enabled)send("lunch",p.lunch_time,title,language==="ar"?"حان وقت الغداء. سجّل وجبتك.":language==="fr"?"C’est l’heure du déjeuner. Enregistrez votre repas.":"Lunch time. Log your meal.");
+      if(p.dinner_enabled)send("dinner",p.dinner_time,title,language==="ar"?"حان وقت العشاء. سجّل وجبتك.":language==="fr"?"C’est l’heure du dîner. Enregistrez votre repas.":"Dinner time. Log your meal.");
+      if(p.water_enabled&&validTime(p.water_start_time)&&validTime(p.water_end_time)){
+        for(let m=minutes(p.water_start_time);m<=minutes(p.water_end_time);m+=p.water_interval_minutes){
+          send("water-"+m,timeAt(m),title,language==="ar"?"حان وقت شرب الماء. حافظ على ترطيب جسمك.":language==="fr"?"Pensez à boire de l’eau et à rester hydraté.":"Time to drink water. Stay hydrated.");
+        }
+      }
+    };
+    tick();
+    const timer=browser.setInterval(tick,15000);
+    return()=>browser.clearInterval(timer);
+  },[p,webNotificationsReady,language]);
   const update=(key:keyof ReminderPreferences,value:boolean|string|number)=>setP(old=>({...old,[key]:value} as ReminderPreferences));
   const save=async()=>{
     if(!loaded||busy)return;
@@ -39,6 +73,7 @@ export default function ReminderSettings({language}:{language:Language}) {
         const browser=globalThis as any;
         if(p.breakfast_enabled||p.lunch_enabled||p.dinner_enabled||p.water_enabled){
           if("Notification" in browser && browser.Notification.permission==="default") await browser.Notification.requestPermission();
+          if("Notification" in browser && browser.Notification.permission==="granted") setWebNotificationsReady(true);
         }
       }else{
         const Notifications=await import("expo-notifications");
