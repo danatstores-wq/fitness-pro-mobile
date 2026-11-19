@@ -83,11 +83,13 @@ export default function ReminderSettings({language}:{language:Language}) {
         const Notifications=await import("expo-notifications");
         Notifications.setNotificationHandler({handleNotification:async()=>({shouldShowBanner:true,shouldShowList:true,shouldPlaySound:true,shouldSetBadge:false})});
         if(Platform.OS==="android") await Notifications.setNotificationChannelAsync("reminders",{name:"Meal and water reminders",importance:Notifications.AndroidImportance.HIGH,sound:"default",enableVibrate:true});
+        const existing=await Notifications.getAllScheduledNotificationsAsync();
+        for(const item of existing){if((item.content.data as any)?.reminderGroup==="fitness-pro-reminders") await Notifications.cancelScheduledNotificationAsync(item.identifier);}
+        const anyEnabled=p.breakfast_enabled||p.lunch_enabled||p.dinner_enabled||p.snacks_enabled||p.water_enabled;
+        if(!anyEnabled){Alert.alert(t.saved);return;}
         let permission=await Notifications.getPermissionsAsync();
         if(permission.status!=="granted") permission=await Notifications.requestPermissionsAsync();
         if(permission.status!=="granted") {Alert.alert(t.permission);return;}
-        const existing=await Notifications.getAllScheduledNotificationsAsync();
-        for(const item of existing){if((item.content.data as any)?.reminderGroup==="fitness-pro-reminders") await Notifications.cancelScheduledNotificationAsync(item.identifier);}
         const schedule=async(id:string,time:string,title:string,body:string)=>{
           const [hour,minute]=time.split(":").map(Number);
           await Notifications.scheduleNotificationAsync({identifier:"fitness-pro-"+id,content:{title,body,sound:"default",data:{reminderGroup:"fitness-pro-reminders"}},trigger:{type:Notifications.SchedulableTriggerInputTypes.DAILY,hour,minute,channelId:"reminders"}});
