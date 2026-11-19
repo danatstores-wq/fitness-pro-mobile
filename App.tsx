@@ -256,25 +256,27 @@ export default function App() {
   if (showWelcome) {
     return (
       <SafeAreaView style={styles.splashContainer}>
-        <StatusBar barStyle="light-content" />
-        <Image
-          source={require("./assets/images/welcome.jpg")}
-          style={styles.splashImage}
-          resizeMode="cover"
-          accessibilityLabel="FITNESS PRO welcome"
-        />
-        <View style={styles.splashShade} />
-        <View style={styles.splashContent}>
-          <Text style={styles.splashEyebrow}>DANAT / WELLNESS</Text>
-          <Text style={styles.splashTitle}>FITNESS PRO</Text>
-          <View style={styles.splashAccent} />
-          <Text style={styles.splashWelcome}>Welcome to FITNESS PRO</Text>
-          <Text style={styles.splashArabic}>مرحباً بك في FITNESS PRO</Text>
-          <Text style={styles.splashFrench}>Bienvenue sur FITNESS PRO</Text>
-        </View>
-        <View style={styles.splashFooter}>
-          <View style={styles.splashFooterDot} />
-          <Text style={styles.splashFooterText}>YOUR HEALTH. YOUR JOURNEY.</Text>
+        <View style={styles.splashFrame}>
+          <StatusBar barStyle="light-content" />
+          <Image
+            source={require("./assets/images/welcome.jpg")}
+            style={styles.splashImage}
+            resizeMode="cover"
+            accessibilityLabel="FITNESS PRO welcome"
+          />
+          <View style={styles.splashShade} />
+          <View style={styles.splashContent}>
+            <Text style={styles.splashEyebrow}>DANAT / WELLNESS</Text>
+            <Text style={styles.splashTitle}>FITNESS PRO</Text>
+            <View style={styles.splashAccent} />
+            <Text style={styles.splashWelcome}>Welcome to FITNESS PRO</Text>
+            <Text style={styles.splashArabic}>مرحباً بك في FITNESS PRO</Text>
+            <Text style={styles.splashFrench}>Bienvenue sur FITNESS PRO</Text>
+          </View>
+          <View style={styles.splashFooter}>
+            <View style={styles.splashFooterDot} />
+            <Text style={styles.splashFooterText}>YOUR HEALTH. YOUR JOURNEY.</Text>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -449,7 +451,8 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 }
 
 const styles = StyleSheet.create({
-  splashContainer: { flex: 1, backgroundColor: "#090D0B", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  splashContainer: { flex: 1, backgroundColor: "#050806", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  splashFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: "#090D0B", overflow: "hidden", borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#202820" },
   splashImage: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
   splashShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(5, 10, 7, 0.62)" },
   splashContent: { width: "100%", maxWidth: 480, paddingHorizontal: 28, alignItems: "center", justifyContent: "center", flex: 1 },
