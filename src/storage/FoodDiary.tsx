@@ -22,7 +22,8 @@ const nutrientNames: Record<Language, Record<string,string>> = {
  fr: {"Energy":"Énergie","Protein":"Protéines","Carbohydrates":"Glucides","Total fat":"Lipides totaux","Fiber":"Fibres","Total sugars":"Sucres totaux","Saturated fat":"Graisses saturées","Trans fat":"Acides gras trans","Monounsaturated fat":"Graisses mono-insaturées","Polyunsaturated fat":"Graisses polyinsaturées","Starch":"Amidon","Cholesterol":"Cholestérol","Water":"Eau","Vitamin A":"Vitamine A","Vitamin C":"Vitamine C","Vitamin D":"Vitamine D","Vitamin E":"Vitamine E","Vitamin K":"Vitamine K","Thiamin (B1)":"Thiamine (B1)","Riboflavin (B2)":"Riboflavine (B2)","Niacin (B3)":"Niacine (B3)","Pantothenic acid (B5)":"Acide pantothénique (B5)","Vitamin B6":"Vitamine B6","Biotin (B7)":"Biotine (B7)","Folate (B9)":"Folates (B9)","Vitamin B12":"Vitamine B12","Calcium":"Calcium","Iron":"Fer","Magnesium":"Magnésium","Phosphorus":"Phosphore","Potassium":"Potassium","Sodium":"Sodium","Zinc":"Zinc","Copper":"Cuivre","Manganese":"Manganèse","Selenium":"Sélénium","Iodine":"Iode","Choline":"Choline"}
 };
 const nutrientLabel = (name: string) => nutrientNames[language][name] ?? name;
-\nconst mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
+
+const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
   { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"Meat|Poultry|Sausage|Beef|Pork|Lamb|Veal|Game|Chicken|Turkey|Duck" },
   { id:"fish", en:"Fish & seafood", ar:"الأسماك والمأكولات البحرية", fr:"Poissons", pattern:"Fish|Finfish|Seafood|Shellfish|Crustacean|Mollusk" },
