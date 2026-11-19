@@ -42,7 +42,7 @@ export function localizeFoodName(name: string, language: Language): string {
   for (const word of phrases) {
     const [ar, fr] = foodWords[word];
     const replacement = language === "ar" ? ar : fr;
-    output = output.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), replacement);
+    output = output.replace(new RegExp("\\b" + word.replace(/[.*+?^${}()|[\]\\]/g, "\\output = output.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), replacement);") + "\\b", "gi"), replacement);
   }
   return output.replace(/,\s*/g, " · ").replace(/\s+/g, " ").trim();
 }
@@ -71,4 +71,13 @@ export function localizeNutrientName(name: string, language: Language): string {
   };
   const match = nutrients[base] ?? nutrients[base.replace(/^total /,"")];
   return match ? match[language === "ar" ? 0 : 1] : name;
+}
+
+export function normalizeFoodSearch(query: string, language: Language): string {
+  const value = query.trim().toLocaleLowerCase();
+  if (!value || language === "en") return query;
+  for (const [english, translations] of Object.entries(foodWords)) {
+    if (translations[language === "ar" ? 0 : 1].toLocaleLowerCase() === value) return english;
+  }
+  return query;
 }
