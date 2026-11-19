@@ -295,7 +295,7 @@ export default function App() {
   {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}
   <Pressable accessibilityRole="button" onPress={()=>setTab("diary")} style={styles.openDiaryButton}><Text style={styles.openDiaryButtonText}>{t.openFoodDiary}</Text><Text style={styles.openDiaryArrow}>›</Text></Pressable>
   <View style={styles.dashboardFootnote}><Text style={styles.dashboardFootnoteText}>{t.mealsLogged}: {dailyIntake.calories!==null && dailyIntake.calories>0 ? "✓" : "0"}</Text><Text style={styles.dashboardFootnoteText}>DANAT WELLNESS</Text></View>
-</>}</ScrollView>{tab === "diary" && (!hydrated
+</>}</ScrollView>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
