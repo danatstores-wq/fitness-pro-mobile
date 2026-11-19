@@ -290,16 +290,7 @@ export default function App() {
           />
           <View style={styles.splashShade} />
           <View style={styles.splashContent}>
-            <Text style={styles.splashEyebrow}>DANAT / WELLNESS</Text>
-            <Text style={styles.splashTitle}>FITNESS PRO</Text>
-            <View style={styles.splashAccent} />
-            <Text style={styles.splashWelcome}>Welcome to FITNESS PRO</Text>
-            <Text style={styles.splashArabic}>مرحباً بك في FITNESS PRO</Text>
-            <Text style={styles.splashFrench}>Bienvenue sur FITNESS PRO</Text>
-          </View>
-          <View style={styles.splashFooter}>
-            <View style={styles.splashFooterDot} />
-            <Text style={styles.splashFooterText}>YOUR HEALTH. YOUR JOURNEY.</Text>
+            <Text style={styles.splashTitle}>DANAT WELLNESS{"\n"}FITNESS PRO</Text>
           </View>
         </View>
       </SafeAreaView>
