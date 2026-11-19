@@ -309,16 +309,60 @@ export async function searchFoodsByNutrient(nutrient: string, direction: "high" 
   const columns: Record<string, { column: string; unit: string }> = {
     Calories: { column: "calories", unit: "kcal" }, Protein: { column: "protein_g", unit: "g" },
     Carbohydrates: { column: "carbs_g", unit: "g" }, Fat: { column: "fat_g", unit: "g" },
-    Fiber: { column: "fiber_g", unit: "g" }, Sugars: { column: "total_sugars_g", unit: "g" },
+    Fiber: { column: "fiber_g", unit: "g" }, Sugars: { column: "COALESCE(f.total_sugars_g, f.sugar_g)", unit: "g" },
     "Saturated fat": { column: "saturated_fat_g", unit: "g" }, "Trans fat": { column: "trans_fat_g", unit: "g" },
     "Monounsaturated fat": { column: "monounsaturated_fat_g", unit: "g" }, "Polyunsaturated fat": { column: "polyunsaturated_fat_g", unit: "g" },
     Starch: { column: "starch_g", unit: "g" }, Cholesterol: { column: "cholesterol_mg", unit: "mg" }, Water: { column: "water_g", unit: "g" }
   };
+  // USDA stores many micronutrients under scientific/form-specific names, not just the short display label.
+  const aliases: Record<string, string[]> = {
+    "Vitamin A":["Vitamin A","Vitamin A, RAE","Retinol"],
+    "Vitamin C":["Vitamin C","Vitamin C, total ascorbic acid"],
+    "Vitamin D":["Vitamin D","Vitamin D (D2 + D3)","Vitamin D2","Vitamin D3"],
+    "Vitamin E":["Vitamin E","Vitamin E (alpha-tocopherol)"],
+    "Vitamin K":["Vitamin K","Vitamin K (phylloquinone)"],
+    "Thiamin (B1)":["Thiamin (B1)","Thiamin","Thiamine"],
+    "Riboflavin (B2)":["Riboflavin (B2)","Riboflavin"],
+    "Niacin (B3)":["Niacin (B3)","Niacin"],
+    "Pantothenic acid (B5)":["Pantothenic acid (B5)","Pantothenic acid"],
+    "Vitamin B6":["Vitamin B6","Vitamin B-6"],
+    "Biotin (B7)":["Biotin (B7)","Biotin"],
+    "Folate (B9)":["Folate (B9)","Folate, total","Folate, DFE"],
+    "Vitamin B12":["Vitamin B12","Vitamin B-12","Cobalamin"],
+    Calcium:["Calcium","Calcium, Ca"], Iron:["Iron","Iron, Fe"],
+    Magnesium:["Magnesium","Magnesium, Mg"], Phosphorus:["Phosphorus","Phosphorus, P"],
+    Potassium:["Potassium","Potassium, K"], Sodium:["Sodium","Sodium, Na"],
+    Zinc:["Zinc","Zinc, Zn"], Copper:["Copper","Copper, Cu"],
+    Manganese:["Manganese","Manganese, Mn"], Selenium:["Selenium","Selenium, Se"],
+    Iodine:["Iodine","Iodine, I"], Choline:["Choline","Choline, total"]
+  };
   const column = columns[nutrient];
-  const expression = column ? "f." + column.column : "(SELECT fn.amount FROM food_nutrients fn JOIN nutrients n ON n.id = fn.nutrient_id WHERE fn.food_id = f.id AND lower(n.name) = lower(?) LIMIT 1)";
-  const unit = column?.unit ?? (await db.getFirstAsync<{unit:string}>("SELECT unit FROM nutrients WHERE lower(name)=lower(?)", nutrient))?.unit ?? "mg";
+  const nutrientAliases = aliases[nutrient] ?? [nutrient];
+  const unitDefaults: Record<string,string> = {
+    "Vitamin A":"µg RAE","Vitamin C":"mg","Vitamin D":"µg","Vitamin E":"mg","Vitamin K":"µg",
+    "Thiamin (B1)":"mg","Riboflavin (B2)":"mg","Niacin (B3)":"mg","Pantothenic acid (B5)":"mg",
+    "Vitamin B6":"mg","Biotin (B7)":"µg","Folate (B9)":"µg","Vitamin B12":"µg",
+    Calcium:"mg",Iron:"mg",Magnesium:"mg",Phosphorus:"mg",Potassium:"mg",Sodium:"mg",
+    Zinc:"mg",Copper:"mg",Manganese:"mg",Selenium:"µg",Iodine:"µg",Choline:"mg"
+  };
+  const unit = column?.unit ?? (await db.getFirstAsync<{unit:string}>(
+    "SELECT unit FROM nutrients WHERE lower(name) IN (" + nutrientAliases.map(()=>"?").join(",") + ") LIMIT 1",
+    ...nutrientAliases.map(value=>value.toLowerCase())
+  ))?.unit ?? unitDefaults[nutrient] ?? "mg";
+  let expression: string;
+  let args: string[];
+  if (column) {
+    expression = column.column.includes("(") ? column.column : "f." + column.column;
+    args = [];
+  } else {
+    // COALESCE tries the preferred canonical nutrient first, then its USDA aliases.
+    expression = "COALESCE(" + nutrientAliases.map(()=>"(SELECT fn.amount FROM food_nutrients fn JOIN nutrients n ON n.id=fn.nutrient_id WHERE fn.food_id=f.id AND lower(n.name)=lower(?) LIMIT 1)").join(",") + ")";
+    args = nutrientAliases;
+  }
   const sql = "SELECT f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality, " + expression + " AS nutrient_amount, ? AS nutrient_unit FROM foods f WHERE " + expression + " IS NOT NULL ORDER BY nutrient_amount " + (direction === "high" ? "DESC" : "ASC") + ", f.name COLLATE NOCASE LIMIT 50";
-  return column ? db.getAllAsync<NutrientFoodResult>(sql, unit) : db.getAllAsync<NutrientFoodResult>(sql, nutrient, unit, nutrient);
+  return column
+    ? db.getAllAsync<NutrientFoodResult>(sql, unit)
+    : db.getAllAsync<NutrientFoodResult>(sql, ...args, unit, ...args);
 }
 
 export async function createFood(food: {
