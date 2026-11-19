@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
 import { localizeFoodName, localizeNutrientName, normalizeFoodSearch } from "../i18n-food";
-import MealPlanner from "./MealPlanner";\nimport CustomMealBuilder from "./CustomMealBuilder";
+import MealPlanner from "./MealPlanner";
+import CustomMealBuilder from "./CustomMealBuilder";
 import BarcodeScanner from "./BarcodeScanner";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
@@ -72,7 +73,8 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   const t = words[language], rtl = language === "ar";
   const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
-  const [plannerMode, setPlannerMode] = useState(false);\n  const [customMealMode, setCustomMealMode] = useState(false);
+  const [plannerMode, setPlannerMode] = useState(false);
+  const [customMealMode, setCustomMealMode] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<typeof foodCategories[number] | null>(null);
@@ -144,7 +146,8 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
     catch (e) { Alert.alert("Error", String(e)); }
   };
   const textAlign = rtl ? "right" as const : "left" as const;
-  if (customMealMode) return <CustomMealBuilder language={language} mealType={meal} onBack={()=>setCustomMealMode(false)} onAdded={()=>{setCustomMealMode(false);load().catch(e=>console.warn("Food diary refresh failed",e));}} />;\n  if (plannerMode) return <ScrollView contentContainerStyle={s.content}>
+  if (customMealMode) return <CustomMealBuilder language={language} mealType={meal} onBack={()=>setCustomMealMode(false)} onAdded={()=>{setCustomMealMode(false);load().catch(e=>console.warn("Food diary refresh failed",e));}} />;
+  if (plannerMode) return <ScrollView contentContainerStyle={s.content}>
     <Pressable onPress={()=>setPlannerMode(false)} style={s.outline}><Text style={s.outlineText}>{t.backDiary}</Text></Pressable>
     <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} />
   </ScrollView>;
@@ -152,7 +155,8 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   return <ScrollView contentContainerStyle={s.content}>
     <Text style={[s.title,{textAlign}]}>{t.title}</Text>
     <View style={s.meals}>
-      <Pressable onPress={()=>setPlannerMode(true)} style={s.mealTab}><Text style={s.mealText}>{t.planner}</Text></Pressable>\n       <Pressable onPress={()=>setCustomMealMode(true)} style={s.mealTab}><Text style={s.mealText}>{language==="ar"?"وجبة مخصصة":language==="fr"?"Repas personnalisé":"Custom meal"}</Text></Pressable>
+      <Pressable onPress={()=>setPlannerMode(true)} style={s.mealTab}><Text style={s.mealText}>{t.planner}</Text></Pressable>
+       <Pressable onPress={()=>setCustomMealMode(true)} style={s.mealTab}><Text style={s.mealText}>{language==="ar"?"وجبة مخصصة":language==="fr"?"Repas personnalisé":"Custom meal"}</Text></Pressable>
       <Pressable onPress={()=>setScannerVisible(true)} style={s.mealTab}><Text style={s.mealText}>{t.scanner}</Text></Pressable>
     </View>
     <BarcodeScanner visible={scannerVisible} onClose={()=>setScannerVisible(false)} onFound={food=>{setSelected(food);setSelectedCategory(null);setQuery("");setQuantity("100");}} language={language} />
