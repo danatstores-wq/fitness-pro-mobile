@@ -373,6 +373,48 @@ export async function addFoodToMeal(
   });
 }
 
+export async function addFoodPlanToDiary(
+  items: { foodId: number; mealType: "breakfast" | "lunch" | "dinner" | "snacks"; quantityGrams: number }[],
+  date = new Date()
+) {
+  if (!items.length) throw new Error("The meal plan is empty.");
+  if (items.some(item => !Number.isInteger(item.foodId) || item.foodId <= 0 ||
+    !["breakfast", "lunch", "dinner", "snacks"].includes(item.mealType) ||
+    !Number.isFinite(item.quantityGrams) || item.quantityGrams <= 0)) {
+    throw new Error("The meal plan contains an invalid food or quantity.");
+  }
+  const db = await database();
+  const day = date.toISOString().slice(0, 10);
+  const timestamp = date.toISOString();
+  await db.withTransactionAsync(async () => {
+    const mealIds = new Map<string, number>();
+    for (const item of items) {
+      let mealId = mealIds.get(item.mealType);
+      if (!mealId) {
+        const existing = await db.getFirstAsync<{ id: number }>(
+          "SELECT id FROM meals WHERE eaten_at LIKE ? AND meal_type = ? ORDER BY id LIMIT 1",
+          `${day}%`, item.mealType
+        );
+        if (existing) mealId = existing.id;
+        else {
+          const created = await db.runAsync(
+            "INSERT INTO meals (eaten_at, meal_type) VALUES (?, ?)",
+            timestamp, item.mealType
+          );
+          mealId = created.lastInsertRowId;
+        }
+        mealIds.set(item.mealType, mealId);
+      }
+      const food = await db.getFirstAsync<{ id: number }>("SELECT id FROM foods WHERE id = ?", item.foodId);
+      if (!food) throw new Error("A food in this plan is no longer available. Generate the plan again.");
+      await db.runAsync(
+        "INSERT INTO meal_items (meal_id, food_id, quantity_g) VALUES (?, ?, ?)",
+        mealId, item.foodId, item.quantityGrams
+      );
+    }
+  });
+}
+
 
 export type CustomMealSummary = { id: number; name: string; ingredient_count: number };
 export type CustomMealItem = { food_id: number; name: string; quantity_g: number; calories: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null };
