@@ -181,7 +181,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       <View style={s.categoryNamePlate}><Text numberOfLines={2} style={[s.categoryText,selectedCategory?.id===category.id&&{color:GOLD}]}>{category[language]}</Text></View>
     </Pressable>)}</View>
     <TextInput value={query} onChangeText={setQuery} placeholder={t.search} placeholderTextColor={MUTED} style={[s.input,{textAlign,marginBottom:10}]} />
-    <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:GOLD}]}>{t[m]}</Text></Pressable>)}</View>
+    <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:"#1C281E"}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
       <Text style={s.cardTitle}>{localizeFoodName(selected.name, language)}</Text>
       <Text style={s.sectionTitle}>{t.nutrition100}</Text>
@@ -227,7 +227,7 @@ const s=StyleSheet.create({
  label:{color:"#263328",fontSize:13,fontWeight:"700"},calorie:{color:GOLD,fontSize:34,fontWeight:"900",marginVertical:7},
  macros:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},macro:{color:GREEN,fontSize:12,fontWeight:"700"},
  input:{color:"#1C281E",backgroundColor:"#F4F7F1",borderWidth:1,borderColor:"#DDE6D9",borderRadius:11,paddingHorizontal:13,paddingVertical:11,fontSize:14},
- meals:{flexDirection:"row",gap:7,flexWrap:"wrap"},mealTab:{paddingVertical:10,paddingHorizontal:12,borderRadius:10,backgroundColor:"#263A2C",borderWidth:1,borderColor:"#263A2C"},mealActive:{borderColor:GOLD,backgroundColor:GOLD},mealText:{color:"#FFFFFF",fontSize:12,fontWeight:"800"},
+ meals:{flexDirection:"row",gap:7,flexWrap:"wrap"},mealTab:{paddingVertical:10,paddingHorizontal:12,borderRadius:10,backgroundColor:"#263A2C",borderWidth:1,borderColor:"#263A2C"},mealActive:{borderColor:"#B8C8B5",backgroundColor:"#E6F0E4"},mealText:{color:"#FFFFFF",fontSize:12,fontWeight:"800"},
  result:{flexDirection:"row",alignItems:"center",paddingVertical:12,borderBottomWidth:1,borderBottomColor:"#E3EADF"},foodName:{color:"#1C281E",fontSize:14,fontWeight:"700"},muted:{color:MUTED,fontSize:12,lineHeight:18},plus:{color:GOLD,fontSize:22,paddingHorizontal:8},
  outline:{borderWidth:1,borderColor:"#263A2C",backgroundColor:"#263A2C",borderRadius:11,padding:12,alignItems:"center",marginTop:14},outlineText:{color:"#FFFFFF",fontWeight:"800"},
  cardTitle:{color:"#1C281E",fontSize:16,fontWeight:"800",marginBottom:9},sectionTitle:{color:"#263A2C",fontSize:13,fontWeight:"900",marginTop:12,marginBottom:6},nutrientRow:{flexDirection:"row",justifyContent:"space-between",gap:12,paddingVertical:7,borderBottomWidth:1,borderBottomColor:"#E3EADF"},nutrientValue:{color:"#1C281E",fontSize:12,fontWeight:"700",textAlign:"right"},logged:{flexDirection:"row",alignItems:"center",paddingVertical:10,borderTopWidth:1,borderTopColor:"#E3EADF"},remove:{color:"#C64F4F",fontSize:23,paddingHorizontal:10},
