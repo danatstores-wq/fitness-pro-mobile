@@ -290,7 +290,9 @@ export default function App() {
           />
           <View style={styles.splashShade} />
           <View style={styles.splashContent}>
-            <Text style={styles.splashTitle}>DANAT WELLNESS{"\n"}FITNESS PRO</Text>
+            <Text style={styles.splashEyebrow}>DANAT WELLNESS</Text>
+            <Text style={styles.splashTitle}>FITNESS PRO</Text>
+            <View style={styles.splashAccent} />
           </View>
         </View>
       </SafeAreaView>
@@ -485,7 +487,7 @@ const styles = StyleSheet.create({
   splashContent: { width: "88%", maxWidth: 430, paddingHorizontal: 22, paddingVertical: 30, alignItems: "center", justifyContent: "center", alignSelf: "center", marginTop: 34, marginBottom: "auto", backgroundColor: "rgba(255, 255, 255, 0.88)", borderRadius: 24, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.95)", shadowColor: "#263A2C", shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 6 },
   splashEyebrow: { color: "#368A4B", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
   splashTitle: { color: "#1C281E", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
-  splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#D8F500", marginTop: 20, marginBottom: 28 },
+  splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#368A4B", marginTop: 20, marginBottom: 28 },
   splashWelcome: { color: "#1C281E", fontSize: 19, fontWeight: "800", textAlign: "center", marginBottom: 13 },
   splashArabic: { color: "#1C281E", fontSize: 20, fontWeight: "700", textAlign: "center", marginBottom: 13, writingDirection: "rtl" },
   splashFrench: { color: "#1C281E", fontSize: 18, fontWeight: "700", textAlign: "center" },
