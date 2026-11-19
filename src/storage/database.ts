@@ -300,6 +300,27 @@ export async function searchFoods(searchText: string, categoryPattern?: string):
   );
 }
 
+
+export type NutrientFoodResult = FoodRecord & { nutrient_amount: number; nutrient_unit: string };
+
+// Rank foods by verified nutrient values per 100 g. Missing values are excluded.
+export async function searchFoodsByNutrient(nutrient: string, direction: "high" | "low" = "high"): Promise<NutrientFoodResult[]> {
+  const db = await database();
+  const columns: Record<string, { column: string; unit: string }> = {
+    Calories: { column: "calories", unit: "kcal" }, Protein: { column: "protein_g", unit: "g" },
+    Carbohydrates: { column: "carbs_g", unit: "g" }, Fat: { column: "fat_g", unit: "g" },
+    Fiber: { column: "fiber_g", unit: "g" }, Sugars: { column: "total_sugars_g", unit: "g" },
+    "Saturated fat": { column: "saturated_fat_g", unit: "g" }, "Trans fat": { column: "trans_fat_g", unit: "g" },
+    "Monounsaturated fat": { column: "monounsaturated_fat_g", unit: "g" }, "Polyunsaturated fat": { column: "polyunsaturated_fat_g", unit: "g" },
+    Starch: { column: "starch_g", unit: "g" }, Cholesterol: { column: "cholesterol_mg", unit: "mg" }, Water: { column: "water_g", unit: "g" }
+  };
+  const column = columns[nutrient];
+  const expression = column ? "f." + column.column : "(SELECT fn.amount FROM food_nutrients fn JOIN nutrients n ON n.id = fn.nutrient_id WHERE fn.food_id = f.id AND lower(n.name) = lower(?) LIMIT 1)";
+  const unit = column?.unit ?? (await db.getFirstAsync<{unit:string}>("SELECT unit FROM nutrients WHERE lower(name)=lower(?)", nutrient))?.unit ?? "mg";
+  const sql = "SELECT f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality, " + expression + " AS nutrient_amount, ? AS nutrient_unit FROM foods f WHERE " + expression + " IS NOT NULL ORDER BY nutrient_amount " + (direction === "high" ? "DESC" : "ASC") + ", f.name COLLATE NOCASE LIMIT 50";
+  return column ? db.getAllAsync<NutrientFoodResult>(sql, unit, unit) : db.getAllAsync<NutrientFoodResult>(sql, nutrient, unit, nutrient);
+}
+
 export async function createFood(food: {
   name: string;
   calories: number | null;
