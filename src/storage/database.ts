@@ -704,5 +704,5 @@ export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[
 }
 
 export async function ensureFnddsFoodsImported(source: ImportedFoodRecord[] | (() => Promise<ImportedFoodRecord[]>)) {
-  return ensureFoodCatalogueImported("usda_fndds_2021_2023", source);
+  return ensureFoodCatalogueImported("usda_fndds_2021_2023_v2_micronutrients", source);
 }
