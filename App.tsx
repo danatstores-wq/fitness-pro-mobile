@@ -19,12 +19,12 @@ type Profile = {
   waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
 };
 
-const GOLD = "#D7B45A";
-const GREEN = "#4FA66B";
-const BG = "#090D0B";
-const PANEL = "#141A16";
-const MUTED = "#A7B0A7";
-const IVORY = "#F2F0E8";
+const GOLD = "#D8F500";
+const GREEN = "#368A4B";
+const BG = "#F7F9F5";
+const PANEL = "#FFFFFF";
+const MUTED = "#667366";
+const IVORY = "#1C281E";
 const initialProfile: Profile = {
   name: '', age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", ibwFormula: "devine", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
@@ -257,7 +257,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.splashContainer}>
         <View style={styles.splashFrame}>
-          <StatusBar barStyle="light-content" />
+          <StatusBar barStyle="dark-content" />
           <Image
             source={require("./assets/images/welcome.jpg")}
             style={styles.splashImage}
@@ -284,7 +284,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
       <View style={styles.appFrame}>
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
@@ -331,7 +331,7 @@ export default function App() {
   <View style={styles.macroGrid}>
     <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.protein}</Text><Text style={styles.macroTileValue}>{dailyIntake.protein===null?"0":Math.round(dailyIntake.protein)}<Text style={styles.macroTileUnit}> / {metrics?.protein||125} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.protein||0)/(metrics?.protein||125))*100)+"%",backgroundColor:GOLD}]}/></View></View>
     <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.carbs}</Text><Text style={styles.macroTileValue}>{dailyIntake.carbs===null?"0":Math.round(dailyIntake.carbs)}<Text style={styles.macroTileUnit}> / {metrics?.carbs||225} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.carbs||0)/(metrics?.carbs||225))*100)+"%",backgroundColor:GREEN}]}/></View></View>
-    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.fats}</Text><Text style={styles.macroTileValue}>{dailyIntake.fats===null?"0":Math.round(dailyIntake.fats)}<Text style={styles.macroTileUnit}> / {metrics?.fats||62} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.fats||0)/(metrics?.fats||62))*100)+"%",backgroundColor:"#91B56B"}]}/></View></View>
+    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.fats}</Text><Text style={styles.macroTileValue}>{dailyIntake.fats===null?"0":Math.round(dailyIntake.fats)}<Text style={styles.macroTileUnit}> / {metrics?.fats||62} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.fats||0)/(metrics?.fats||62))*100)+"%",backgroundColor:"#368A4B"}]}/></View></View>
     <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.currentWeight}</Text><Text style={styles.macroTileValue}>{profile.weight||"—"}<Text style={styles.macroTileUnit}> {profile.weight?t.kg:""}</Text></Text><Text style={styles.macroTileHint}>{t.progress}</Text></View>
   </View>
   {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}
@@ -354,7 +354,7 @@ export default function App() {
   <Card>
     <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.weightTrend}</Text><Text style={styles.sectionMeta}>{weightLog.length} {t.logWeight.toUpperCase()}</Text></View>
     {weightLog.length ? <>
-      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:index===arr.length-1?"#EFFF00":"#4FA66B"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
+      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:index===arr.length-1?"#D8F500":"#368A4B"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
       <View style={styles.weightList}>{weightLog.slice(-5).reverse().map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View>
     </> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
   </Card>
@@ -439,7 +439,7 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
   return <View style={[styles.card, { flex: 1 }]}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.muted}>{label}</Text></View>;
 }
 function MetricLine({ label, value }: { label: string; value: string }) { return <View style={styles.spaceBetween}><Text style={styles.muted}>{label}</Text><Text style={styles.valueText}>{value}</Text></View>; }
-function Macro({label,value,consumed,color}:{label:string;value:number;consumed:number|null;color:string}){const pct=Math.min(100,Math.max(0,(consumed??0)/Math.max(1,value)*100));return <View style={{paddingVertical:8}}><View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{color:"#E8E8DC",fontWeight:"800"}}>{consumed===null?"0":Math.round(consumed)} / {value} g</Text></View><View style={styles.progressTrack}><View style={[styles.progressFill,{backgroundColor:color,width:pct+"%"}]}/></View></View>;}
+function Macro({label,value,consumed,color}:{label:string;value:number;consumed:number|null;color:string}){const pct=Math.min(100,Math.max(0,(consumed??0)/Math.max(1,value)*100));return <View style={{paddingVertical:8}}><View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{color:"#263328",fontWeight:"800"}}>{consumed===null?"0":Math.round(consumed)} / {value} g</Text></View><View style={styles.progressTrack}><View style={[styles.progressFill,{backgroundColor:color,width:pct+"%"}]}/></View></View>;}
 function GoldButton({ title, onPress }: { title: string; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.goldButton}><Text style={styles.goldButtonText}>{title}</Text></Pressable>;
 }
@@ -451,70 +451,70 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 }
 
 const styles = StyleSheet.create({
-  splashContainer: { flex: 1, backgroundColor: "#050806", alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  splashFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: "#090D0B", overflow: "hidden", borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#202820" },
+  splashContainer: { flex: 1, backgroundColor: "#F0F4ED", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  splashFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: "#F7F9F5", overflow: "hidden", borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#E1E9DE" },
   splashImage: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
   splashShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(5, 10, 7, 0.62)" },
   splashContent: { width: "100%", maxWidth: 480, paddingHorizontal: 28, alignItems: "center", justifyContent: "center", flex: 1 },
-  splashEyebrow: { color: "#EFFF00", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
-  splashTitle: { color: "#F2F0E8", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
-  splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#EFFF00", marginTop: 20, marginBottom: 28 },
-  splashWelcome: { color: "#F2F0E8", fontSize: 19, fontWeight: "800", textAlign: "center", marginBottom: 13 },
-  splashArabic: { color: "#F2F0E8", fontSize: 20, fontWeight: "700", textAlign: "center", marginBottom: 13, writingDirection: "rtl" },
-  splashFrench: { color: "#F2F0E8", fontSize: 18, fontWeight: "700", textAlign: "center" },
+  splashEyebrow: { color: "#D8F500", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
+  splashTitle: { color: "#1C281E", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
+  splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#D8F500", marginTop: 20, marginBottom: 28 },
+  splashWelcome: { color: "#1C281E", fontSize: 19, fontWeight: "800", textAlign: "center", marginBottom: 13 },
+  splashArabic: { color: "#1C281E", fontSize: 20, fontWeight: "700", textAlign: "center", marginBottom: 13, writingDirection: "rtl" },
+  splashFrench: { color: "#1C281E", fontSize: 18, fontWeight: "700", textAlign: "center" },
   splashFooter: { position: "absolute", bottom: 28, flexDirection: "row", alignItems: "center", gap: 9 },
-  splashFooterDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#EFFF00" },
-  splashFooterText: { color: "#F2F0E8", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
-  safe: { flex: 1, backgroundColor: "#050806", alignItems: "center" },
-  appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#202820" },
-  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#343B32" },
+  splashFooterDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#D8F500" },
+  splashFooterText: { color: "#1C281E", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
+  safe: { flex: 1, backgroundColor: "#F0F4ED", alignItems: "center" },
+  appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#E1E9DE" },
+  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#DDE6D9" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
   logoImage: { width: 46, height: 46 },
   brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
   languageSelector: { flexDirection: "row", alignItems: "center", gap: 5 },
-  languageButton: { borderWidth: 1, borderColor: "#485347", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, minWidth: 35, alignItems: "center" },
-  languageButtonActive: { backgroundColor: "#263A2B", borderColor: GOLD },
+  languageButton: { borderWidth: 1, borderColor: "#DDE6D9", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, minWidth: 35, alignItems: "center" },
+  languageButtonActive: { backgroundColor: "#E6F0E4", borderColor: GOLD },
   languageText: { color: GOLD, fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: MUTED },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
-  todayPill: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, backgroundColor: "#18231B", borderWidth: 1, borderColor: "#344B37" },
-  todayPillText: { color: "#C4D2C1", fontSize: 9, fontWeight: "800", letterSpacing: 1.5 },
+  todayPill: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, backgroundColor: "#EEF4E9", borderWidth: 1, borderColor: "#DDE6D9" },
+  todayPillText: { color: "#405143", fontSize: 9, fontWeight: "800", letterSpacing: 1.5 },
   sectionTitle: { color: IVORY, fontSize: 15, fontWeight: "900", letterSpacing: 0.5 },
   calorieDashboard: { flexDirection: "row", alignItems: "center", gap: 18, marginTop: 18 },
-  calorieRing: { width: 142, height: 142, borderRadius: 71, borderWidth: 9, borderColor: "#EFFF00", backgroundColor: "#18231B", alignItems: "center", justifyContent: "center", shadowColor: "#EFFF00", shadowOpacity: 0.13, shadowRadius: 14, elevation: 3 },
-  calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#101712", alignItems: "center", justifyContent: "center" },
+  calorieRing: { width: 142, height: 142, borderRadius: 71, borderWidth: 9, borderColor: "#D8F500", backgroundColor: "#EEF4E9", alignItems: "center", justifyContent: "center", shadowColor: "#D8F500", shadowOpacity: 0.13, shadowRadius: 14, elevation: 3 },
+  calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#F4F7F1", alignItems: "center", justifyContent: "center" },
   ringCaption: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2 },
   ringValue: { color: IVORY, fontSize: 25, fontWeight: "900", marginTop: 4 },
   ringUnit: { color: GOLD, fontSize: 8, fontWeight: "900", letterSpacing: 2, marginTop: 2 },
   calorieSummary: { flex: 1, minWidth: 0 },
-  remainingPanel: { borderLeftWidth: 2, borderLeftColor: "#EFFF00", paddingLeft: 10, marginTop: 14 },
-  remainingValue: { color: "#EFFF00", fontSize: 24, fontWeight: "900" },
+  remainingPanel: { borderLeftWidth: 2, borderLeftColor: "#D8F500", paddingLeft: 10, marginTop: 14 },
+  remainingValue: { color: "#D8F500", fontSize: 24, fontWeight: "900" },
   remainingLabel: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2, marginTop: 2 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  macroTile: { width: "48%", flexGrow: 1, minWidth: 130, backgroundColor: PANEL, borderRadius: 15, borderWidth: 1, borderColor: "#303A31", padding: 14, minHeight: 91 },
+  macroTile: { width: "48%", flexGrow: 1, minWidth: 130, backgroundColor: PANEL, borderRadius: 15, borderWidth: 1, borderColor: "#E3EADF", padding: 14, minHeight: 91 },
   macroTileLabel: { color: MUTED, fontSize: 11, fontWeight: "700", marginBottom: 8 },
   macroTileValue: { color: IVORY, fontSize: 19, fontWeight: "900" },
   macroTileUnit: { color: MUTED, fontSize: 10, fontWeight: "600" },
   macroTileHint: { color: GREEN, fontSize: 9, fontWeight: "800", marginTop: 5 },
-  miniTrack: { height: 4, backgroundColor: "#303A31", borderRadius: 8, marginTop: 9, overflow: "hidden" },
+  miniTrack: { height: 4, backgroundColor: "#E3EADF", borderRadius: 8, marginTop: 9, overflow: "hidden" },
   miniFill: { height: 4, borderRadius: 8 },
-  openDiaryArrow: { color: "#090D0B", fontSize: 25, fontWeight: "900", position: "absolute", right: 18, top: 7 },
+  openDiaryArrow: { color: "#F7F9F5", fontSize: 25, fontWeight: "900", position: "absolute", right: 18, top: 7 },
   dashboardFootnote: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 3, paddingTop: 2 },
-  dashboardFootnoteText: { color: "#778278", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
+  dashboardFootnoteText: { color: "#758274", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
 
   greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
-  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#343B32", padding: 19, marginBottom: 2 },
+  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#DDE6D9", padding: 19, marginBottom: 2 },
   cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
   muted: { color: MUTED, fontSize: 12, lineHeight: 19 },
-  calorieHero: { backgroundColor: "#18231B", borderRadius: 22, borderWidth: 1, borderColor: "#485347", padding: 21, marginBottom: 2 },
+  calorieHero: { backgroundColor: "#EEF4E9", borderRadius: 22, borderWidth: 1, borderColor: "#DDE6D9", padding: 21, marginBottom: 2 },
   heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
-  heroLabel: { color: "#A7B0A7", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
+  heroLabel: { color: "#667366", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
   heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
@@ -522,7 +522,7 @@ const styles = StyleSheet.create({
   calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: GOLD, alignItems: "center", justifyContent: "center", marginLeft: 10 },
   badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
   badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
-  progressTrack: { height: 5, backgroundColor: "#303A31", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
+  progressTrack: { height: 5, backgroundColor: "#E3EADF", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: GREEN, borderRadius: 10 },
   sectionHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
   sectionMeta: { color: GOLD, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
@@ -531,38 +531,38 @@ const styles = StyleSheet.create({
   statRow: { flexDirection: "row", gap: 11 },
   statIcon: { color: GOLD, fontSize: 18, marginBottom: 10 },
   statValue: { color: IVORY, fontSize: 23, fontWeight: "700", letterSpacing: -0.5, marginBottom: 4 },
-  macroRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#303A31" },
-  mealCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: PANEL, borderRadius: 16, padding: 15, borderWidth: 1, borderColor: "#343B32" },
-  mealIcon: { width: 43, height: 43, borderRadius: 13, backgroundColor: "#202920", alignItems: "center", justifyContent: "center" },
+  macroRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: "#E3EADF" },
+  mealCard: { flexDirection: "row", alignItems: "center", gap: 12, backgroundColor: PANEL, borderRadius: 16, padding: 15, borderWidth: 1, borderColor: "#DDE6D9" },
+  mealIcon: { width: 43, height: 43, borderRadius: 13, backgroundColor: "#E1E9DE", alignItems: "center", justifyContent: "center" },
   addIcon: { color: GOLD, fontSize: 24, fontWeight: "700" },
   weightList: { gap: 9, marginTop: 8 },
-  progressHero: { backgroundColor: "#18231B", borderRadius: 22, borderWidth: 1, borderColor: "#344B37", padding: 20 },
+  progressHero: { backgroundColor: "#EEF4E9", borderRadius: 22, borderWidth: 1, borderColor: "#DDE6D9", padding: 20 },
   progressWeight: { color: IVORY, fontSize: 36, fontWeight: "900", marginVertical: 8 },
-  progressTrendMark: { color: "#EFFF00", fontSize: 28, fontWeight: "900" },
-  targetWeightPill: { alignSelf: "flex-start", backgroundColor: "#263A2B", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, marginTop: 12 },
-  targetWeightText: { color: "#EFFF00", fontSize: 10, fontWeight: "800" },
+  progressTrendMark: { color: "#D8F500", fontSize: 28, fontWeight: "900" },
+  targetWeightPill: { alignSelf: "flex-start", backgroundColor: "#E6F0E4", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, marginTop: 12 },
+  targetWeightText: { color: "#D8F500", fontSize: 10, fontWeight: "800" },
   chartBars: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", minHeight: 145, paddingTop: 12, paddingBottom: 6, gap: 5 },
   chartColumn: { flex: 1, alignItems: "center", justifyContent: "flex-end", minWidth: 0 },
-  chartValue: { color: "#E8E8DC", fontSize: 9, fontWeight: "800", marginBottom: 5 },
+  chartValue: { color: "#263328", fontSize: 9, fontWeight: "800", marginBottom: 5 },
   chartBar: { width: "58%", minWidth: 9, borderRadius: 7 },
   chartDate: { color: MUTED, fontSize: 8, marginTop: 6 },
 
   valueText: { color: GOLD, fontWeight: "800" },
-  input: { color: "#F2F0E8", backgroundColor: "#101712", borderWidth: 1, borderColor: "#485347", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
+  input: { color: "#1C281E", backgroundColor: "#F4F7F1", borderWidth: 1, borderColor: "#DDE6D9", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
   field: { marginBottom: 13 },
-  fieldLabel: { color: "#E8E8DC", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
+  fieldLabel: { color: "#263328", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
   optionRow: { flexDirection: "row", gap: 9, marginBottom: 12 },
   choiceWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 8 },
-  choice: { borderWidth: 1, borderColor: "#303A31", backgroundColor: "#141A16", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
-  choiceActive: { borderColor: GOLD, backgroundColor: "#263A2B" },
+  choice: { borderWidth: 1, borderColor: "#E3EADF", backgroundColor: "#FFFFFF", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
+  choiceActive: { borderColor: GOLD, backgroundColor: "#E6F0E4" },
   choiceText: { color: "#C2C8BB", fontSize: 12, fontWeight: "700" },
-  openDiaryButton: { backgroundColor: "#EFFF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", justifyContent: "center", marginTop: 5, borderWidth: 1, borderColor: "#F7FF78", shadowColor: "#EFFF00", shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 5 },
-  openDiaryButtonText: { color: "#090D0B", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
-  goldButton: { backgroundColor: "#EFFF00", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
-  goldButtonText: { color: "#090D0B", fontWeight: "900", fontSize: 14 },
-  tabBar: { flexDirection: "row", backgroundColor: "#141A16", borderTopWidth: 1, borderTopColor: "#343B32", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  openDiaryButton: { backgroundColor: "#D8F500", borderRadius: 14, paddingVertical: 16, alignItems: "center", justifyContent: "center", marginTop: 5, borderWidth: 1, borderColor: "#D8F500", shadowColor: "#D8F500", shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 5 },
+  openDiaryButtonText: { color: "#F7F9F5", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
+  goldButton: { backgroundColor: "#D8F500", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
+  goldButtonText: { color: "#F7F9F5", fontWeight: "900", fontSize: 14 },
+  tabBar: { flexDirection: "row", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#DDE6D9", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
-  tabIcon: { color: "#899487", fontSize: 21, fontWeight: "500" },
-  tabLabel: { color: "#A7B0A7", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
+  tabIcon: { color: "#758274", fontSize: 21, fontWeight: "500" },
+  tabLabel: { color: "#667366", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
   activeTab: { color: GOLD }
 });
