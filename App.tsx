@@ -450,8 +450,8 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 
 const styles = StyleSheet.create({
   splashContainer: { flex: 1, backgroundColor: "#090D0B", alignItems: "center", justifyContent: "center", overflow: "hidden" },
-  splashImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  splashShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(5, 10, 7, 0.62)" },
+  splashImage: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
+  splashShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(5, 10, 7, 0.62)" },
   splashContent: { width: "100%", maxWidth: 480, paddingHorizontal: 28, alignItems: "center", justifyContent: "center", flex: 1 },
   splashEyebrow: { color: "#EFFF00", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
   splashTitle: { color: "#F2F0E8", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
