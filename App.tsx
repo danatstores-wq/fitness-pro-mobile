@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported } from "./src/storage/database";
+import * as ImagePicker from "expo-image-picker";
+import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image,
@@ -80,6 +81,7 @@ export default function App() {
   }, []);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [profile, setProfile] = useState<Profile>(initialProfile);
+  const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
@@ -138,7 +140,8 @@ export default function App() {
         // catalogue is ready. The much larger FNDDS catalogue is imported in
         // the background so it cannot block profile saving or food browsing.
         await ensureFoundationFoodsImported(USDA_FOUNDATION_FOODS as unknown as ImportedFoodRecord[]);
-        const [storedProfile, measurements] = await Promise.all([loadProfile(), getWeightMeasurements()]);
+        const [storedProfile, measurements, storedPhoto] = await Promise.all([loadProfile(), getWeightMeasurements(), getProfilePhotoDataUri()]);
+        setProfilePhotoUri(storedPhoto);
         if (!active) return;
         if (storedProfile) {
           setProfile({
@@ -194,6 +197,27 @@ export default function App() {
   const change = <K extends keyof Profile>(key: K, value: Profile[K]) => {
     setProfile(old => ({ ...old, [key]: value }));
     setSaved(false);
+  };
+  const chooseProfilePhoto = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.72,
+        base64: true, exif: false
+      });
+      if (result.canceled || !result.assets?.[0]?.base64) return;
+      const asset = result.assets[0];
+      const mime = asset.mimeType === "image/png" ? "image/png" : "image/jpeg";
+      const dataUri = `data:${mime};base64,${asset.base64}`;
+      await saveProfilePhotoDataUri(dataUri);
+      setProfilePhotoUri(dataUri);
+    } catch (error) {
+      console.warn("Could not save profile photo locally", error);
+      Alert.alert(language === "ar" ? "تعذر حفظ الصورة" : language === "fr" ? "Impossible d’enregistrer la photo" : "Could not save photo");
+    }
+  };
+  const removeProfilePhoto = async () => {
+    try { await deleteProfilePhoto(); setProfilePhotoUri(null); }
+    catch (error) { console.warn("Could not remove local profile photo", error); }
   };
   const saveProfile = async () => {
     if (!hydrated) {
@@ -301,7 +325,10 @@ export default function App() {
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
 <View style={styles.dashboardIntro}>
   <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>{t.today}</Text></View>
-  <Text style={[styles.greeting,direction]}>{profile.name.trim() ? (language === 'ar' ? `مرحباً، ${profile.name.trim()}` : language === 'fr' ? `Bonjour, ${profile.name.trim()}` : `Hi, ${profile.name.trim()}`) : t.greeting}</Text>
+  <View style={[styles.greetingRow, isRTL && styles.rowReverse]}>
+    <View style={styles.greetingAvatar}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.greetingAvatarImage} /> : <Text style={styles.avatarFallback}>👤</Text>}</View>
+    <Text style={[styles.greeting,direction,{ flex: 1 }]}>{profile.name.trim() ? (language === 'ar' ? `مرحباً، ${profile.name.trim()}` : language === 'fr' ? `Bonjour, ${profile.name.trim()}` : `Hi, ${profile.name.trim()}`) : t.greeting}</Text>
+  </View>
   <Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text>
 </View>
 {!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
@@ -364,6 +391,15 @@ export default function App() {
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
             <Card>
+              <View style={styles.profilePhotoSection}>
+                <View style={styles.profilePhotoPreview}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profilePhotoImage} /> : <Text style={styles.profilePhotoPlaceholder}>👤</Text>}</View>
+                <View style={{ flex: 1, gap: 8 }}>
+                  <Text style={styles.fieldLabel}>{language === "ar" ? "الصورة الشخصية" : language === "fr" ? "Photo de profil" : "Profile photo"}</Text>
+                  <Pressable onPress={chooseProfilePhoto} style={styles.photoButton}><Text style={styles.photoButtonText}>{profilePhotoUri ? (language === "ar" ? "تغيير الصورة" : language === "fr" ? "Changer la photo" : "Change photo") : (language === "ar" ? "إضافة صورة" : language === "fr" ? "Ajouter une photo" : "Add photo")}</Text></Pressable>
+                  {profilePhotoUri ? <Pressable onPress={removeProfilePhoto}><Text style={styles.removePhotoText}>{language === "ar" ? "إزالة الصورة" : language === "fr" ? "Supprimer la photo" : "Remove photo"}</Text></Pressable> : null}
+                  <Text style={styles.muted}>{language === "ar" ? "تُحفظ الصورة على هذا الجهاز فقط ولا تُرفع إلى Firebase." : language === "fr" ? "La photo reste sur cet appareil et n’est pas envoyée à Firebase." : "Stored on this device only. It is never uploaded to Firebase."}</Text>
+                </View>
+              </View>
               <Field label={language==='ar'?'الاسم':language==='fr'?'Prénom':'Your name'} value={profile.name} onChangeText={v => change('name', v)} />
               <Field label={t.age} value={profile.age} onChangeText={v => change("age", v)} keyboardType="number-pad" />
               <Text style={styles.fieldLabel}>{t.sex}</Text>
@@ -506,6 +542,17 @@ const styles = StyleSheet.create({
   dashboardFootnoteText: { color: "#758274", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
 
   greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
+  greetingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 },
+  greetingAvatar: { width: 54, height: 54, borderRadius: 27, overflow: "hidden", backgroundColor: "#E6F0E4", borderWidth: 2, borderColor: "#D8F500", alignItems: "center", justifyContent: "center" },
+  greetingAvatarImage: { width: "100%", height: "100%" },
+  avatarFallback: { fontSize: 25 },
+  profilePhotoSection: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 18 },
+  profilePhotoPreview: { width: 88, height: 88, borderRadius: 44, overflow: "hidden", backgroundColor: "#E6F0E4", borderWidth: 2, borderColor: "#D8F500", alignItems: "center", justifyContent: "center" },
+  profilePhotoImage: { width: "100%", height: "100%" },
+  profilePhotoPlaceholder: { fontSize: 38 },
+  photoButton: { alignSelf: "flex-start", backgroundColor: "#263A2C", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
+  photoButtonText: { color: "#FFFFFF", fontSize: 11, fontWeight: "800" },
+  removePhotoText: { color: "#B64A4A", fontSize: 11, fontWeight: "700" },
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
