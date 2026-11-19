@@ -887,7 +887,6 @@ export function localizeNutrientName(name: string, language: Language): string {
     "energy":["الطاقة","Énergie"], "protein":["البروتين","Protéines"], "carbohydrates":["الكربوهيدرات","Glucides"],
     "total fat":["إجمالي الدهون","Lipides totaux"], "fat":["الدهون","Lipides"], "fiber":["الألياف","Fibres"],
     "total dietary fiber":["الألياف الغذائية","Fibres alimentaires"], "total sugars":["السكريات","Sucres"],
-    "sugars":["السكريات","Sucres"], "saturated fat":["الدهون المشبعة","Graisses saturées"],
     "trans fat":["الدهون المتحولة","Acides gras trans"], "cholesterol":["الكوليسترول","Cholestérol"],
     "magnesium":["المغنيسيوم","Magnésium"], "phosphorus":["الفوسفور","Phosphore"],
     "potassium":["البوتاسيوم","Potassium"], "sodium":["الصوديوم","Sodium"], "zinc":["الزنك","Zinc"],
@@ -895,8 +894,6 @@ export function localizeNutrientName(name: string, language: Language): string {
     "iodine":["اليود","Iode"], "choline":["الكولين","Choline"], "thiamin":["الثيامين","Thiamine"],
     "riboflavin":["الريبوفلافين","Riboflavine"], "niacin":["النياسين","Niacine"],
     "pantothenic acid":["حمض البانتوثينيك","Acide pantothénique"], "folate":["الفولات","Folates"],
-    "vitamin a":["فيتامين أ","Vitamine A"], "vitamin c":["فيتامين ج","Vitamine C"],
-    "vitamin d":["فيتامين د","Vitamine D"], "vitamin e":["فيتامين هـ","Vitamine E"],
     "vitamin k":["فيتامين ك","Vitamine K"], "vitamin b-6":["فيتامين ب6","Vitamine B6"],
     "vitamin b-12":["فيتامين ب12","Vitamine B12"], "vitamin b-1":["فيتامين ب1","Vitamine B1"],
     "vitamin b-2":["فيتامين ب2","Vitamine B2"], "vitamin b-3":["فيتامين ب3","Vitamine B3"]
