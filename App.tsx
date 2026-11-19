@@ -14,7 +14,7 @@ import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
   age: string; sex: "male" | "female"; height: string; weight: string;
-  targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive";
+  targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive"; ibwFormula: "devine" | "robinson";
   objective: "lose" | "maintain" | "gain";
   waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
 };
@@ -27,7 +27,7 @@ const MUTED = "#A7B0A7";
 const IVORY = "#F2F0E8";
 const initialProfile: Profile = {
   age: "", sex: "male", height: "", weight: "", targetWeight: "",
-  activity: "moderate", objective: "maintain", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
+  activity: "moderate", objective: "maintain", ibwFormula: "devine", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
 };
 const activityFactor: Record<Profile["activity"], number> = {
   sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9
@@ -54,7 +54,7 @@ function calculate(profile: Profile) {
   const leanMass = bodyFat === null ? null : weight * (1 - bodyFat / 100);
   const waistHeight = validWaist ? waist / height : null;
   const waistHip = validWaist && validHip ? waist / hip : null;
-  const waterMl = Math.round(weight * 35), ideal = (min + max) / 2;
+  const inchesOverFiveFeet = Math.max(0, height / 2.54 - 60);\n  const ideal = profile.ibwFormula === "robinson"\n    ? (profile.sex === "male" ? 52 : 49) + inchesOverFiveFeet * (profile.sex === "male" ? 1.9 : 1.7)\n    : (profile.sex === "male" ? 50 : 45.5) + inchesOverFiveFeet * 2.3;\n  const waterMl = Math.round(weight * ({ sedentary: 30, light: 32, moderate: 35, active: 40, veryActive: 45 } as const)[profile.activity]);
   // Educational age-equivalent: compare the Mifflin-St Jeor estimate with
   // the independent revised Harris-Benedict reference equation, then solve
   // for the age that would produce the same BMR. This is not a clinical measure.
@@ -138,7 +138,7 @@ export default function App() {
             targetWeight: storedProfile.target_weight_kg > 0 ? String(storedProfile.target_weight_kg) : "",
             activity: storedProfile.activity_level as Profile["activity"],
             objective: storedProfile.fitness_objective as Profile["objective"],
-            waist: storedProfile.waist_cm == null ? "" : String(storedProfile.waist_cm), hip: storedProfile.hip_cm == null ? "" : String(storedProfile.hip_cm),
+            ibwFormula: storedProfile.formula_setting === "robinson" ? "robinson" : "devine",\n             waist: storedProfile.waist_cm == null ? "" : String(storedProfile.waist_cm), hip: storedProfile.hip_cm == null ? "" : String(storedProfile.hip_cm),
             neck: storedProfile.neck_cm == null ? "" : String(storedProfile.neck_cm), bodyFat: storedProfile.body_fat_percent == null ? "" : String(storedProfile.body_fat_percent),
             muscleMass: storedProfile.muscle_mass_kg == null ? "" : String(storedProfile.muscle_mass_kg)
           });
@@ -212,7 +212,7 @@ export default function App() {
         age: Number(profile.age) || 0, sex: profile.sex,
         height_cm: Number(profile.height) || 0, current_weight_kg: Number(profile.weight) || 0,
         target_weight_kg: Number(profile.targetWeight) || 0,
-        activity_level: profile.activity, fitness_objective: profile.objective,
+        activity_level: profile.activity, fitness_objective: profile.objective, formula_setting: profile.ibwFormula,
         waist_cm: Number(profile.waist) || null, hip_cm: Number(profile.hip) || null, neck_cm: Number(profile.neck) || null,
         body_fat_percent: Number(profile.bodyFat) || null, muscle_mass_kg: Number(profile.muscleMass) || null
       });
@@ -338,7 +338,7 @@ export default function App() {
               <Field label={t.neckCm} value={profile.neck} onChangeText={v => change("neck", v)} keyboardType="decimal-pad" />
               <Field label={t.bodyFatInput} value={profile.bodyFat} onChangeText={v => change("bodyFat", v)} keyboardType="decimal-pad" />
               <Field label={t.muscleMassInput} value={profile.muscleMass} onChangeText={v => change("muscleMass", v)} keyboardType="decimal-pad" />
-              <Text style={styles.fieldLabel}>{t.activity}</Text>
+              <Text style={styles.fieldLabel}>{language==="ar"?"معادلة الوزن المثالي":language==="fr"?"Formule du poids idéal":"Ideal weight formula"}</Text>\n               <View style={styles.optionRow}>\n                 <Choice title="Devine" active={profile.ibwFormula==="devine"} onPress={()=>change("ibwFormula","devine")} />\n                 <Choice title="Robinson" active={profile.ibwFormula==="robinson"} onPress={()=>change("ibwFormula","robinson")} />\n               </View>\n               <Text style={styles.muted}>{language==="ar"?"يُحسب الوزن المثالي وفق الجنس والطول. هذه تقديرات وليست هدفاً طبياً إلزامياً.":language==="fr"?"Estimation selon la taille et le sexe ; ce n’est pas un objectif médical obligatoire.":"Estimated from height and sex; this is a reference, not a mandatory medical target."}</Text>\n               <Text style={styles.fieldLabel}>{t.activity}</Text>
               <View style={styles.choiceWrap}>
                 {(["sedentary", "light", "moderate", "active", "veryActive"] as const).map(v => <Choice key={v} title={t[v]} active={profile.activity === v} onPress={() => change("activity", v)} />)}
               </View>
@@ -356,10 +356,10 @@ export default function App() {
             </Card>}
             <ReminderSettings language={language} />
             {metrics && <Card><Text style={styles.cardTitle}>{t.bodyMetrics}</Text>
-              <MetricLine label={t.idealWeight} value={metrics.ideal.toFixed(1) + " kg"} /><MetricLine label={t.healthyRange} value={metrics.min.toFixed(1) + "–" + metrics.max.toFixed(1) + " kg"} />
+              <MetricLine label={t.idealWeight} value={metrics.ideal.toFixed(1) + " kg"} />\n               <MetricLine label={language==="ar"?"معادلة الوزن المثالي":language==="fr"?"Formule du poids idéal":"IBW formula"} value={profile.ibwFormula==="devine"?"Devine":"Robinson"} /><MetricLine label={t.healthyRange} value={metrics.min.toFixed(1) + "–" + metrics.max.toFixed(1) + " kg"} />
               <MetricLine label={t.bodyFat} value={metrics.bodyFat === null ? "—" : metrics.bodyFat.toFixed(1) + "%"} /><MetricLine label={t.leanMass} value={metrics.leanMass === null ? "—" : metrics.leanMass.toFixed(1) + " kg"} />
               <MetricLine label={t.muscleMass} value={metrics.muscleMass === null ? "—" : metrics.muscleMass.toFixed(1) + " kg"} /><MetricLine label={t.waistHeight} value={metrics.waistHeight === null ? "—" : metrics.waistHeight.toFixed(2)} />
-              <MetricLine label={t.waistHip} value={metrics.waistHip === null ? "—" : metrics.waistHip.toFixed(2)} /><MetricLine label={t.waterNeeds} value={(metrics.waterMl / 1000).toFixed(2) + " L / day"} />
+              <MetricLine label={t.waistHip} value={metrics.waistHip === null ? "—" : metrics.waistHip.toFixed(2)} /><MetricLine label={t.waterNeeds} value={(metrics.waterMl / 1000).toFixed(2) + " L / day"} />\n               <Text style={styles.muted}>{language==="ar"?"تقدير مبدئي يتغير حسب مستوى النشاط؛ احتياجات السوائل تختلف باختلاف الطقس والصحة والتعرق.":language==="fr"?"Estimation ajustée à l’activité ; les besoins varient aussi selon le climat, la santé et la transpiration.":"Activity-adjusted estimate. Actual fluid needs also vary with climate, health and sweating."}</Text>
               <MetricLine label={t.metabolicAge} value={metrics.metabolicAge === null ? t.notAvailable : metrics.metabolicAge + " " + t.years} /><Text style={styles.muted}>{t.metabolicAgeHint}</Text><Text style={styles.muted}>{t.metricsDisclaimer}</Text>
             </Card>}
           </ScrollView>
