@@ -257,17 +257,45 @@ export default function App() {
 
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
-<View style={styles.dashboardIntro}><Text style={[styles.eyebrow,direction]}>{t.today}</Text><Text style={[styles.greeting,direction]}>{t.greeting}</Text><Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text></View>
+<View style={styles.dashboardIntro}>
+  <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>{t.today}</Text></View>
+  <Text style={[styles.greeting,direction]}>{t.greeting}</Text>
+  <Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text>
+</View>
 {!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
-<View style={styles.calorieHero}><View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><View style={styles.liveDot}/></View>
-<View style={styles.heroNumberRow}><View style={{flex:1}}><Text style={styles.calorieNumber}>{metrics ? metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : "2,000"}</Text><Text style={styles.heroSubline}>{t.dailyTarget.toUpperCase()}</Text></View>
-<View style={styles.calorieBadge}><Text style={styles.badgeValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories)}</Text><Text style={styles.badgeCaption}>{t.consumed.toUpperCase()}</Text></View></View>
-<View style={styles.progressTrack}><View style={[styles.progressFill,{width:(Math.min(100,((dailyIntake.calories||0)/(metrics?.calories||2000))*100))+"%"}]}/></View>
-<View style={styles.spaceBetween}><Text style={styles.muted}>{t.dailyGoal}: {metrics?.calories||2000} kcal</Text><Text style={styles.greenText}>{dailyIntake.calories===null?"—":Math.max(0,Math.round((metrics?.calories||2000)-dailyIntake.calories))} {t.remaining}</Text></View></View>
-<Card><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
-<Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color={GOLD}/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
-<View style={styles.statRow}><StatCard label={t.mealsLogged} value={dailyIntake.calories===null?"0":"1"} icon="＋"/><StatCard label={t.currentWeight} value={profile.weight?profile.weight+" "+t.kg:"—"} icon="↗"/></View>
- {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<Pressable accessibilityRole="button" onPress={()=>setTab("diary")} style={styles.openDiaryButton}><Text style={styles.openDiaryButtonText}>{t.openFoodDiary}</Text></Pressable></>}</ScrollView>}{tab === "diary" && (!hydrated
+  <View style={styles.calorieHero}>
+    <View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><Text style={styles.sectionMeta}>{t.dailyTarget.toUpperCase()}</Text></View>
+    <View style={styles.calorieDashboard}>
+      <View style={styles.calorieRing}>
+        <View style={styles.calorieRingInner}>
+          <Text style={styles.ringCaption}>{t.consumed.toUpperCase()}</Text>
+          <Text style={styles.ringValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
+          <Text style={styles.ringUnit}>KCAL</Text>
+        </View>
+      </View>
+      <View style={styles.calorieSummary}>
+        <Text style={styles.calorieNumber}>{metrics ? metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : "2,000"}</Text>
+        <Text style={styles.heroSubline}>{t.dailyGoal.toUpperCase()}</Text>
+        <View style={styles.remainingPanel}>
+          <Text style={styles.remainingValue}>{dailyIntake.calories===null?"—":Math.max(0,Math.round((metrics?.calories||2000)-dailyIntake.calories)).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
+          <Text style={styles.remainingLabel}>{t.remaining.toUpperCase()}</Text>
+        </View>
+      </View>
+    </View>
+    <View style={styles.progressTrack}><View style={[styles.progressFill,{width:(Math.min(100,((dailyIntake.calories||0)/(metrics?.calories||2000))*100))+"%"}]}/></View>
+    <View style={styles.spaceBetween}><Text style={styles.muted}>{t.dailyGoal}: {metrics?.calories||2000} kcal</Text><Text style={styles.greenText}>{Math.min(100,Math.round(((dailyIntake.calories||0)/(metrics?.calories||2000))*100))}%</Text></View>
+  </View>
+  <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
+  <View style={styles.macroGrid}>
+    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.protein}</Text><Text style={styles.macroTileValue}>{dailyIntake.protein===null?"0":Math.round(dailyIntake.protein)}<Text style={styles.macroTileUnit}> / {metrics?.protein||125} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.protein||0)/(metrics?.protein||125))*100)+"%",backgroundColor:GOLD}]}/></View></View>
+    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.carbs}</Text><Text style={styles.macroTileValue}>{dailyIntake.carbs===null?"0":Math.round(dailyIntake.carbs)}<Text style={styles.macroTileUnit}> / {metrics?.carbs||225} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.carbs||0)/(metrics?.carbs||225))*100)+"%",backgroundColor:GREEN}]}/></View></View>
+    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.fats}</Text><Text style={styles.macroTileValue}>{dailyIntake.fats===null?"0":Math.round(dailyIntake.fats)}<Text style={styles.macroTileUnit}> / {metrics?.fats||62} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.fats||0)/(metrics?.fats||62))*100)+"%",backgroundColor:"#91B56B"}]}/></View></View>
+    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.currentWeight}</Text><Text style={styles.macroTileValue}>{profile.weight||"—"}<Text style={styles.macroTileUnit}> {profile.weight?t.kg:""}</Text></Text><Text style={styles.macroTileHint}>{t.progress}</Text></View>
+  </View>
+  {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}
+  <Pressable accessibilityRole="button" onPress={()=>setTab("diary")} style={styles.openDiaryButton}><Text style={styles.openDiaryButtonText}>{t.openFoodDiary}</Text><Text style={styles.openDiaryArrow}>›</Text></Pressable>
+  <View style={styles.dashboardFootnote}><Text style={styles.dashboardFootnoteText}>{t.mealsLogged}: {dailyIntake.calories!==null && dailyIntake.calories>0 ? "✓" : "0"}</Text><Text style={styles.dashboardFootnoteText}>DANAT WELLNESS</Text></View>
+</>}</ScrollView>{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -381,6 +409,31 @@ const styles = StyleSheet.create({
   languageTextInactive: { color: MUTED },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
+  todayPill: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, backgroundColor: "#18231B", borderWidth: 1, borderColor: "#344B37" },
+  todayPillText: { color: "#C4D2C1", fontSize: 9, fontWeight: "800", letterSpacing: 1.5 },
+  sectionTitle: { color: IVORY, fontSize: 15, fontWeight: "900", letterSpacing: 0.5 },
+  calorieDashboard: { flexDirection: "row", alignItems: "center", gap: 18, marginTop: 18 },
+  calorieRing: { width: 142, height: 142, borderRadius: 71, borderWidth: 9, borderColor: "#EFFF00", backgroundColor: "#18231B", alignItems: "center", justifyContent: "center", shadowColor: "#EFFF00", shadowOpacity: 0.13, shadowRadius: 14, elevation: 3 },
+  calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#101712", alignItems: "center", justifyContent: "center" },
+  ringCaption: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2 },
+  ringValue: { color: IVORY, fontSize: 25, fontWeight: "900", marginTop: 4 },
+  ringUnit: { color: GOLD, fontSize: 8, fontWeight: "900", letterSpacing: 2, marginTop: 2 },
+  calorieSummary: { flex: 1, minWidth: 0 },
+  remainingPanel: { borderLeftWidth: 2, borderLeftColor: "#EFFF00", paddingLeft: 10, marginTop: 14 },
+  remainingValue: { color: "#EFFF00", fontSize: 24, fontWeight: "900" },
+  remainingLabel: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2, marginTop: 2 },
+  macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  macroTile: { width: "48%", flexGrow: 1, minWidth: 130, backgroundColor: PANEL, borderRadius: 15, borderWidth: 1, borderColor: "#303A31", padding: 14, minHeight: 91 },
+  macroTileLabel: { color: MUTED, fontSize: 11, fontWeight: "700", marginBottom: 8 },
+  macroTileValue: { color: IVORY, fontSize: 19, fontWeight: "900" },
+  macroTileUnit: { color: MUTED, fontSize: 10, fontWeight: "600" },
+  macroTileHint: { color: GREEN, fontSize: 9, fontWeight: "800", marginTop: 5 },
+  miniTrack: { height: 4, backgroundColor: "#303A31", borderRadius: 8, marginTop: 9, overflow: "hidden" },
+  miniFill: { height: 4, borderRadius: 8 },
+  openDiaryArrow: { color: "#090D0B", fontSize: 25, fontWeight: "900", position: "absolute", right: 18, top: 7 },
+  dashboardFootnote: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 3, paddingTop: 2 },
+  dashboardFootnoteText: { color: "#778278", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
+
   greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
@@ -421,10 +474,10 @@ const styles = StyleSheet.create({
   choice: { borderWidth: 1, borderColor: "#303A31", backgroundColor: "#141A16", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   choiceActive: { borderColor: GOLD, backgroundColor: "#263A2B" },
   choiceText: { color: "#C2C8BB", fontSize: 12, fontWeight: "700" },
-  openDiaryButton: { backgroundColor: "#EFFF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 14, borderWidth: 1, borderColor: "#F7FF78", shadowColor: "#EFFF00", shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 5 },
+  openDiaryButton: { backgroundColor: "#EFFF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", justifyContent: "center", marginTop: 5, borderWidth: 1, borderColor: "#F7FF78", shadowColor: "#EFFF00", shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 5 },
   openDiaryButtonText: { color: "#090D0B", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
-  goldButton: { backgroundColor: "#C9A34A", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
-  goldButtonText: { color: "#141A16", fontWeight: "900", fontSize: 14 },
+  goldButton: { backgroundColor: "#EFFF00", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
+  goldButtonText: { color: "#090D0B", fontWeight: "900", fontSize: 14 },
   tabBar: { flexDirection: "row", backgroundColor: "#141A16", borderTopWidth: 1, borderTopColor: "#343B32", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#899487", fontSize: 21, fontWeight: "500" },
