@@ -63,7 +63,6 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   const plantProtein=/bean|lentil|chickpea|tofu|soy|nut|seed|pea/i;
   let pool=foods.filter(f=>f.calories!==null&&f.calories>0&&f.protein_g!==null&&f.carbs_g!==null&&f.fat_g!==null);
   if(preference==="vegetarian")pool=pool.filter(f=>!meat.test(f.name));
-  if(preference==="high")pool=pool.filter(f=>(f.protein_g??0)>=5);
   if(pool.length<6){Alert.alert(w.empty);return;}
   const pick=(items:FoodRecord[],used:Set<number>,day:number,slot:number,role:number)=>{
    const available=items.filter(f=>!used.has(f.id));
@@ -71,7 +70,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
     const score=(f:FoodRecord)=>{
      const kcal=Math.max(1,f.calories??1);
      const proteinDensity=(f.protein_g??0)/kcal,carbDensity=(f.carbs_g??0)/kcal,fatDensity=(f.fat_g??0)/kcal;
-     return role===0?proteinDensity*(1+macroShares.protein*3)+fatDensity*(1+macroShares.fat)+(f.fiber_g??0)/100:role===1?carbDensity*(1+macroShares.carbs*3)+(f.fiber_g??0)/100:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
+     return role===0?proteinDensity*(1+macroShares.protein*3)*(preference==="high"?1.5:1)+fatDensity*(1+macroShares.fat)+(f.fiber_g??0)/100:role===1?carbDensity*(1+macroShares.carbs*3)+(f.fiber_g??0)/100:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
     };
     return score(b)-score(a);
    });
