@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
+import { localizeFoodName, localizeNutrientName } from "../i18n-food";
 import MealPlanner from "./MealPlanner";
 import BarcodeScanner from "./BarcodeScanner";
 import {
@@ -39,7 +40,7 @@ const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? 
 
 export default function FoodDiary({ language, targetCalories = 2000 }: { language: Language; targetCalories?: number }) {
   const t = words[language], rtl = language === "ar";
-  const nutrientLabel = (name: string) => nutrientNames[language][name] ?? name;
+  const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [plannerMode, setPlannerMode] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
@@ -134,7 +135,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
     <TextInput value={query} onChangeText={setQuery} placeholder={t.search} placeholderTextColor={MUTED} style={[s.input,{textAlign,marginBottom:10}]} />
     <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:GOLD}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
-      <Text style={s.cardTitle}>{selected.name}</Text>
+      <Text style={s.cardTitle}>{localizeFoodName(selected.name, language)}</Text>
       <Text style={s.sectionTitle}>{t.nutrition100}</Text>
       {[
         ["Energy", selected.calories, "kcal"], ["Protein", selected.protein_g, "g"],
@@ -150,7 +151,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       <Pressable onPress={()=>setSelected(null)} style={s.cancel}><Text style={s.muted}>{t.cancel}</Text></Pressable>
     </View> : <View style={s.card}>
       {!selectedCategory && !query.trim() && <Text style={s.muted}>{t.chooseCategoryHint}</Text>}
-      {results.map(item=><Pressable key={item.id} onPress={()=>setSelected(item)} style={s.result}><View style={{flex:1}}><Text style={s.foodName}>{item.name}</Text><Text style={s.muted}>{item.calories===null?t.unknown:Math.round(item.calories)+" kcal"} / 100 g</Text></View><Text style={s.plus}>＋</Text></Pressable>)}
+      {results.map(item=><Pressable key={item.id} onPress={()=>setSelected(item)} style={s.result}><View style={{flex:1}}><Text style={s.foodName}>{localizeFoodName(item.name, language)}</Text><Text style={s.muted}>{item.calories===null?t.unknown:Math.round(item.calories)+" kcal"} / 100 g</Text></View><Text style={s.plus}>＋</Text></Pressable>)}
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
       <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
     </View>}
@@ -158,7 +159,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
     {mealTypes.map(m=><View key={m} style={s.card}>
       <Text style={[s.cardTitle,{textAlign}]}>{t[m]}</Text>
       {foods.filter(f=>f.meal_type===m).length===0 ? <Text style={[s.muted,{textAlign}]}>{t.empty}</Text> :
-        foods.filter(f=>f.meal_type===m).map(item=><View key={item.meal_item_id} style={s.logged}><View style={{flex:1}}><Text style={s.foodName}>{item.name}</Text><Text style={s.muted}>{item.quantity_g} g · {fmt(nutritionForQuantity(item,item.quantity_g).calories)} kcal</Text></View><Pressable onPress={()=>addRow(item)}><Text style={s.remove}>×</Text></Pressable></View>)}
+        foods.filter(f=>f.meal_type===m).map(item=><View key={item.meal_item_id} style={s.logged}><View style={{flex:1}}><Text style={s.foodName}>{localizeFoodName(item.name, language)}</Text><Text style={s.muted}>{item.quantity_g} g · {fmt(nutritionForQuantity(item,item.quantity_g).calories)} kcal</Text></View><Pressable onPress={()=>addRow(item)}><Text style={s.remove}>×</Text></Pressable></View>)}
     </View>)}
     <Modal visible={modal} transparent animationType="slide" onRequestClose={()=>setModal(false)}>
       <View style={s.overlay}><ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.modalWrap}><View style={s.modal}>
