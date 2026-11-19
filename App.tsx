@@ -4,8 +4,9 @@ import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutriti
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image,
-  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
+  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Linking
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import ReminderSettings from "./src/storage/ReminderSettings";
@@ -447,14 +448,20 @@ export default function App() {
 
       <View style={[styles.tabBar, isRTL && styles.rowReverse]}>
         {([
-          ["dashboard", "⌂", t.dashboard], ["diary", "◫", t.diary],
-          ["progress", "↗", t.progress], ["profile", "◉", t.profile]
-        ] as [Tab, string, string][]).map(([key, icon, label]) =>
-          <Pressable key={key} onPress={() => setTab(key)} style={styles.tabItem}>
-            <Text style={[styles.tabIcon, tab === key && styles.activeTab]}>{icon}</Text>
-            <Text style={[styles.tabLabel, tab === key && styles.activeTab]}>{label}</Text>
+          ["dashboard", "home", "home-outline", t.dashboard],
+          ["diary", "book", "book-outline", t.diary],
+          ["progress", "stats-chart", "stats-chart-outline", t.progress],
+          ["profile", "person-circle", "person-circle-outline", t.profile]
+        ] as [Tab, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, string][]).map(([key, activeIcon, inactiveIcon, label]) =>
+          <Pressable key={key} onPress={() => setTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
+            <Ionicons name={tab === key ? activeIcon : inactiveIcon} size={23} color={tab === key ? GREEN : "#C5D0C2"} />
+            <Text style={[styles.tabLabel, tab === key && styles.activeTab]} numberOfLines={1}>{label}</Text>
           </Pressable>
         )}
+        <Pressable onPress={() => Linking.openURL("mailto:IT@danat-gulf.com")} style={styles.tabItem} accessibilityRole="link" accessibilityLabel={language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"}>
+          <Ionicons name="mail-outline" size={23} color="#C5D0C2" />
+          <Text style={styles.tabLabel} numberOfLines={1}>{language === "ar" ? "اتصل بنا" : language === "fr" ? "Contact" : "Contact"}</Text>
+        </Pressable>
       </View>
       </View>
     </SafeAreaView>
