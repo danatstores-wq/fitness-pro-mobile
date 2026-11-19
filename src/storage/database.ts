@@ -129,6 +129,7 @@ async function database() {
           breakfast_enabled INTEGER NOT NULL DEFAULT 1, breakfast_time TEXT NOT NULL DEFAULT '08:00',
           lunch_enabled INTEGER NOT NULL DEFAULT 1, lunch_time TEXT NOT NULL DEFAULT '13:00',
           dinner_enabled INTEGER NOT NULL DEFAULT 1, dinner_time TEXT NOT NULL DEFAULT '19:00',
+          snacks_enabled INTEGER NOT NULL DEFAULT 0, snacks_time TEXT NOT NULL DEFAULT '16:00',
           water_enabled INTEGER NOT NULL DEFAULT 1, water_interval_minutes INTEGER NOT NULL DEFAULT 120,
           water_start_time TEXT NOT NULL DEFAULT '08:00', water_end_time TEXT NOT NULL DEFAULT '22:00'
         );
@@ -590,6 +591,7 @@ export type ReminderPreferences = {
   breakfast_enabled: boolean; breakfast_time: string;
   lunch_enabled: boolean; lunch_time: string;
   dinner_enabled: boolean; dinner_time: string;
+  snacks_enabled: boolean; snacks_time: string;
   water_enabled: boolean; water_interval_minutes: number;
   water_start_time: string; water_end_time: string;
 };
@@ -598,6 +600,7 @@ const DEFAULT_REMINDERS: ReminderPreferences = {
   breakfast_enabled: true, breakfast_time: "08:00",
   lunch_enabled: true, lunch_time: "13:00",
   dinner_enabled: true, dinner_time: "19:00",
+  snacks_enabled: false, snacks_time: "16:00",
   water_enabled: true, water_interval_minutes: 120,
   water_start_time: "08:00", water_end_time: "22:00"
 };
@@ -610,6 +613,7 @@ export async function getReminderPreferences(): Promise<ReminderPreferences> {
     breakfast_enabled: !!row.breakfast_enabled, breakfast_time: row.breakfast_time,
     lunch_enabled: !!row.lunch_enabled, lunch_time: row.lunch_time,
     dinner_enabled: !!row.dinner_enabled, dinner_time: row.dinner_time,
+    snacks_enabled: !!row.snacks_enabled, snacks_time: row.snacks_time,
     water_enabled: !!row.water_enabled, water_interval_minutes: row.water_interval_minutes,
     water_start_time: row.water_start_time, water_end_time: row.water_end_time
   };
@@ -620,16 +624,17 @@ export async function saveReminderPreferences(p: ReminderPreferences): Promise<v
   await db.runAsync(
     `INSERT INTO reminder_settings
       (id, breakfast_enabled, breakfast_time, lunch_enabled, lunch_time, dinner_enabled, dinner_time,
-       water_enabled, water_interval_minutes, water_start_time, water_end_time)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       snacks_enabled, snacks_time, water_enabled, water_interval_minutes, water_start_time, water_end_time)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        breakfast_enabled=excluded.breakfast_enabled, breakfast_time=excluded.breakfast_time,
        lunch_enabled=excluded.lunch_enabled, lunch_time=excluded.lunch_time,
        dinner_enabled=excluded.dinner_enabled, dinner_time=excluded.dinner_time,
+       snacks_enabled=excluded.snacks_enabled, snacks_time=excluded.snacks_time,
        water_enabled=excluded.water_enabled, water_interval_minutes=excluded.water_interval_minutes,
        water_start_time=excluded.water_start_time, water_end_time=excluded.water_end_time`,
     p.breakfast_enabled ? 1 : 0, p.breakfast_time, p.lunch_enabled ? 1 : 0, p.lunch_time,
-    p.dinner_enabled ? 1 : 0, p.dinner_time, p.water_enabled ? 1 : 0,
+    p.dinner_enabled ? 1 : 0, p.dinner_time, p.snacks_enabled ? 1 : 0, p.snacks_time, p.water_enabled ? 1 : 0,
     p.water_interval_minutes, p.water_start_time, p.water_end_time
   );
 }
