@@ -12,7 +12,7 @@ const styles = StyleSheet.create({
   button: { backgroundColor: "#D8F500", borderRadius: 11, padding: 13, alignItems: "center", marginTop: 12 },
   buttonText: { color: "#FFFFFF", fontWeight: "900" },
   close: { padding: 12, alignItems: "center" },
-  loading: { color: "#D8F500", textAlign: "center", marginTop: 12 }
+  loading: { color: "#368A4B", textAlign: "center", marginTop: 12 }
 });
 type NutrimentMap = Record<string, unknown>;
 export default function BarcodeScanner({ visible, onClose, onFound, language }: Props) {
