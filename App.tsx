@@ -447,7 +447,7 @@ function Field({ label, value, onChangeText, keyboardType }: { label: string; va
   return <View style={styles.field}><Text style={styles.fieldLabel}>{label}</Text><TextInput value={value} onChangeText={onChangeText} keyboardType={keyboardType} placeholder={label} placeholderTextColor={MUTED} style={styles.input} /></View>;
 }
 function Choice({ title, active, onPress }: { title: string; active: boolean; onPress: () => void }) {
-  return <Pressable onPress={onPress} style={[styles.choice, active && styles.choiceActive]}><Text style={[styles.choiceText, active && { color: GOLD }]}>{title}</Text></Pressable>;
+  return <Pressable onPress={onPress} style={[styles.choice, active && styles.choiceActive]}><Text style={[styles.choiceText, active && { color: "#1C281E" }]}>{title}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   splashFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: "#F7F9F5", overflow: "hidden", borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#E1E9DE" },
   splashImage: { ...StyleSheet.absoluteFill, width: "100%", height: "100%" },
   splashShade: { ...StyleSheet.absoluteFill, backgroundColor: "rgba(255, 255, 255, 0.24)" },
-  splashContent: { width: "88%", maxWidth: 430, paddingHorizontal: 22, paddingVertical: 30, alignItems: "center", justifyContent: "center", alignSelf: "center", marginTop: "auto", marginBottom: "auto", backgroundColor: "rgba(255, 255, 255, 0.88)", borderRadius: 24, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.95)", shadowColor: "#263A2C", shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 6 },
+  splashContent: { width: "88%", maxWidth: 430, paddingHorizontal: 22, paddingVertical: 30, alignItems: "center", justifyContent: "center", alignSelf: "center", marginTop: 34, marginBottom: "auto", backgroundColor: "rgba(255, 255, 255, 0.88)", borderRadius: 24, borderWidth: 1, borderColor: "rgba(255, 255, 255, 0.95)", shadowColor: "#263A2C", shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 6 },
   splashEyebrow: { color: "#368A4B", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
   splashTitle: { color: "#1C281E", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
   splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#D8F500", marginTop: 20, marginBottom: 28 },
