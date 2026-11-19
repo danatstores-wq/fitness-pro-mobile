@@ -251,9 +251,7 @@ export default function App() {
             <Text style={[styles.brandEyebrow, direction]}>DANAT / WELLNESS</Text>
             <Text style={[styles.brandName, direction]}>FITNESS PRO</Text>
           </View>
-          <Pressable style={styles.languageButton} onPress={() => setLanguage(language === "en" ? "ar" : language === "ar" ? "fr" : "en")}>
-            <Text style={styles.languageText}>{language.toUpperCase()}</Text>
-          </Pressable>
+          <View style={styles.languageSelector}>{(["en", "ar", "fr"] as Language[]).map(code => <Pressable key={code} accessibilityRole="button" accessibilityLabel={code === "en" ? "English" : code === "ar" ? "العربية" : "Français"} onPress={() => setLanguage(code)} style={[styles.languageButton, language === code && styles.languageButtonActive]}><Text style={[styles.languageText, language !== code && styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>
         </View>
       </View>
 
@@ -376,8 +374,11 @@ const styles = StyleSheet.create({
   logoMark: { color: BG, fontWeight: "900", fontSize: 25, letterSpacing: -2 },
   brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: IVORY, fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
-  languageButton: { borderWidth: 1, borderColor: "#485347", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8 },
-  languageText: { color: GOLD, fontSize: 12, fontWeight: "800" },
+  languageSelector: { flexDirection: "row", alignItems: "center", gap: 5 },
+  languageButton: { borderWidth: 1, borderColor: "#485347", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, minWidth: 35, alignItems: "center" },
+  languageButtonActive: { backgroundColor: "#263A2B", borderColor: GOLD },
+  languageText: { color: GOLD, fontSize: 11, fontWeight: "900" },
+  languageTextInactive: { color: MUTED },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
   greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
