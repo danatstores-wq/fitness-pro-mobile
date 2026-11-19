@@ -13,7 +13,7 @@ import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 
 type Tab = "dashboard" | "diary" | "progress" | "profile";
 type Profile = {
-  age: string; sex: "male" | "female"; height: string; weight: string;
+  name: string; age: string; sex: "male" | "female"; height: string; weight: string;
   targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive"; ibwFormula: "devine" | "robinson";
   objective: "lose" | "maintain" | "gain";
   waist: string; hip: string; neck: string; bodyFat: string; muscleMass: string;
@@ -26,7 +26,7 @@ const PANEL = "#141A16";
 const MUTED = "#A7B0A7";
 const IVORY = "#F2F0E8";
 const initialProfile: Profile = {
-  age: "", sex: "male", height: "", weight: "", targetWeight: "",
+  name: '', age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", ibwFormula: "devine", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
 };
 const activityFactor: Record<Profile["activity"], number> = {
@@ -136,7 +136,7 @@ export default function App() {
         if (!active) return;
         if (storedProfile) {
           setProfile({
-            age: storedProfile.age > 0 ? String(storedProfile.age) : "", sex: storedProfile.sex,
+            name: storedProfile.name ?? '', age: storedProfile.age > 0 ? String(storedProfile.age) : "", sex: storedProfile.sex,
             height: storedProfile.height_cm > 0 ? String(storedProfile.height_cm) : "",
             weight: storedProfile.current_weight_kg > 0 ? String(storedProfile.current_weight_kg) : "",
             targetWeight: storedProfile.target_weight_kg > 0 ? String(storedProfile.target_weight_kg) : "",
@@ -214,7 +214,7 @@ export default function App() {
     }
     try {
       await saveProfileToDatabase({
-        age: Number(profile.age) || 0, sex: profile.sex,
+        name: profile.name.trim(), age: Number(profile.age) || 0, sex: profile.sex,
         height_cm: Number(profile.height) || 0, current_weight_kg: Number(profile.weight) || 0,
         target_weight_kg: Number(profile.targetWeight) || 0,
         activity_level: profile.activity, fitness_objective: profile.objective, formula_setting: profile.ibwFormula,
@@ -266,7 +266,7 @@ export default function App() {
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
 <View style={styles.dashboardIntro}>
   <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>{t.today}</Text></View>
-  <Text style={[styles.greeting,direction]}>{t.greeting}</Text>
+  <Text style={[styles.greeting,direction]}>{profile.name.trim() ? (language === 'ar' ? `مرحباً، ${profile.name.trim()}` : language === 'fr' ? `Bonjour, ${profile.name.trim()}` : `Hi, ${profile.name.trim()}`) : t.greeting}</Text>
   <Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text>
 </View>
 {!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
@@ -329,6 +329,7 @@ export default function App() {
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
             <Card>
+              <Field label={language==='ar'?'الاسم':language==='fr'?'Prénom':'Your name'} value={profile.name} onChangeText={v => change('name', v)} />
               <Field label={t.age} value={profile.age} onChangeText={v => change("age", v)} keyboardType="number-pad" />
               <Text style={styles.fieldLabel}>{t.sex}</Text>
               <View style={styles.optionRow}>
