@@ -199,7 +199,7 @@ export default function App() {
       return;
     }
     const numericFields = [profile.age, profile.height, profile.weight, profile.targetWeight, profile.waist, profile.hip, profile.neck, profile.bodyFat, profile.muscleMass];
-    if (!numericFields.some(value => value.trim() !== "")) {
+    if (!profile.name.trim() && !numericFields.some(value => value.trim() !== "")) {
       Alert.alert(t.nothingTitle, t.nothingMessage);
       return;
     }
