@@ -250,6 +250,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" />
+      <View style={styles.appFrame}>
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <View style={styles.logo}><Text style={styles.logoMark}>d.</Text></View>
@@ -390,6 +391,7 @@ export default function App() {
           </Pressable>
         )}
       </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -413,7 +415,8 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
+  safe: { flex: 1, backgroundColor: "#050806", alignItems: "center" },
+  appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#202820" },
   header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#343B32" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
