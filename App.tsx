@@ -372,7 +372,7 @@ export default function App() {
   <Card>
     <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.weightTrend}</Text><Text style={styles.sectionMeta}>{weightLog.length} {t.logWeight.toUpperCase()}</Text></View>
     {weightLog.length ? <>
-      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:index===arr.length-1?"#D8F500":"#368A4B"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
+      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#368A4B"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
       <View style={styles.weightList}>{weightLog.slice(-5).reverse().map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View>
     </> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
   </Card>
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
   logoImage: { width: 46, height: 46 },
-  brandEyebrow: { color: GOLD, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
+  brandEyebrow: { color: GREEN, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: "#FFFFFF", fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
   languageSelector: { flexDirection: "row", alignItems: "center", gap: 5 },
   languageButton: { borderWidth: 1, borderColor: "#58705B", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, minWidth: 35, alignItems: "center" },
@@ -515,10 +515,10 @@ const styles = StyleSheet.create({
   calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#F4F7F1", alignItems: "center", justifyContent: "center" },
   ringCaption: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2 },
   ringValue: { color: IVORY, fontSize: 25, fontWeight: "900", marginTop: 4 },
-  ringUnit: { color: GOLD, fontSize: 8, fontWeight: "900", letterSpacing: 2, marginTop: 2 },
+  ringUnit: { color: GREEN, fontSize: 8, fontWeight: "900", letterSpacing: 2, marginTop: 2 },
   calorieSummary: { flex: 1, minWidth: 0 },
   remainingPanel: { borderLeftWidth: 2, borderLeftColor: "#D8F500", paddingLeft: 10, marginTop: 14 },
-  remainingValue: { color: "#D8F500", fontSize: 24, fontWeight: "900" },
+  remainingValue: { color: GREEN, fontSize: 24, fontWeight: "900" },
   remainingLabel: { color: MUTED, fontSize: 8, fontWeight: "800", letterSpacing: 1.2, marginTop: 2 },
   macroGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   macroTile: { width: "48%", flexGrow: 1, minWidth: 130, backgroundColor: PANEL, borderRadius: 15, borderWidth: 1, borderColor: "#E3EADF", padding: 14, minHeight: 91 },
@@ -545,7 +545,7 @@ const styles = StyleSheet.create({
   photoButtonText: { color: "#FFFFFF", fontSize: 11, fontWeight: "800" },
   removePhotoText: { color: "#B64A4A", fontSize: 11, fontWeight: "700" },
   introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
-  eyebrow: { color: GOLD, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
+  eyebrow: { color: GREEN, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
   card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#DDE6D9", padding: 19, marginBottom: 2 },
   cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
@@ -556,14 +556,14 @@ const styles = StyleSheet.create({
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
   heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
-  heroSubline: { color: GOLD, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
+  heroSubline: { color: GREEN, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
   calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: GOLD, alignItems: "center", justifyContent: "center", marginLeft: 10 },
   badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
   badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
   progressTrack: { height: 5, backgroundColor: "#E3EADF", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: GREEN, borderRadius: 10 },
   sectionHeading: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 5 },
-  sectionMeta: { color: GOLD, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
+  sectionMeta: { color: GREEN, fontSize: 8, fontWeight: "800", letterSpacing: 1.3 },
   spaceBetween: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 5 },
   greenText: { color: GREEN, fontSize: 11, fontWeight: "700" },
   statRow: { flexDirection: "row", gap: 11 },
@@ -578,14 +578,14 @@ const styles = StyleSheet.create({
   progressWeight: { color: IVORY, fontSize: 36, fontWeight: "900", marginVertical: 8 },
   progressTrendMark: { color: "#D8F500", fontSize: 28, fontWeight: "900" },
   targetWeightPill: { alignSelf: "flex-start", backgroundColor: "#E6F0E4", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, marginTop: 12 },
-  targetWeightText: { color: "#D8F500", fontSize: 10, fontWeight: "800" },
+  targetWeightText: { color: GREEN, fontSize: 10, fontWeight: "800" },
   chartBars: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-around", minHeight: 145, paddingTop: 12, paddingBottom: 6, gap: 5 },
   chartColumn: { flex: 1, alignItems: "center", justifyContent: "flex-end", minWidth: 0 },
   chartValue: { color: "#263328", fontSize: 9, fontWeight: "800", marginBottom: 5 },
   chartBar: { width: "58%", minWidth: 9, borderRadius: 7 },
   chartDate: { color: MUTED, fontSize: 8, marginTop: 6 },
 
-  valueText: { color: GOLD, fontWeight: "800" },
+  valueText: { color: GREEN, fontWeight: "800" },
   input: { color: "#1C281E", backgroundColor: "#F4F7F1", borderWidth: 1, borderColor: "#DDE6D9", borderRadius: 11, paddingHorizontal: 13, paddingVertical: 12, marginTop: 7, fontSize: 15 },
   field: { marginBottom: 13 },
   fieldLabel: { color: "#263328", fontWeight: "700", fontSize: 13, marginBottom: 3, marginTop: 6 },
@@ -602,5 +602,5 @@ const styles = StyleSheet.create({
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#C5D0C2", fontSize: 21, fontWeight: "500" },
   tabLabel: { color: "#D5DED2", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
-  activeTab: { color: GOLD }
+  activeTab: { color: GREEN }
 });
