@@ -5,14 +5,14 @@ import { createFood, FoodRecord, getFoodBySourceId } from "./database";
 
 type Props = { visible: boolean; onClose: () => void; onFound: (food: FoodRecord) => void; language: "en" | "ar" | "fr" };
 const styles = StyleSheet.create({
-  overlay: { flex: 1, backgroundColor: "#080A08", justifyContent: "center", padding: 18 },
-  title: { color: "#F2F0E9", fontSize: 20, fontWeight: "900", textAlign: "center", marginBottom: 12 },
+  overlay: { flex: 1, backgroundColor: "#F7F9F5", justifyContent: "center", padding: 18 },
+  title: { color: "#1C281E", fontSize: 20, fontWeight: "900", textAlign: "center", marginBottom: 12 },
   camera: { height: 390, borderRadius: 18, overflow: "hidden" },
-  muted: { color: "#B0B4AA", fontSize: 13, textAlign: "center", marginVertical: 12 },
-  button: { backgroundColor: "#D7B66D", borderRadius: 11, padding: 13, alignItems: "center", marginTop: 12 },
-  buttonText: { color: "#171813", fontWeight: "900" },
+  muted: { color: "#667366", fontSize: 13, textAlign: "center", marginVertical: 12 },
+  button: { backgroundColor: "#D8F500", borderRadius: 11, padding: 13, alignItems: "center", marginTop: 12 },
+  buttonText: { color: "#FFFFFF", fontWeight: "900" },
   close: { padding: 12, alignItems: "center" },
-  loading: { color: "#D7B66D", textAlign: "center", marginTop: 12 }
+  loading: { color: "#D8F500", textAlign: "center", marginTop: 12 }
 });
 type NutrimentMap = Record<string, unknown>;
 export default function BarcodeScanner({ visible, onClose, onFound, language }: Props) {
