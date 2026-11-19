@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
+import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 
@@ -353,6 +354,7 @@ export default function App() {
               <Text style={styles.calorieNumber}>{metrics.calories} kcal</Text>
               <Text style={styles.muted}>{t.bmr}: {metrics.bmr} kcal</Text><Text style={styles.muted}>{t.tdee}: {metrics.tdee} kcal</Text><Text style={styles.muted}>{t.protein}: {metrics.protein} g / day</Text>
             </Card>}
+            <ReminderSettings language={language} />
             {metrics && <Card><Text style={styles.cardTitle}>{t.bodyMetrics}</Text>
               <MetricLine label={t.idealWeight} value={metrics.ideal.toFixed(1) + " kg"} /><MetricLine label={t.healthyRange} value={metrics.min.toFixed(1) + "–" + metrics.max.toFixed(1) + " kg"} />
               <MetricLine label={t.bodyFat} value={metrics.bodyFat === null ? "—" : metrics.bodyFat.toFixed(1) + "%"} /><MetricLine label={t.leanMass} value={metrics.leanMass === null ? "—" : metrics.leanMass.toFixed(1) + " kg"} />
