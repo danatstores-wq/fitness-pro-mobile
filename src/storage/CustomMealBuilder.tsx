@@ -42,9 +42,10 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
   const n=nutritionForQuantity(item.food,Number(item.grams)||0);
   return {calories:sum.calories+(n.calories??0),protein:sum.protein+(n.protein_g??0),carbs:sum.carbs+(n.carbs_g??0),fat:sum.fat+(n.fat_g??0)};
  },{calories:0,protein:0,carbs:0,fat:0}),[items]);
- const addIngredient=(food:FoodRecord)=>{
+ const addIngredient=async(food:FoodRecord)=>{
   const amount=Number(grams.replace(",",".")); if(!Number.isFinite(amount)||amount<=0){Alert.alert(w.grams);return;}
-  setItems(old=>[...old,{food,grams:String(amount)}]);setQuery("");setResults([]);
+  try { setLoadingFood(true); const nutrients=await getCustomFoodNutrients(food.id); setItems(old=>[...old,{food,grams:String(amount),nutrients}]);setQuery("");setResults([]); }
+  catch(e){Alert.alert(w.error,String(e));} finally {setLoadingFood(false);}
  };
  const save=async()=>{
   if(!name.trim()||!items.length){Alert.alert(w.title,w.empty);return;}
