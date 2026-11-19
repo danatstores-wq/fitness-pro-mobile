@@ -275,7 +275,7 @@ const foodWords: Record<string, [string, string]> = {
   "brussels sprout": ["كرنب بروكسل", "chou de Bruxelles"],
   "green peas": ["بازلاء خضراء", "petits pois"],
   "jalapeno": ["هالبينو", "jalapeño"],
-  "poblano": ["ب poblano", "poblano"],
+  "poblano": ["بوبلانو", "poblano"],
   "serrano": ["سيرانو", "serrano"],
   "banana pepper": ["فلفل موزي", "piment banane"],
   "wax pepper": ["فلفل شمعي", "piment cire"],
