@@ -153,7 +153,7 @@ export default function App() {
       } catch (error) {
         console.warn("Could not load local fitness data", error);
         setStorageError(error instanceof Error ? error.message : String(error));
-        Alert.alert("Storage error", "Your local database could not be opened. " + (error instanceof Error ? error.message : String(error)));
+        Alert.alert(t.storageTitle, t.storageMessage + " " + (error instanceof Error ? error.message : String(error)));
       } finally {
         if (active) setHydrated(true);
       }
@@ -185,16 +185,16 @@ export default function App() {
   };
   const saveProfile = async () => {
     if (!hydrated) {
-      Alert.alert("Please wait", "Your local data is still being prepared.");
+      Alert.alert(t.waitTitle, t.waitMessage);
       return;
     }
     if (storageError) {
-      Alert.alert("Storage unavailable", storageError);
+      Alert.alert(t.storageUnavailable, storageError);
       return;
     }
     const numericFields = [profile.age, profile.height, profile.weight, profile.targetWeight, profile.waist, profile.hip, profile.neck, profile.bodyFat, profile.muscleMass];
     if (!numericFields.some(value => value.trim() !== "")) {
-      Alert.alert("Nothing to save", "Enter any profile detail you want to save. All fields are optional.");
+      Alert.alert(t.nothingTitle, t.nothingMessage);
       return;
     }
     const valid = (!profile.age || (Number(profile.age) >= 13 && Number(profile.age) <= 110)) &&
@@ -224,7 +224,7 @@ export default function App() {
       Alert.alert(t.saved);
     } catch (error) {
       console.warn("Could not save profile", error);
-      Alert.alert("Save failed", "Your profile could not be saved locally. Please try again.");
+      Alert.alert(t.saveFailed, t.profileSaveFailed);
     }
   };
   const addWeight = async () => {
@@ -236,7 +236,7 @@ export default function App() {
         setWeightInput("");
       } catch (error) {
         console.warn("Could not save weight", error);
-        Alert.alert("Save failed", "The weight entry could not be saved.");
+        Alert.alert(t.saveFailed, t.weightSaveFailed);
       }
     }
   };
@@ -270,9 +270,9 @@ export default function App() {
 <Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color="#8DA7C4"/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
 <View style={styles.statRow}><StatCard label={t.mealsLogged} value={dailyIntake.calories===null?"0":"1"} icon="＋"/><StatCard label={t.currentWeight} value={profile.weight?profile.weight+" "+t.kg:"—"} icon="↗"/></View>
  {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<GoldButton title={t.openFoodDiary} onPress={()=>setTab("diary")}/></>}</ScrollView>}{tab === "diary" && (!hydrated
-          ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Preparing your food catalogue</Text><Text style={styles.muted}>Please wait while the verified food database is installed. Food search and categories will become available when this finishes.</Text></Card></ScrollView>
+          ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
-            ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>Food database unavailable</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
+            ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
             : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} />)}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
