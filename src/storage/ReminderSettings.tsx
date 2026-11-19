@@ -19,7 +19,7 @@ const copy = {
 const validTime=(value:string)=>/^([01]\d|2[0-3]):[0-5]\d$/.test(value);
 const minutes=(value:string)=>{const [h,m]=value.split(":").map(Number);return h*60+m;};
 const timeAt=(m:number)=>String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
-const GOLD="#EFFF00", PANEL="#141A16", MUTED="#A7B0A7";
+const GOLD="#D8F500", PANEL="#FFFFFF", MUTED="#667366";
 
 export default function ReminderSettings({language}:{language:Language}) {
   const t=copy[language];
@@ -109,22 +109,22 @@ export default function ReminderSettings({language}:{language:Language}) {
     }catch(error){Alert.alert(t.error,String(error));}
     finally{setBusy(false);}
   };
-  const line=(label:string,enabled:boolean,onToggle:(v:boolean)=>void,time:string,onTime:(v:string)=>void)=><View style={{flexDirection:"row",alignItems:"center",gap:9,marginTop:12}}><Switch value={enabled} onValueChange={onToggle} trackColor={{false:"#475047",true:"#557A40"}} thumbColor={enabled?GOLD:"#D0D0D0"}/><Text style={{color:"#F2F0E8",fontWeight:"700",flex:1}}>{label}</Text><TextInput value={time} onChangeText={onTime} keyboardType="numbers-and-punctuation" maxLength={5} placeholder="HH:MM" placeholderTextColor={MUTED} style={{width:82,color:"#F2F0E8",backgroundColor:"#0D130F",borderColor:"#465044",borderWidth:1,borderRadius:9,padding:9,textAlign:"center"}}/></View>;
-  return <View style={{backgroundColor:PANEL,borderColor:"#343B32",borderWidth:1,borderRadius:18,padding:16,marginBottom:12}}>
+  const line=(label:string,enabled:boolean,onToggle:(v:boolean)=>void,time:string,onTime:(v:string)=>void)=><View style={{flexDirection:"row",alignItems:"center",gap:9,marginTop:12}}><Switch value={enabled} onValueChange={onToggle} trackColor={{false:"#DDE6D9",true:"#368A4B"}} thumbColor={enabled?GOLD:"#D0D0D0"}/><Text style={{color:"#1C281E",fontWeight:"700",flex:1}}>{label}</Text><TextInput value={time} onChangeText={onTime} keyboardType="numbers-and-punctuation" maxLength={5} placeholder="HH:MM" placeholderTextColor={MUTED} style={{width:82,color:"#1C281E",backgroundColor:"#F4F7F1",borderColor:"#DDE6D9",borderWidth:1,borderRadius:9,padding:9,textAlign:"center"}}/></View>;
+  return <View style={{backgroundColor:PANEL,borderColor:"#DDE6D9",borderWidth:1,borderRadius:18,padding:16,marginBottom:12}}>
     <Text style={{color:GOLD,fontSize:12,fontWeight:"900",letterSpacing:1.2}}>{t.title}</Text><Text style={{color:MUTED,fontSize:12,lineHeight:18,marginTop:7}}>{t.sub}</Text>
     {line(t.breakfast,p.breakfast_enabled,v=>update("breakfast_enabled",v),p.breakfast_time,v=>update("breakfast_time",v))}
     {line(t.lunch,p.lunch_enabled,v=>update("lunch_enabled",v),p.lunch_time,v=>update("lunch_time",v))}
     {line(t.dinner,p.dinner_enabled,v=>update("dinner_enabled",v),p.dinner_time,v=>update("dinner_time",v))}
     {line(t.snacks,p.snacks_enabled,v=>update("snacks_enabled",v),p.snacks_time,v=>update("snacks_time",v))}
-    <View style={{borderTopWidth:1,borderColor:"#303A31",marginTop:16,paddingTop:12}}>
-      <View style={{flexDirection:"row",alignItems:"center",gap:9}}><Switch value={p.water_enabled} onValueChange={v=>update("water_enabled",v)} trackColor={{false:"#475047",true:"#557A40"}} thumbColor={p.water_enabled?GOLD:"#D0D0D0"}/><Text style={{color:"#F2F0E8",fontWeight:"800",flex:1}}>{t.water}</Text></View>
-      <Text style={{color:MUTED,fontSize:11,marginTop:12}}>{t.every}</Text><TextInput value={String(p.water_interval_minutes)} onChangeText={v=>update("water_interval_minutes",Number(v.replace(/[^0-9]/g,""))||0)} keyboardType="number-pad" style={{color:"#F2F0E8",backgroundColor:"#0D130F",borderWidth:1,borderColor:"#465044",borderRadius:9,padding:10,marginTop:5}}/>
+    <View style={{borderTopWidth:1,borderColor:"#E3EADF",marginTop:16,paddingTop:12}}>
+      <View style={{flexDirection:"row",alignItems:"center",gap:9}}><Switch value={p.water_enabled} onValueChange={v=>update("water_enabled",v)} trackColor={{false:"#DDE6D9",true:"#368A4B"}} thumbColor={p.water_enabled?GOLD:"#D0D0D0"}/><Text style={{color:"#1C281E",fontWeight:"800",flex:1}}>{t.water}</Text></View>
+      <Text style={{color:MUTED,fontSize:11,marginTop:12}}>{t.every}</Text><TextInput value={String(p.water_interval_minutes)} onChangeText={v=>update("water_interval_minutes",Number(v.replace(/[^0-9]/g,""))||0)} keyboardType="number-pad" style={{color:"#1C281E",backgroundColor:"#F4F7F1",borderWidth:1,borderColor:"#DDE6D9",borderRadius:9,padding:10,marginTop:5}}/>
       <View style={{flexDirection:"row",gap:12,marginTop:8}}>
-        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.from}</Text><TextInput value={p.water_start_time} onChangeText={v=>update("water_start_time",v)} maxLength={5} placeholder="08:00" placeholderTextColor={MUTED} style={{color:"#F2F0E8",backgroundColor:"#0D130F",borderWidth:1,borderColor:"#465044",borderRadius:9,padding:10,marginTop:5}}/></View>
-        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.to}</Text><TextInput value={p.water_end_time} onChangeText={v=>update("water_end_time",v)} maxLength={5} placeholder="22:00" placeholderTextColor={MUTED} style={{color:"#F2F0E8",backgroundColor:"#0D130F",borderWidth:1,borderColor:"#465044",borderRadius:9,padding:10,marginTop:5}}/></View>
+        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.from}</Text><TextInput value={p.water_start_time} onChangeText={v=>update("water_start_time",v)} maxLength={5} placeholder="08:00" placeholderTextColor={MUTED} style={{color:"#1C281E",backgroundColor:"#F4F7F1",borderWidth:1,borderColor:"#DDE6D9",borderRadius:9,padding:10,marginTop:5}}/></View>
+        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.to}</Text><TextInput value={p.water_end_time} onChangeText={v=>update("water_end_time",v)} maxLength={5} placeholder="22:00" placeholderTextColor={MUTED} style={{color:"#1C281E",backgroundColor:"#F4F7F1",borderWidth:1,borderColor:"#DDE6D9",borderRadius:9,padding:10,marginTop:5}}/></View>
       </View>
     </View>
     {Platform.OS==="web"&&<Text style={{color:MUTED,fontSize:11,lineHeight:17,marginTop:12}}>{t.web}</Text>}
-    <Pressable onPress={save} disabled={busy||!loaded} style={{backgroundColor:GOLD,borderRadius:11,padding:13,alignItems:"center",marginTop:16,opacity:busy||!loaded?0.55:1}}><Text style={{color:"#090D0B",fontWeight:"900"}}>{busy?"…":t.save}</Text></Pressable>
+    <Pressable onPress={save} disabled={busy||!loaded} style={{backgroundColor:GOLD,borderRadius:11,padding:13,alignItems:"center",marginTop:16,opacity:busy||!loaded?0.55:1}}><Text style={{color:"#F7F9F5",fontWeight:"900"}}>{busy?"…":t.save}</Text></Pressable>
   </View>;
 }
