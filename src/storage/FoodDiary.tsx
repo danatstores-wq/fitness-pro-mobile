@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
 import { localizeFoodName, localizeNutrientName, normalizeFoodSearch } from "../i18n-food";
 import MealPlanner from "./MealPlanner";
@@ -65,6 +65,16 @@ const foodCategories = [
   { id:"legumes", en:"Beans, nuts & seeds", ar:"البقوليات والمكسرات والبذور", fr:"Légumineuses", pattern:"Legume|Nut|Seed|Bean" },
   { id:"other", en:"Other foods", ar:"أطعمة أخرى", fr:"Autres aliments", pattern:"%" }
 ];
+const categoryImages = {
+  meat: require("../../assets/images/food-categories/meat.png"),
+  fish: require("../../assets/images/food-categories/fish.png"),
+  vegetables: require("../../assets/images/food-categories/vegetables.png"),
+  fruits: require("../../assets/images/food-categories/fruits.png"),
+  dairy: require("../../assets/images/food-categories/dairy.png"),
+  grains: require("../../assets/images/food-categories/grains.png"),
+  legumes: require("../../assets/images/food-categories/legumes.png"),
+  other: require("../../assets/images/food-categories/other.png")
+} as const;
 const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace(",", "."));
 const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
@@ -165,7 +175,11 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       <View style={s.macros}><Text style={s.macro}>{t.protein}: {fmt(totals.protein)} g</Text><Text style={s.macro}>{t.carbs}: {fmt(totals.carbs)} g</Text><Text style={s.macro}>{t.fats}: {fmt(totals.fat)} g</Text></View>
     </View>
     <Text style={[s.sectionTitle,{marginTop:4}]}>{t.category}</Text>
-    <View style={s.categoryGrid}>{foodCategories.map(category=><Pressable key={category.id} onPress={()=>{setSelectedCategory(category);setQuery("");setSelected(null);}} style={[s.categoryCard,selectedCategory?.id===category.id&&s.categorySelected]}><Text style={[s.categoryText,selectedCategory?.id===category.id&&{color:GOLD}]}>{category[language]}</Text></Pressable>)}</View>
+    <View style={s.categoryGrid}>{foodCategories.map(category=><Pressable key={category.id} onPress={()=>{setSelectedCategory(category);setQuery("");setSelected(null);}} style={[s.categoryCard,selectedCategory?.id===category.id&&s.categorySelected]}>
+      <Image source={categoryImages[category.id as keyof typeof categoryImages]} style={s.categoryImage} resizeMode="cover" />
+      <View style={s.categoryImageShade} />
+      <View style={s.categoryNamePlate}><Text numberOfLines={2} style={[s.categoryText,selectedCategory?.id===category.id&&{color:GOLD}]}>{category[language]}</Text></View>
+    </Pressable>)}</View>
     <TextInput value={query} onChangeText={setQuery} placeholder={t.search} placeholderTextColor={MUTED} style={[s.input,{textAlign,marginBottom:10}]} />
     <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:GOLD}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
@@ -208,7 +222,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   </ScrollView>;
 }
 const s=StyleSheet.create({
- content:{padding:20,paddingBottom:32,gap:12},categoryGrid:{flexDirection:"row",flexWrap:"wrap",gap:9},categoryCard:{width:"48%",minHeight:82,justifyContent:"center",backgroundColor:"#18231B",borderWidth:1,borderColor:"#344B37",borderRadius:16,padding:14},categorySelected:{borderColor:GOLD,backgroundColor:"#283A2D",shadowColor:GOLD,shadowOpacity:0.12,shadowRadius:8,elevation:2},categoryText:{color:"#E8E8DC",fontSize:12,fontWeight:"800"},title:{color:"#F2F0E8",fontSize:28,fontWeight:"900",marginBottom:7,letterSpacing:-0.5},
+ content:{padding:20,paddingBottom:32,gap:12},categoryGrid:{flexDirection:"row",flexWrap:"wrap",gap:9},categoryCard:{width:"48%",minHeight:112,justifyContent:"flex-end",alignItems:"stretch",backgroundColor:"#18231B",borderWidth:1,borderColor:"#344B37",borderRadius:16,overflow:"hidden",padding:0},categorySelected:{borderColor:GOLD,borderWidth:2,shadowColor:GOLD,shadowOpacity:0.22,shadowRadius:8,elevation:3},categoryImage:{...StyleSheet.absoluteFillObject,width:"100%",height:"100%"},categoryImageShade:{...StyleSheet.absoluteFillObject,backgroundColor:"rgba(4,8,5,0.34)"},categoryNamePlate:{width:"100%",minHeight:42,justifyContent:"center",paddingHorizontal:10,paddingVertical:8,backgroundColor:"rgba(3,7,4,0.82)",borderTopWidth:1,borderTopColor:"rgba(239,255,0,0.28)"},categoryText:{color:"#FFFFFF",fontSize:12,fontWeight:"900",textAlign:"center",textShadowColor:"#000000",textShadowOffset:{width:0,height:1},textShadowRadius:3},title:{color:"#F2F0E8",fontSize:28,fontWeight:"900",marginBottom:7,letterSpacing:-0.5},
  card:{backgroundColor:PANEL,borderRadius:18,borderWidth:1,borderColor:"#343B32",padding:16,marginBottom:2},
  label:{color:"#E8E8DC",fontSize:13,fontWeight:"700"},calorie:{color:GOLD,fontSize:34,fontWeight:"900",marginVertical:7},
  macros:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},macro:{color:GREEN,fontSize:12,fontWeight:"700"},
