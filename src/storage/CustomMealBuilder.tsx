@@ -11,10 +11,10 @@ const styles = StyleSheet.create({
  title:{color:"#1C281E",fontSize:20,fontWeight:"900"},muted:{color:"#667366",fontSize:12,lineHeight:18},
  input:{backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:10,padding:11,color:"#1C281E"},
  row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- button:{backgroundColor:"#D8F500",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#10150F",fontWeight:"900"},
- outline:{borderWidth:1,borderColor:"#758274",padding:11,borderRadius:10,alignItems:"center"},
- outlineText:{color:"#D8F500",fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700",flex:1},
- line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:9,padding:8,color:"#1C281E"},chip:{padding:9,borderRadius:9,backgroundColor:"#E7EEE3"}
+ button:{backgroundColor:"#263A2C",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#263A2C"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
+ outline:{borderWidth:1,borderColor:"#263A2C",backgroundColor:"#263A2C",padding:11,borderRadius:10,alignItems:"center"},
+ outlineText:{color:"#FFFFFF",fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700",flex:1},
+ line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:9,padding:8,color:"#1C281E"},chip:{padding:9,borderRadius:9,backgroundColor:"#263A2C"}
 });
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
