@@ -489,6 +489,10 @@ export async function getFoodNutrients(foodId: number): Promise<FoodNutrientDeta
   );
 }
 
+export async function getCustomFoodNutrients(foodId: number): Promise<FoodNutrientDetail[]> {
+  return getFoodNutrients(foodId);
+}
+
 
 export type ImportedFoodRecord = {
   name: string;
