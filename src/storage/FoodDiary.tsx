@@ -23,6 +23,36 @@ const nutrientNames: Record<Language, Record<string,string>> = {
  fr: {"Energy":"Énergie","Protein":"Protéines","Carbohydrates":"Glucides","Total fat":"Lipides totaux","Fiber":"Fibres","Total sugars":"Sucres totaux","Saturated fat":"Graisses saturées","Trans fat":"Acides gras trans","Monounsaturated fat":"Graisses mono-insaturées","Polyunsaturated fat":"Graisses polyinsaturées","Starch":"Amidon","Cholesterol":"Cholestérol","Water":"Eau","Vitamin A":"Vitamine A","Vitamin C":"Vitamine C","Vitamin D":"Vitamine D","Vitamin E":"Vitamine E","Vitamin K":"Vitamine K","Thiamin (B1)":"Thiamine (B1)","Riboflavin (B2)":"Riboflavine (B2)","Niacin (B3)":"Niacine (B3)","Pantothenic acid (B5)":"Acide pantothénique (B5)","Vitamin B6":"Vitamine B6","Biotin (B7)":"Biotine (B7)","Folate (B9)":"Folates (B9)","Vitamin B12":"Vitamine B12","Calcium":"Calcium","Iron":"Fer","Magnesium":"Magnésium","Phosphorus":"Phosphore","Potassium":"Potassium","Sodium":"Sodium","Zinc":"Zinc","Copper":"Cuivre","Manganese":"Manganèse","Selenium":"Sélénium","Iodine":"Iode","Choline":"Choline"}
 };
 
+const vitaminMineralCatalog = [
+  { name:"Vitamin A", unit:"µg", aliases:["Vitamin A","Vitamin A, RAE","Retinol"] },
+  { name:"Vitamin C", unit:"mg", aliases:["Vitamin C","Vitamin C, total ascorbic acid"] },
+  { name:"Vitamin D", unit:"µg", aliases:["Vitamin D","Vitamin D (D2 + D3)","Vitamin D2","Vitamin D3"] },
+  { name:"Vitamin E", unit:"mg", aliases:["Vitamin E","Vitamin E (alpha-tocopherol)"] },
+  { name:"Vitamin K", unit:"µg", aliases:["Vitamin K","Vitamin K (phylloquinone)"] },
+  { name:"Thiamin (B1)", unit:"mg", aliases:["Thiamin (B1)","Thiamin","Thiamine"] },
+  { name:"Riboflavin (B2)", unit:"mg", aliases:["Riboflavin (B2)","Riboflavin"] },
+  { name:"Niacin (B3)", unit:"mg", aliases:["Niacin (B3)","Niacin"] },
+  { name:"Pantothenic acid (B5)", unit:"mg", aliases:["Pantothenic acid (B5)","Pantothenic acid"] },
+  { name:"Vitamin B6", unit:"mg", aliases:["Vitamin B6","Vitamin B-6"] },
+  { name:"Biotin (B7)", unit:"µg", aliases:["Biotin (B7)","Biotin"] },
+  { name:"Folate (B9)", unit:"µg", aliases:["Folate (B9)","Folate, total","Folate, DFE"] },
+  { name:"Vitamin B12", unit:"µg", aliases:["Vitamin B12","Vitamin B-12","Cobalamin"] },
+  { name:"Calcium", unit:"mg", aliases:["Calcium","Calcium, Ca"] },
+  { name:"Iron", unit:"mg", aliases:["Iron","Iron, Fe"] },
+  { name:"Magnesium", unit:"mg", aliases:["Magnesium","Magnesium, Mg"] },
+  { name:"Phosphorus", unit:"mg", aliases:["Phosphorus","Phosphorus, P"] },
+  { name:"Potassium", unit:"mg", aliases:["Potassium","Potassium, K"] },
+  { name:"Sodium", unit:"mg", aliases:["Sodium","Sodium, Na"] },
+  { name:"Zinc", unit:"mg", aliases:["Zinc","Zinc, Zn"] },
+  { name:"Copper", unit:"mg", aliases:["Copper","Copper, Cu"] },
+  { name:"Manganese", unit:"mg", aliases:["Manganese","Manganese, Mn"] },
+  { name:"Selenium", unit:"µg", aliases:["Selenium","Selenium, Se"] },
+  { name:"Iodine", unit:"µg", aliases:["Iodine","Iodine, I"] },
+  { name:"Choline", unit:"mg", aliases:["Choline","Choline, total"] }
+] as const;
+const findNutrient = (rows: FoodNutrientDetail[], aliases: readonly string[]) =>
+  aliases.map(alias => rows.find(row => row.name.toLowerCase() === alias.toLowerCase())).find(Boolean) ?? null;
+
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
   { id:"meat", en:"Meat & poultry", ar:"اللحوم والدواجن", fr:"Viandes", pattern:"Meat|Poultry|Sausage|Beef|Pork|Lamb|Veal|Game|Chicken|Turkey|Duck" },
@@ -144,7 +174,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
         ["Saturated fat", selected.saturated_fat_g, "g"], ["Trans fat", selected.trans_fat_g, "g"], ["Monounsaturated fat", selected.monounsaturated_fat_g, "g"], ["Polyunsaturated fat", selected.polyunsaturated_fat_g, "g"], ["Starch", selected.starch_g, "g"], ["Cholesterol", selected.cholesterol_mg, "mg"], ["Water", selected.water_g, "g"]
       ].map(([label, amount, unit]) => <View key={String(label)} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(String(label))}</Text><Text style={s.nutrientValue}>{amount === null ? "—" : amount} {unit}</Text></View>)}
       <Text style={s.sectionTitle}>{t.vitamins100}</Text>
-      {micros.length === 0 ? <Text style={s.muted}>{language === "ar" ? "لا تتوفر بيانات فيتامينات أو معادن موثقة لهذا الطعام." : language === "fr" ? "Aucune donnée vérifiée sur les vitamines ou minéraux pour cet aliment." : "No verified vitamin or mineral values are available for this food."}</Text> : micros.map(n => <View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(n.name)}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : n.amount + " " + n.unit}</Text></View>)}
+      {vitaminMineralCatalog.map(item => { const n=findNutrient(micros,item.aliases); return <View key={item.name} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(item.name)}</Text><Text style={s.nutrientValue}>{n?.amount == null ? "—" : Number(n.amount.toFixed(3)) + " " + (n.unit || item.unit)}</Text></View>; })}
       {field(t.grams,quantity,setQuantity,true)}
       {servings.length > 0 && <View style={s.meals}>{servings.map(serving => <Pressable key={serving.id} onPress={() => setQuantity(String(serving.grams))} style={s.mealTab}><Text style={s.mealText}>{serving.label} · {serving.grams} g</Text></Pressable>)}</View>}
       <Pressable onPress={addSelected} disabled={busy} style={s.button}><Text style={s.buttonText}>{t.addMeal}</Text></Pressable>
@@ -155,7 +185,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
       <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
     </View>}
-    <View style={s.card}><Text style={s.cardTitle}>{t.dailyMicros}</Text>{dailyMicros.length === 0 ? <Text style={s.muted}>{t.noDailyMicros}</Text> : dailyMicros.map(n=><View key={n.name} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(n.name)}</Text><Text style={s.nutrientValue}>{n.amount === null ? "—" : Number(n.amount.toFixed(2)) + " " + n.unit}</Text></View>)}</View>
+    <View style={s.card}><Text style={s.cardTitle}>{t.dailyMicros}</Text>{vitaminMineralCatalog.map(item=>{const n=findNutrient(dailyMicros,item.aliases);const amount=n?.amount??(foods.length===0?0:null);return <View key={item.name} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(item.name)}</Text><Text style={s.nutrientValue}>{amount===null?"—":Number(amount.toFixed(2))+" "+(n?.unit||item.unit)}</Text></View>;})}</View>
     {mealTypes.map(m=><View key={m} style={s.card}>
       <Text style={[s.cardTitle,{textAlign}]}>{t[m]}</Text>
       {foods.filter(f=>f.meal_type===m).length===0 ? <Text style={[s.muted,{textAlign}]}>{t.empty}</Text> :
