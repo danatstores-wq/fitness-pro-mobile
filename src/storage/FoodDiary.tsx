@@ -30,7 +30,7 @@ const foodCategories = [
   { id:"vegetables", en:"Vegetables", ar:"الخضروات", fr:"Légumes", pattern:"%Vegetable%" },
   { id:"fruits", en:"Fruits", ar:"الفواكه", fr:"Fruits", pattern:"%Fruit%" },
   { id:"dairy", en:"Dairy & eggs", ar:"الألبان والبيض", fr:"Produits laitiers", pattern:"Dairy|Egg" },
-  { id:"grains", en:"Grains & cereals", ar:"الحبوب", fr:"Céréales", pattern:"Cereal|Grain|Pasta|Rice" },
+  { id:"grains", en:"Grains & cereals", ar:"الحبوب", fr:"Céréales", pattern:"Cereal|Grain|Pasta|Rice|Noodle|Quinoa|Couscous|Bulgur" },
   { id:"legumes", en:"Beans, nuts & seeds", ar:"البقوليات والمكسرات والبذور", fr:"Légumineuses", pattern:"Legume|Nut|Seed|Bean" },
   { id:"other", en:"Other foods", ar:"أطعمة أخرى", fr:"Autres aliments", pattern:"%" }
 ];
