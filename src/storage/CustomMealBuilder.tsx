@@ -29,7 +29,8 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
  const [grams,setGrams]=useState("100");
  const [items,setItems]=useState<Ingredient[]>([]);
  const [saved,setSaved]=useState<CustomMealSummary[]>([]);
- const [busy,setBusy]=useState(false);\n const [loadingFood,setLoadingFood]=useState(false);
+ const [busy,setBusy]=useState(false);
+ const [loadingFood,setLoadingFood]=useState(false);
  useEffect(()=>{getCustomMeals().then(setSaved).catch(e=>console.warn("Custom meals unavailable",e));},[]);
  useEffect(()=>{
   let active=true;
