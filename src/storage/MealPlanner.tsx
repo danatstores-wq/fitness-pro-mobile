@@ -101,7 +101,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
     });
     // If the catalogue lacks a role, use another food suitable for that meal type, never force meat into breakfast/snacks.
     if(selected.length<2){
-     const fallback=pool.filter(f=>!used.has(f.id)&&(meal!=="breakfast"&&!((meal==="snacks")?poultryFish.test(f.name):false))&&(meal!=="breakfast"||!poultryFish.test(f.name)));
+     const fallback=pool.filter(f=>!used.has(f.id)&&!((meal==="breakfast"||meal==="snacks")&&poultryFish.test(f.name)));
      const extra=pick(fallback,used,day,slot,3);
      if(extra){selected.push({food:extra,base:80});used.add(extra.id);}
     }
