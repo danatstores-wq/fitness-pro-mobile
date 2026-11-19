@@ -201,7 +201,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
       {!selectedCategory && !query.trim() && <Text style={s.muted}>{t.chooseCategoryHint}</Text>}
       {results.map(item=><Pressable key={item.id} onPress={()=>setSelected(item)} style={s.result}><View style={{flex:1}}><Text style={s.foodName}>{localizeFoodName(item.name, language)}</Text><Text style={s.muted}>{item.calories===null?t.unknown:Math.round(item.calories)+" kcal"} / 100 g</Text></View><Text style={s.plus}>＋</Text></Pressable>)}
       {results.length===0&&<Text style={[s.muted,{textAlign}]}>{t.noResults}</Text>}
-      <Pressable onPress={()=>setModal(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
+      <Pressable onPress={()=>setCustomMealMode(true)} style={s.outline}><Text style={s.outlineText}>＋ {t.create}</Text></Pressable>
     </View>}
     <View style={s.card}><Text style={s.cardTitle}>{t.dailyMicros}</Text>{vitaminMineralCatalog.map(item=>{const n=findNutrient(dailyMicros,item.aliases);const amount=n?.amount??(foods.length===0?0:null);return <View key={item.name} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(item.name)}</Text><Text style={s.nutrientValue}>{amount===null?"—":Number(amount.toFixed(2))+" "+(n?.unit||item.unit)}</Text></View>;})}</View>
     {mealTypes.map(m=><View key={m} style={s.card}>
