@@ -318,7 +318,7 @@ export async function searchFoodsByNutrient(nutrient: string, direction: "high" 
   const expression = column ? "f." + column.column : "(SELECT fn.amount FROM food_nutrients fn JOIN nutrients n ON n.id = fn.nutrient_id WHERE fn.food_id = f.id AND lower(n.name) = lower(?) LIMIT 1)";
   const unit = column?.unit ?? (await db.getFirstAsync<{unit:string}>("SELECT unit FROM nutrients WHERE lower(name)=lower(?)", nutrient))?.unit ?? "mg";
   const sql = "SELECT f.id, f.name, f.calories, f.protein_g, f.carbs_g, f.fat_g, f.fiber_g, COALESCE(f.total_sugars_g, f.sugar_g) AS sugar_g, f.saturated_fat_g, f.trans_fat_g, f.monounsaturated_fat_g, f.polyunsaturated_fat_g, f.starch_g, f.cholesterol_mg, f.water_g, f.data_quality, " + expression + " AS nutrient_amount, ? AS nutrient_unit FROM foods f WHERE " + expression + " IS NOT NULL ORDER BY nutrient_amount " + (direction === "high" ? "DESC" : "ASC") + ", f.name COLLATE NOCASE LIMIT 50";
-  return column ? db.getAllAsync<NutrientFoodResult>(sql, unit, unit) : db.getAllAsync<NutrientFoodResult>(sql, nutrient, unit, nutrient);
+  return column ? db.getAllAsync<NutrientFoodResult>(sql, unit) : db.getAllAsync<NutrientFoodResult>(sql, nutrient, unit, nutrient);
 }
 
 export async function createFood(food: {
