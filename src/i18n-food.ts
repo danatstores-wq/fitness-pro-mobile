@@ -950,6 +950,13 @@ const foodWords: Record<string, [string, string]> = {
   "swiss cheese": ["جبن سويسري","fromage suisse"],
   "cheese singles": ["شرائح جبن فردية","tranches de fromage individuelles"],
   "whole grains": ["حبوب كاملة","grains entiers"],
+  "top loin": ["أعلى الخاصرة","haut de longe"],
+  "blue swimming": ["أزرق سبّاح","bleu nageur"],
+  "ny strip steak": ["شريحة نيويورك","steak de contre-filet"],
+  "mulitgrain": ["متعدد الحبوب","multicéréales"],
+  "with added vitamin d": ["مع إضافة فيتامين د","avec vitamine D ajoutée"],
+  "grade a": ["درجة أ","catégorie A"],
+  "large egg": ["بيضة كبيرة","gros œuf"],
 };
 
 const phrases = Object.keys(foodWords).sort((a,b)=>b.length-a.length);
