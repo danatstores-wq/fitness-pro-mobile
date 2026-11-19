@@ -18,10 +18,9 @@ const words: Record<Language, Record<string, string>> = {
 
 const nutrientNames: Record<Language, Record<string,string>> = {
  en: {},
- ar: {"Energy":"الطاقة","Protein":"البروتين","Carbohydrates":"الكربوهيدرات","Total fat":"إجمالي الدهون","Fiber":"الألياف","Total sugars":"السكريات","Saturated fat":"الدهون المشبعة","Trans fat":"الدهون المتحولة","Monounsaturated fat":"الدهون الأحادية غير المشبعة","Polyunsaturated fat":"الدهون المتعددة غير المشبعة","Starch":"النشا","Cholesterol":"الكوليسترول","Water":"الماء","Vitamin A":"فيتامين أ","Vitamin C":"فيتامين ج","Vitamin D":"فيتامين د","Vitamin E":"فيتامين هـ","Vitamin K":"فيتامين ك","Thiamin (B1)":"الثيامين (ب1)","Riboflavin (B2)":"الريبوفلافين (ب2)","Niacin (B3)":"النياسين (ب3)","Pantothenic acid (B5)":"حمض البانتوثينيك (ب5)","Vitamin B6":"فيتامين ب6","Biotin (B7)":"البيوتين (ب7)","Folate (B9)":"الفولات (ب9)","Folate (B9)":"الفولات (ب9)","Vitamin B12":"فيتامين ب12","Calcium":"الكالسيوم","Iron":"الحديد","Magnesium":"المغنيسيوم","Phosphorus":"الفوسفور","Potassium":"البوتاسيوم","Sodium":"الصوديوم","Zinc":"الزنك","Copper":"النحاس","Manganese":"المنغنيز","Selenium":"السيلينيوم","Iodine":"اليود","Choline":"الكولين"},
+ ar: {"Energy":"الطاقة","Protein":"البروتين","Carbohydrates":"الكربوهيدرات","Total fat":"إجمالي الدهون","Fiber":"الألياف","Total sugars":"السكريات","Saturated fat":"الدهون المشبعة","Trans fat":"الدهون المتحولة","Monounsaturated fat":"الدهون الأحادية غير المشبعة","Polyunsaturated fat":"الدهون المتعددة غير المشبعة","Starch":"النشا","Cholesterol":"الكوليسترول","Water":"الماء","Vitamin A":"فيتامين أ","Vitamin C":"فيتامين ج","Vitamin D":"فيتامين د","Vitamin E":"فيتامين هـ","Vitamin K":"فيتامين ك","Thiamin (B1)":"الثيامين (ب1)","Riboflavin (B2)":"الريبوفلافين (ب2)","Niacin (B3)":"النياسين (ب3)","Pantothenic acid (B5)":"حمض البانتوثينيك (ب5)","Vitamin B6":"فيتامين ب6","Biotin (B7)":"البيوتين (ب7)","Folate (B9)":"الفولات (ب9)","Vitamin B12":"فيتامين ب12","Calcium":"الكالسيوم","Iron":"الحديد","Magnesium":"المغنيسيوم","Phosphorus":"الفوسفور","Potassium":"البوتاسيوم","Sodium":"الصوديوم","Zinc":"الزنك","Copper":"النحاس","Manganese":"المنغنيز","Selenium":"السيلينيوم","Iodine":"اليود","Choline":"الكولين"},
  fr: {"Energy":"Énergie","Protein":"Protéines","Carbohydrates":"Glucides","Total fat":"Lipides totaux","Fiber":"Fibres","Total sugars":"Sucres totaux","Saturated fat":"Graisses saturées","Trans fat":"Acides gras trans","Monounsaturated fat":"Graisses mono-insaturées","Polyunsaturated fat":"Graisses polyinsaturées","Starch":"Amidon","Cholesterol":"Cholestérol","Water":"Eau","Vitamin A":"Vitamine A","Vitamin C":"Vitamine C","Vitamin D":"Vitamine D","Vitamin E":"Vitamine E","Vitamin K":"Vitamine K","Thiamin (B1)":"Thiamine (B1)","Riboflavin (B2)":"Riboflavine (B2)","Niacin (B3)":"Niacine (B3)","Pantothenic acid (B5)":"Acide pantothénique (B5)","Vitamin B6":"Vitamine B6","Biotin (B7)":"Biotine (B7)","Folate (B9)":"Folates (B9)","Vitamin B12":"Vitamine B12","Calcium":"Calcium","Iron":"Fer","Magnesium":"Magnésium","Phosphorus":"Phosphore","Potassium":"Potassium","Sodium":"Sodium","Zinc":"Zinc","Copper":"Cuivre","Manganese":"Manganèse","Selenium":"Sélénium","Iodine":"Iode","Choline":"Choline"}
 };
-const nutrientLabel = (name: string) => nutrientNames[language][name] ?? name;
 
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
@@ -40,6 +39,7 @@ const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? 
 
 export default function FoodDiary({ language, targetCalories = 2000 }: { language: Language; targetCalories?: number }) {
   const t = words[language], rtl = language === "ar";
+  const nutrientLabel = (name: string) => nutrientNames[language][name] ?? name;
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [plannerMode, setPlannerMode] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
