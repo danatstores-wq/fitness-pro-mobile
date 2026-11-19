@@ -243,7 +243,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <View style={styles.logo}><Text style={styles.logoMark}>d.</Text></View>
@@ -267,7 +267,7 @@ export default function App() {
 <View style={styles.progressTrack}><View style={[styles.progressFill,{width:(Math.min(100,((dailyIntake.calories||0)/(metrics?.calories||2000))*100))+"%"}]}/></View>
 <View style={styles.spaceBetween}><Text style={styles.muted}>{t.dailyGoal}: {metrics?.calories||2000} kcal</Text><Text style={styles.greenText}>{dailyIntake.calories===null?"—":Math.max(0,Math.round((metrics?.calories||2000)-dailyIntake.calories))} {t.remaining}</Text></View></View>
 <Card><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
-<Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color="#8DA7C4"/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
+<Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color={GOLD}/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
 <View style={styles.statRow}><StatCard label={t.mealsLogged} value={dailyIntake.calories===null?"0":"1"} icon="＋"/><StatCard label={t.currentWeight} value={profile.weight?profile.weight+" "+t.kg:"—"} icon="↗"/></View>
  {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<GoldButton title={t.openFoodDiary} onPress={()=>setTab("diary")}/></>}</ScrollView>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
   heroNumberRow: { flexDirection: "row", alignItems: "center", marginTop: 9 },
   calorieNumber: { color: IVORY, fontSize: 43, fontWeight: "700", letterSpacing: -1.7, marginVertical: 3 },
   heroSubline: { color: GOLD, fontSize: 9, fontWeight: "800", letterSpacing: 1.7 },
-  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: "#A9BDD2", alignItems: "center", justifyContent: "center", marginLeft: 10 },
+  calorieBadge: { minWidth: 77, minHeight: 77, borderRadius: 39, borderWidth: 1, borderColor: GOLD, alignItems: "center", justifyContent: "center", marginLeft: 10 },
   badgeValue: { color: IVORY, fontSize: 17, fontWeight: "800" },
   badgeCaption: { color: MUTED, fontSize: 8, letterSpacing: 1.4, marginTop: 3 },
   progressTrack: { height: 5, backgroundColor: "#303A31", borderRadius: 10, marginTop: 20, marginBottom: 11, overflow: "hidden" },
@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
   choiceText: { color: "#C2C8BB", fontSize: 12, fontWeight: "700" },
   goldButton: { backgroundColor: "#C9A34A", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
   goldButtonText: { color: "#141A16", fontWeight: "900", fontSize: 14 },
-  tabBar: { flexDirection: "row", backgroundColor: "#141A16", borderTopWidth: 1, borderTopColor: "#E1EAE4", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  tabBar: { flexDirection: "row", backgroundColor: "#141A16", borderTopWidth: 1, borderTopColor: "#343B32", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#899487", fontSize: 21, fontWeight: "500" },
   tabLabel: { color: "#A7B0A7", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
