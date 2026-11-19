@@ -38,10 +38,16 @@ for (const food of [...foundation, ...fndds]) {
   const key = english.toLocaleLowerCase("en");
   if (!unique.has(key)) unique.set(key, english);
 }
-const rows = [...unique.values()].sort((a,b) => a.localeCompare(b, "en")).map(english => [
-  english, translate(english, "ar"), translate(english, "fr"), ""
-]);
-const header = ["English food name", "Arabic (current translation)", "French (current translation)", "Your correction / notes"];
+const hasArabic = /[\\u0600-\\u06FF]/;
+const hasLatin = /[A-Za-z]/;
+const rows = [...unique.values()].sort((a,b) => a.localeCompare(b, "en")).map(english => {
+  const arabic = translate(english, "ar");
+  const french = translate(english, "fr");
+  const arabicStatus = !hasArabic.test(arabic) ? "Needs translation" : hasLatin.test(arabic) ? "Partially translated" : "Translated — please verify";
+  const frenchStatus = french.trim().toLowerCase() === english.trim().toLowerCase() ? "Needs translation" : "Draft — please verify";
+  return [english, arabic, arabicStatus, "", french, frenchStatus, ""];
+});
+const header = ["English food name", "Arabic (current translation)", "Arabic translation status", "Your corrected Arabic translation", "French (current translation)", "French translation status", "Your corrected French translation"];
 fs.mkdirSync("docs", { recursive: true });
 fs.writeFileSync("docs/food-name-review.csv", [header, ...rows].map(row => row.map(csv).join(",")).join("\n") + "\n", "utf8");
 console.log("Foundation foods: " + foundation.length);
