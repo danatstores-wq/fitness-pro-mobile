@@ -80,7 +80,7 @@ const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace("
 const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
 
-export default function FoodDiary({ language, targetCalories = 2000 }: { language: Language; targetCalories?: number }) {
+export default function FoodDiary({ language, targetCalories = 2000, targetProtein, targetCarbs, targetFat }: { language: Language; targetCalories?: number; targetProtein?: number; targetCarbs?: number; targetFat?: number }) {
   const t = words[language], rtl = language === "ar";
   const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
@@ -176,7 +176,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   if (customMealMode) return <CustomMealBuilder language={language} mealType={meal} onBack={()=>setCustomMealMode(false)} onAdded={()=>{setCustomMealMode(false);load().catch(e=>console.warn("Food diary refresh failed",e));}} />;
   if (plannerMode) return <ScrollView contentContainerStyle={s.content}>
     <Pressable onPress={()=>setPlannerMode(false)} style={s.outline}><Text style={s.outlineText}>{t.backDiary}</Text></Pressable>
-    <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} onAdded={() => { setPlannerMode(false); load().catch(e => console.warn("Food diary refresh failed after adding plan", e)); }} />
+    <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} targetProtein={targetProtein} targetCarbs={targetCarbs} targetFat={targetFat} onAdded={() => { setPlannerMode(false); load().catch(e => console.warn("Food diary refresh failed after adding plan", e)); }} />
   </ScrollView>;
   const field = (label: string, value: string, set: (v:string)=>void, numeric=false) => <View style={s.field}><Text style={[s.label,{textAlign}]}>{label}</Text><TextInput value={value} onChangeText={set} keyboardType={numeric ? "decimal-pad" : "default"} placeholder="—" placeholderTextColor={MUTED} style={[s.input,{textAlign}]} /></View>;
   return <ScrollView contentContainerStyle={s.content}>
