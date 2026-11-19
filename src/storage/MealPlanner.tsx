@@ -12,9 +12,9 @@ const shares: Record<Meal, number> = { breakfast: .25, lunch: .35, dinner: .30, 
 const styles = StyleSheet.create({
  wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#DDE6D9",borderWidth:1,borderRadius:16,padding:14,gap:9},
  title:{color:"#1C281E",fontSize:20,fontWeight:"900"},muted:{color:"#667366",fontSize:12,lineHeight:18},
- gold:{color:"#D8F500",fontWeight:"800"},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- chip:{borderWidth:1,borderColor:"#667366",borderRadius:10,paddingVertical:9,paddingHorizontal:12},active:{borderColor:"#D8F500",backgroundColor:"#EEF4E9"},
- button:{backgroundColor:"#D8F500",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
+ gold:{color:"#368A4B",fontWeight:"800"},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
+ chip:{borderWidth:1,borderColor:"#667366",borderRadius:10,paddingVertical:9,paddingHorizontal:12},active:{borderColor:"#368A4B",backgroundColor:"#E6F0E4"},
+ button:{backgroundColor:"#263A2C",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#263A2C"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
  day:{color:"#1C281E",fontSize:14,fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700"},line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:8,gap:4}
 });
 export default function MealPlanner({language,targetCalories}:{language:Language;targetCalories:number}) {
