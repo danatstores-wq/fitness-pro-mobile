@@ -42,7 +42,7 @@ export function localizeFoodName(name: string, language: Language): string {
   for (const word of phrases) {
     const [ar, fr] = foodWords[word];
     const replacement = language === "ar" ? ar : fr;
-    output = output.replace(new RegExp("\\b" + word.replace(/[.*+?^${}()|[\]\\]/g, "\\output = output.replace(new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), replacement);") + "\\b", "gi"), replacement);
+    output = output.replace(new RegExp("\\b" + word.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&") + "\\b", "gi"), replacement);
   }
   return output.replace(/,\s*/g, " · ").replace(/\s+/g, " ").trim();
 }
