@@ -24,10 +24,10 @@ function translate(name, language) {
   for (const [english, arabic, french] of dictionary) {
     const replacement = language === "ar" ? arabic : french;
     if (!replacement) continue;
-    const escaped = english.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&");
+    const escaped = english.replace(/[.*+?^${}()|[\\]\\]/g, "\\english.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")");
     result = result.replace(new RegExp("\\b" + escaped + "\\b", "gi"), replacement);
   }
-  return result.replace(/,\\s*/g, " · ").replace(/\\s+/g, " ").trim();
+  return result.replace(/,\s*/g, " · ").replace(/\s+/g, " ").trim();
 }
 function csv(value) { return '"' + String(value ?? "").replace(/"/g, '""') + '"'; }
 
