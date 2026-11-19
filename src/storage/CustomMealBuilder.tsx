@@ -41,8 +41,8 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
  const totalWeight=useMemo(()=>items.reduce((sum,item)=>sum+(Number(item.grams)||0),0),[items]);
  const totals=useMemo(()=>items.reduce((sum,item)=>{
   const n=nutritionForQuantity(item.food,Number(item.grams)||0);
-  return {calories:sum.calories+(n.calories??0),protein:sum.protein+(n.protein_g??0),carbs:sum.carbs+(n.carbs_g??0),fat:sum.fat+(n.fat_g??0)};
- },{calories:0,protein:0,carbs:0,fat:0}),[items]);
+  return {calories:sum.calories+(n.calories??0),protein:sum.protein+(n.protein_g??0),carbs:sum.carbs+(n.carbs_g??0),fat:sum.fat+(n.fat_g??0),fiber:sum.fiber+(n.fiber_g??0)};
+ },{calories:0,protein:0,carbs:0,fat:0,fiber:0}),[items]);
  const micronutrientTotals=useMemo(()=>{
   const totals=new Map<string,{unit:string;amount:number}>();
   for(const item of items){
