@@ -19,10 +19,10 @@ const styles = StyleSheet.create({
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
  const w=ar
- ? {title:"إنشاء طعام مخصص",search:"ابحث عن مكوّن (مثل الدجاج)",name:"اسم الوصفة",grams:"وزن المكوّن بالغرام",add:"إضافة مكوّن",weight:"الوزن (غرام)",save:"حفظ الوصفة",saved:"الوصفات المحفوظة",use:"إضافة إلى المفكرة",back:"العودة",empty:"ابحث عن كل مكوّن وأضفه. ستُجلب قيمه الغذائية من قاعدة البيانات.",noSaved:"لا توجد وصفات محفوظة بعد.",ingredient:"مكوّن",ok:"تم حفظ الوصفة.",error:"تعذر حفظ الوصفة.",added:"تمت إضافة الوصفة إلى المفكرة.",remove:"حذف",total:"وزن الوصفة",per100:"القيم المحسوبة لكل ١٠٠ غ",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",nutrients:"الفيتامينات والمعادن"}
+ ? {title:"إنشاء طعام مخصص",search:"ابحث عن مكوّن (مثل الدجاج)",name:"اسم الوصفة",grams:"وزن المكوّن بالغرام",add:"إضافة مكوّن",weight:"الوزن (غرام)",save:"حفظ الوصفة",saved:"الوصفات المحفوظة",use:"إضافة إلى المفكرة",back:"العودة",empty:"ابحث عن كل مكوّن وأضفه. ستُجلب قيمه الغذائية من قاعدة البيانات.",noSaved:"لا توجد وصفات محفوظة بعد.",ingredient:"مكوّن",ok:"تم حفظ الوصفة.",error:"تعذر حفظ الوصفة.",added:"تمت إضافة الوصفة إلى المفكرة.",remove:"حذف",total:"وزن الوصفة",per100:"القيم المحسوبة لكل ١٠٠ غ",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",nutrients:"الفيتامينات والمعادن",availableOnly:"تُجمع العناصر الغذائية المتاحة في قاعدة البيانات فقط."}
  : fr
- ? {title:"Créer un aliment personnalisé",search:"Rechercher un ingrédient (ex. poulet)",name:"Nom de la recette",grams:"Poids de l’ingrédient en grammes",add:"Ajouter l’ingrédient",weight:"Poids (g)",save:"Enregistrer la recette",saved:"Recettes enregistrées",use:"Ajouter au journal",back:"Retour",empty:"Recherchez et ajoutez chaque ingrédient. Ses valeurs nutritionnelles seront récupérées dans la base.",noSaved:"Aucune recette enregistrée.",ingredient:"ingrédient(s)",ok:"Recette enregistrée.",error:"Impossible d’enregistrer la recette.",added:"Recette ajoutée au journal.",remove:"Retirer",total:"Poids total",per100:"Valeurs calculées pour 100 g",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",nutrients:"Vitamines et minéraux"}
- : {title:"Create custom food",search:"Search for an ingredient (e.g. chicken)",name:"Recipe name",grams:"Ingredient weight in grams",add:"Add ingredient",weight:"Weight (g)",save:"Save recipe",saved:"Saved recipes",use:"Add to food diary",back:"Back",empty:"Search for each ingredient and add it. Nutrition details are fetched from the food database.",noSaved:"No saved recipes yet.",ingredient:"ingredient(s)",ok:"Recipe saved.",error:"Could not save recipe.",added:"Recipe added to your diary.",remove:"Remove",total:"Total recipe weight",per100:"Calculated nutrition per 100 g",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",nutrients:"Vitamins and minerals"};
+ ? {title:"Créer un aliment personnalisé",search:"Rechercher un ingrédient (ex. poulet)",name:"Nom de la recette",grams:"Poids de l’ingrédient en grammes",add:"Ajouter l’ingrédient",weight:"Poids (g)",save:"Enregistrer la recette",saved:"Recettes enregistrées",use:"Ajouter au journal",back:"Retour",empty:"Recherchez et ajoutez chaque ingrédient. Ses valeurs nutritionnelles seront récupérées dans la base.",noSaved:"Aucune recette enregistrée.",ingredient:"ingrédient(s)",ok:"Recette enregistrée.",error:"Impossible d’enregistrer la recette.",added:"Recette ajoutée au journal.",remove:"Retirer",total:"Poids total",per100:"Valeurs calculées pour 100 g",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",nutrients:"Vitamines et minéraux",availableOnly:"Seules les valeurs nutritionnelles disponibles dans la base sont additionnées."}
+ : {title:"Create custom food",search:"Search for an ingredient (e.g. chicken)",name:"Recipe name",grams:"Ingredient weight in grams",add:"Add ingredient",weight:"Weight (g)",save:"Save recipe",saved:"Saved recipes",use:"Add to food diary",back:"Back",empty:"Search for each ingredient and add it. Nutrition details are fetched from the food database.",noSaved:"No saved recipes yet.",ingredient:"ingredient(s)",ok:"Recipe saved.",error:"Could not save recipe.",added:"Recipe added to your diary.",remove:"Remove",total:"Total recipe weight",per100:"Calculated nutrition per 100 g",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",nutrients:"Vitamins and minerals",availableOnly:"Only nutrient values available in the food database are included in these totals."};
  const [query,setQuery]=useState("");
  const [results,setResults]=useState<FoodRecord[]>([]);
  const [name,setName]=useState("");
@@ -43,6 +43,18 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
   const n=nutritionForQuantity(item.food,Number(item.grams)||0);
   return {calories:sum.calories+(n.calories??0),protein:sum.protein+(n.protein_g??0),carbs:sum.carbs+(n.carbs_g??0),fat:sum.fat+(n.fat_g??0)};
  },{calories:0,protein:0,carbs:0,fat:0}),[items]);
+ const micronutrientTotals=useMemo(()=>{
+  const totals=new Map<string,{unit:string;amount:number}>();
+  for(const item of items){
+   const factor=(Number(item.grams)||0)/100;
+   for(const nutrient of item.nutrients){
+    if(nutrient.amount===null||!Number.isFinite(nutrient.amount)) continue;
+    const current=totals.get(nutrient.name);
+    totals.set(nutrient.name,{unit:nutrient.unit||current?.unit||"",amount:(current?.amount??0)+nutrient.amount*factor});
+   }
+  }
+  return [...totals.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+ },[items]);
  const updateIngredientWeight=(index:number,value:string)=>setItems(old=>old.map((item,i)=>i===index?{...item,grams:value}:item));
  const addIngredient=async(food:FoodRecord)=>{
   const amount=Number(grams.replace(",",".")); if(!Number.isFinite(amount)||amount<=0){Alert.alert(w.grams);return;}
@@ -68,6 +80,17 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
    {results.map(food=><Pressable key={food.id} onPress={()=>addIngredient(food)} disabled={loadingFood} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(food.name,language)}</Text><Text style={styles.outlineText}>＋</Text></View><Text style={styles.muted}>{food.calories==null?"—":Math.round(food.calories)+" kcal"} / 100 g</Text></Pressable>)}
    {items.length===0?<Text style={styles.muted}>{w.empty}</Text>:items.map((item,index)=><View key={index} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(item.food.name,language)}</Text><Text style={styles.muted}>{w.weight}</Text><TextInput value={item.grams} onChangeText={value=>updateIngredientWeight(index,value)} keyboardType="decimal-pad" selectTextOnFocus style={styles.weightInput} accessibilityLabel={`${w.weight}: ${localizeFoodName(item.food.name,language)}`} /><Text style={styles.muted}>g</Text><Pressable onPress={()=>setItems(old=>old.filter((_,i)=>i!==index))}><Text style={styles.outlineText}>×</Text></Pressable></View><Text style={styles.muted}>{Math.round(nutritionForQuantity(item.food,Math.max(0,Number(item.grams)||0)).calories??0)} kcal</Text></View>)}
    {items.length>0&&<Text style={styles.muted}>{w.total}: {totalWeight.toFixed(1)} g · {Math.round(totals.calories)} kcal · {totals.protein.toFixed(1)} g protein · {totals.carbs.toFixed(1)} g carbs · {totals.fat.toFixed(1)} g fat</Text>}
+   {items.length>0&&<View style={styles.line}>
+    <Text style={styles.title}>{w.per100.replace(/100 g|١٠٠ غ/g,"")}{totalWeight>0?" · "+w.total+": "+totalWeight.toFixed(1)+" g":""}</Text>
+    <Text style={styles.food}>{w.calories}: {totals.calories.toFixed(1)} kcal</Text>
+    <Text style={styles.food}>{w.protein}: {totals.protein.toFixed(1)} g</Text>
+    <Text style={styles.food}>{w.carbs}: {totals.carbs.toFixed(1)} g</Text>
+    <Text style={styles.food}>{w.fat}: {totals.fat.toFixed(1)} g</Text>
+    <Text style={styles.food}>{w.fiber}: {totals.fiber.toFixed(1)} g</Text>
+    <Text style={styles.title}>{w.nutrients}</Text>
+    {micronutrientTotals.length===0?<Text style={styles.muted}>{w.availableOnly}</Text>:micronutrientTotals.map(([nutrient,value])=><View key={nutrient} style={styles.row}><Text style={styles.muted}>{nutrient}</Text><Text style={styles.food}>{value.amount.toFixed(3)} {value.unit}</Text></View>)}
+    <Text style={styles.muted}>{w.availableOnly}</Text>
+   </View>}
    <Pressable disabled={busy||!items.length||!name.trim()} style={styles.button} onPress={save}><Text style={styles.buttonText}>{w.save}</Text></Pressable>
   </View>
   <View style={styles.card}><Text style={styles.title}>{w.saved}</Text>
