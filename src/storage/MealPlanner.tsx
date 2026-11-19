@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Language } from "../i18n";
+import { localizeFoodName } from "../i18n-food";
 import { addFoodToMeal, FoodRecord, getMealPlannerFoods, nutritionForQuantity } from "./database";
 
 type Meal = "breakfast" | "lunch" | "dinner" | "snacks";
@@ -63,7 +64,7 @@ export default function MealPlanner({language,targetCalories}:{language:Language
    <View style={styles.row}>{(["all","vegetarian","high"] as const).map(p=><Pressable key={p} onPress={()=>setPreference(p)} style={[styles.chip,preference===p&&styles.active]}><Text style={[styles.muted,preference===p&&styles.gold]}>{p==="all"?w.all:p==="vegetarian"?w.veg:w.high}</Text></Pressable>)}</View>
    <Pressable style={styles.button} onPress={generate}><Text style={styles.buttonText}>{w.generate}</Text></Pressable>
   </View>
-  {plan.length>0&&<><View style={styles.card}><Text style={styles.title}>{w.today} · {fmtDate(today.date)}</Text>{today.items.map((item,i)=><View key={i} style={styles.line}><View style={styles.row}><Text style={styles.gold}>{mealName(item.meal)}</Text><Text style={styles.muted}>{item.grams} g</Text></View><Text style={styles.food}>{item.food.name}</Text><Text style={styles.muted}>{Math.round(nutritionForQuantity(item.food,item.grams).calories??0)} kcal · {Math.round(nutritionForQuantity(item.food,item.grams).protein_g??0)} g protein</Text></View>)}<Pressable disabled={busy} style={styles.button} onPress={addToday}><Text style={styles.buttonText}>{busy?w.loading:w.add}</Text></Pressable></View>
-   <View style={styles.card}><Text style={styles.title}>{w.week}</Text>{plan.map((d,i)=><View key={i} style={styles.line}><Text style={styles.day}>{fmtDate(d.date)}</Text>{d.items.map((item,j)=><Text key={j} style={styles.muted}>• {mealName(item.meal)}: {item.food.name} ({item.grams} g)</Text>)}</View>)}</View></>}
+  {plan.length>0&&<><View style={styles.card}><Text style={styles.title}>{w.today} · {fmtDate(today.date)}</Text>{today.items.map((item,i)=><View key={i} style={styles.line}><View style={styles.row}><Text style={styles.gold}>{mealName(item.meal)}</Text><Text style={styles.muted}>{item.grams} g</Text></View><Text style={styles.food}>{localizeFoodName(item.food.name, language)}</Text><Text style={styles.muted}>{Math.round(nutritionForQuantity(item.food,item.grams).calories??0)} kcal · {Math.round(nutritionForQuantity(item.food,item.grams).protein_g??0)} g protein</Text></View>)}<Pressable disabled={busy} style={styles.button} onPress={addToday}><Text style={styles.buttonText}>{busy?w.loading:w.add}</Text></Pressable></View>
+   <View style={styles.card}><Text style={styles.title}>{w.week}</Text>{plan.map((d,i)=><View key={i} style={styles.line}><Text style={styles.day}>{fmtDate(d.date)}</Text>{d.items.map((item,j)=><Text key={j} style={styles.muted}>• {mealName(item.meal)}: {localizeFoodName(item.food.name, language)} ({item.grams} g)</Text>)}</View>)}</View></>}
  </ScrollView>;
 }
