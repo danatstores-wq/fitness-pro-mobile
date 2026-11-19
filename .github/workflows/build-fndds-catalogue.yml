@@ -41,5 +41,6 @@ jobs:
             echo "Catalogue is already up to date."
           else
             git commit -m "Add USDA FNDDS 2021-2023 food catalogue"
+            git pull --rebase origin main
             git push
           fi
