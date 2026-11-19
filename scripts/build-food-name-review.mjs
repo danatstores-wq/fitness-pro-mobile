@@ -38,7 +38,7 @@ for (const food of [...foundation, ...fndds]) {
   const key = english.toLocaleLowerCase("en");
   if (!unique.has(key)) unique.set(key, english);
 }
-const hasArabic = /[\\u0600-\\u06FF]/;
+const hasArabic = /[\u0600-\u06FF]/;
 const hasLatin = /[A-Za-z]/;
 const rows = [...unique.values()].sort((a,b) => a.localeCompare(b, "en")).map(english => {
   const arabic = translate(english, "ar");
@@ -49,7 +49,9 @@ const rows = [...unique.values()].sort((a,b) => a.localeCompare(b, "en")).map(en
 });
 const header = ["English food name", "Arabic (current translation)", "Arabic translation status", "Your corrected Arabic translation", "French (current translation)", "French translation status", "Your corrected French translation"];
 fs.mkdirSync("docs", { recursive: true });
-fs.writeFileSync("docs/food-name-review.csv", [header, ...rows].map(row => row.map(csv).join(",")).join("\n") + "\n", "utf8");
+// Excel on Windows often needs a UTF-8 BOM to recognize Arabic correctly in CSV files.
+const csvContent = [header, ...rows].map(row => row.map(csv).join(",")).join("\r\n") + "\r\n";
+fs.writeFileSync("docs/food-name-review.csv", "\uFEFF" + csvContent, "utf8");
 console.log("Foundation foods: " + foundation.length);
 console.log("FNDDS foods: " + fndds.length);
 console.log("Unique food names in review file: " + rows.length);
