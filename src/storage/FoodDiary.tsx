@@ -159,7 +159,7 @@ export default function FoodDiary({ language, targetCalories = 2000 }: { languag
   if (customMealMode) return <CustomMealBuilder language={language} mealType={meal} onBack={()=>setCustomMealMode(false)} onAdded={()=>{setCustomMealMode(false);load().catch(e=>console.warn("Food diary refresh failed",e));}} />;
   if (plannerMode) return <ScrollView contentContainerStyle={s.content}>
     <Pressable onPress={()=>setPlannerMode(false)} style={s.outline}><Text style={s.outlineText}>{t.backDiary}</Text></Pressable>
-    <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} />
+    <MealPlanner language={language} targetCalories={targetCalories > 0 ? targetCalories : 2000} onAdded={() => { setPlannerMode(false); load().catch(e => console.warn("Food diary refresh failed after adding plan", e)); }} />
   </ScrollView>;
   const field = (label: string, value: string, set: (v:string)=>void, numeric=false) => <View style={s.field}><Text style={[s.label,{textAlign}]}>{label}</Text><TextInput value={value} onChangeText={set} keyboardType={numeric ? "decimal-pad" : "default"} placeholder="—" placeholderTextColor={MUTED} style={[s.input,{textAlign}]} /></View>;
   return <ScrollView contentContainerStyle={s.content}>
