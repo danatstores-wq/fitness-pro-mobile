@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Language } from "../i18n";
 import { localizeFoodName, normalizeFoodSearch } from "../i18n-food";
-import { addCustomMealToDiary, CustomMealSummary, FoodRecord, getCustomMeals, nutritionForQuantity, saveCustomMeal, searchFoods } from "./database";
+import { addCustomMealToDiary, CustomMealSummary, FoodNutrientDetail, FoodRecord, getCustomFoodNutrients, getCustomMeals, nutritionForQuantity, saveCustomMeal, searchFoods } from "./database";
 
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
-type Ingredient = { food: FoodRecord; grams: string };
+type Ingredient = { food: FoodRecord; grams: string; nutrients: FoodNutrientDetail[] };
 const styles = StyleSheet.create({
  wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#141A16",borderColor:"#343A32",borderWidth:1,borderRadius:16,padding:14,gap:10},
  title:{color:"#F2F0E8",fontSize:20,fontWeight:"900"},muted:{color:"#A7B0A7",fontSize:12,lineHeight:18},
@@ -19,17 +19,17 @@ const styles = StyleSheet.create({
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
  const w=ar
- ? {title:"إنشاء وجبة مخصصة",search:"ابحث عن مكوّن",name:"اسم الوجبة",grams:"الكمية بالغرام",add:"إضافة مكوّن",save:"حفظ الوجبة",saved:"الوجبات المحفوظة",use:"إضافة إلى المفكرة",back:"العودة",empty:"ابحث عن الأطعمة وأضف المكونات.",noSaved:"لا توجد وجبات محفوظة بعد.",ingredient:"مكوّن",ok:"تم حفظ الوجبة.",error:"تعذر حفظ الوجبة.",added:"تمت إضافة الوجبة إلى المفكرة.",remove:"حذف"}
+ ? {title:"إنشاء طعام مخصص",search:"ابحث عن مكوّن (مثل الدجاج)",name:"اسم الوصفة",grams:"كمية المكوّن بالغرام",add:"إضافة مكوّن",save:"حفظ الوصفة",saved:"الوصفات المحفوظة",use:"إضافة إلى المفكرة",back:"العودة",empty:"ابحث عن كل مكوّن وأضفه. ستُجلب قيمه الغذائية من قاعدة البيانات.",noSaved:"لا توجد وصفات محفوظة بعد.",ingredient:"مكوّن",ok:"تم حفظ الوصفة.",error:"تعذر حفظ الوصفة.",added:"تمت إضافة الوصفة إلى المفكرة.",remove:"حذف",total:"وزن الوصفة",per100:"القيم المحسوبة لكل ١٠٠ غ",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",nutrients:"الفيتامينات والمعادن"}
  : fr
- ? {title:"Créer un repas personnalisé",search:"Rechercher un ingrédient",name:"Nom du repas",grams:"Quantité en grammes",add:"Ajouter l’ingrédient",save:"Enregistrer le repas",saved:"Repas enregistrés",use:"Ajouter au journal",back:"Retour",empty:"Recherchez des aliments et ajoutez des ingrédients.",noSaved:"Aucun repas enregistré.",ingredient:"ingrédient(s)",ok:"Repas enregistré.",error:"Impossible d’enregistrer le repas.",added:"Repas ajouté au journal.",remove:"Retirer"}
- : {title:"Build a custom meal",search:"Search for an ingredient",name:"Meal name",grams:"Quantity in grams",add:"Add ingredient",save:"Save meal",saved:"Saved meals",use:"Add to food diary",back:"Back",empty:"Search foods and add ingredients.",noSaved:"No saved meals yet.",ingredient:"ingredient(s)",ok:"Meal saved.",error:"Could not save meal.",added:"Meal added to your diary.",remove:"Remove"};
+ ? {title:"Créer un aliment personnalisé",search:"Rechercher un ingrédient (ex. poulet)",name:"Nom de la recette",grams:"Quantité de l’ingrédient en grammes",add:"Ajouter l’ingrédient",save:"Enregistrer la recette",saved:"Recettes enregistrées",use:"Ajouter au journal",back:"Retour",empty:"Recherchez et ajoutez chaque ingrédient. Ses valeurs nutritionnelles seront récupérées dans la base.",noSaved:"Aucune recette enregistrée.",ingredient:"ingrédient(s)",ok:"Recette enregistrée.",error:"Impossible d’enregistrer la recette.",added:"Recette ajoutée au journal.",remove:"Retirer",total:"Poids total",per100:"Valeurs calculées pour 100 g",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",nutrients:"Vitamines et minéraux"}
+ : {title:"Create custom food",search:"Search for an ingredient (e.g. chicken)",name:"Recipe name",grams:"Ingredient quantity in grams",add:"Add ingredient",save:"Save recipe",saved:"Saved recipes",use:"Add to food diary",back:"Back",empty:"Search for each ingredient and add it. Nutrition details are fetched from the food database.",noSaved:"No saved recipes yet.",ingredient:"ingredient(s)",ok:"Recipe saved.",error:"Could not save recipe.",added:"Recipe added to your diary.",remove:"Remove",total:"Total recipe weight",per100:"Calculated nutrition per 100 g",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",nutrients:"Vitamins and minerals"};
  const [query,setQuery]=useState("");
  const [results,setResults]=useState<FoodRecord[]>([]);
  const [name,setName]=useState("");
  const [grams,setGrams]=useState("100");
  const [items,setItems]=useState<Ingredient[]>([]);
  const [saved,setSaved]=useState<CustomMealSummary[]>([]);
- const [busy,setBusy]=useState(false);
+ const [busy,setBusy]=useState(false);\n const [loadingFood,setLoadingFood]=useState(false);
  useEffect(()=>{getCustomMeals().then(setSaved).catch(e=>console.warn("Custom meals unavailable",e));},[]);
  useEffect(()=>{
   let active=true;
@@ -57,11 +57,11 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
  return <ScrollView contentContainerStyle={styles.wrap}>
   <Pressable style={styles.outline} onPress={onBack}><Text style={styles.outlineText}>{w.back}</Text></Pressable>
   <View style={styles.card}>
-   <Text style={styles.title}>{w.title}</Text>
+   <Text style={styles.title}>{w.title}</Text><Text style={styles.muted}>{w.empty}</Text>
    <TextInput value={name} onChangeText={setName} placeholder={w.name} placeholderTextColor="#899389" style={styles.input}/>
    <TextInput value={query} onChangeText={setQuery} placeholder={w.search} placeholderTextColor="#899389" style={styles.input}/>
    <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder={w.grams} placeholderTextColor="#899389" style={styles.input}/>
-   {results.map(food=><Pressable key={food.id} onPress={()=>addIngredient(food)} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(food.name,language)}</Text><Text style={styles.outlineText}>＋</Text></View><Text style={styles.muted}>{food.calories==null?"—":Math.round(food.calories)+" kcal"} / 100 g</Text></Pressable>)}
+   {results.map(food=><Pressable key={food.id} onPress={()=>addIngredient(food)} disabled={loadingFood} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(food.name,language)}</Text><Text style={styles.outlineText}>＋</Text></View><Text style={styles.muted}>{food.calories==null?"—":Math.round(food.calories)+" kcal"} / 100 g</Text></Pressable>)}
    {items.length===0?<Text style={styles.muted}>{w.empty}</Text>:items.map((item,index)=><View key={index} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(item.food.name,language)}</Text><Text style={styles.muted}>{item.grams} g</Text><Pressable onPress={()=>setItems(old=>old.filter((_,i)=>i!==index))}><Text style={styles.outlineText}>×</Text></Pressable></View></View>)}
    {items.length>0&&<Text style={styles.muted}>{Math.round(totals.calories)} kcal · {totals.protein.toFixed(1)} g protein · {totals.carbs.toFixed(1)} g carbs · {totals.fat.toFixed(1)} g fat</Text>}
    <Pressable disabled={busy||!items.length||!name.trim()} style={styles.button} onPress={save}><Text style={styles.buttonText}>{w.save}</Text></Pressable>
