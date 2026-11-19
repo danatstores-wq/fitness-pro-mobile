@@ -111,7 +111,7 @@ export default function ReminderSettings({language}:{language:Language}) {
   };
   const line=(label:string,enabled:boolean,onToggle:(v:boolean)=>void,time:string,onTime:(v:string)=>void)=><View style={{flexDirection:"row",alignItems:"center",gap:9,marginTop:12}}><Switch value={enabled} onValueChange={onToggle} trackColor={{false:"#DDE6D9",true:"#368A4B"}} thumbColor={enabled?GOLD:"#D0D0D0"}/><Text style={{color:"#1C281E",fontWeight:"700",flex:1}}>{label}</Text><TextInput value={time} onChangeText={onTime} keyboardType="numbers-and-punctuation" maxLength={5} placeholder="HH:MM" placeholderTextColor={MUTED} style={{width:82,color:"#1C281E",backgroundColor:"#F4F7F1",borderColor:"#DDE6D9",borderWidth:1,borderRadius:9,padding:9,textAlign:"center"}}/></View>;
   return <View style={{backgroundColor:PANEL,borderColor:"#DDE6D9",borderWidth:1,borderRadius:18,padding:16,marginBottom:12}}>
-    <Text style={{color:GOLD,fontSize:12,fontWeight:"900",letterSpacing:1.2}}>{t.title}</Text><Text style={{color:MUTED,fontSize:12,lineHeight:18,marginTop:7}}>{t.sub}</Text>
+    <Text style={{color:"#368A4B",fontSize:12,fontWeight:"900",letterSpacing:1.2}}>{t.title}</Text><Text style={{color:MUTED,fontSize:12,lineHeight:18,marginTop:7}}>{t.sub}</Text>
     {line(t.breakfast,p.breakfast_enabled,v=>update("breakfast_enabled",v),p.breakfast_time,v=>update("breakfast_time",v))}
     {line(t.lunch,p.lunch_enabled,v=>update("lunch_enabled",v),p.lunch_time,v=>update("lunch_time",v))}
     {line(t.dinner,p.dinner_enabled,v=>update("dinner_enabled",v),p.dinner_time,v=>update("dinner_time",v))}
