@@ -133,8 +133,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
           <CameraView
             style={styles.camera}
             facing="back"
-            barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39", "itf14"] }}
-            onBarcodeScanned={loading ? undefined : lookup}
+            barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39", "code93", "itf14", "codabar", "qr", "pdf417", "aztec", "datamatrix"] }}
+            onBarcodeScanned={lookup}
           />
         )}
         {loading && <Text style={styles.loading}>{ar ? "جارٍ البحث عن المنتج…" : fr ? "Recherche du produit…" : "Looking up product…"}</Text>}
