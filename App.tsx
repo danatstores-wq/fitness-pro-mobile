@@ -267,7 +267,7 @@ export default function App() {
 <Card><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
 <Macro label={t.protein} value={metrics?.protein||125} consumed={dailyIntake.protein} color={GOLD}/><Macro label={t.carbs} value={metrics?.carbs||225} consumed={dailyIntake.carbs} color={GOLD}/><Macro label={t.fats} value={metrics?.fats||62} consumed={dailyIntake.fats} color={GREEN}/></Card>
 <View style={styles.statRow}><StatCard label={t.mealsLogged} value={dailyIntake.calories===null?"0":"1"} icon="＋"/><StatCard label={t.currentWeight} value={profile.weight?profile.weight+" "+t.kg:"—"} icon="↗"/></View>
- {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<GoldButton title={t.openFoodDiary} onPress={()=>setTab("diary")}/></>}</ScrollView>}{tab === "diary" && (!hydrated
+ {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}<Pressable accessibilityRole="button" onPress={()=>setTab("diary")} style={styles.openDiaryButton}><Text style={styles.openDiaryButtonText}>{t.openFoodDiary}</Text></Pressable></>}</ScrollView>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -421,6 +421,8 @@ const styles = StyleSheet.create({
   choice: { borderWidth: 1, borderColor: "#303A31", backgroundColor: "#141A16", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   choiceActive: { borderColor: GOLD, backgroundColor: "#263A2B" },
   choiceText: { color: "#C2C8BB", fontSize: 12, fontWeight: "700" },
+  openDiaryButton: { backgroundColor: "#EFFF00", borderRadius: 14, paddingVertical: 16, alignItems: "center", marginTop: 14, borderWidth: 1, borderColor: "#F7FF78", shadowColor: "#EFFF00", shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 0 }, elevation: 5 },
+  openDiaryButtonText: { color: "#090D0B", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
   goldButton: { backgroundColor: "#C9A34A", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14 },
   goldButtonText: { color: "#141A16", fontWeight: "900", fontSize: 14 },
   tabBar: { flexDirection: "row", backgroundColor: "#141A16", borderTopWidth: 1, borderTopColor: "#343B32", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
