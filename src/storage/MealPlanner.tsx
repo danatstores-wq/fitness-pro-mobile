@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
  nutrientGrid:{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:5},nutrient:{width:"48%",flexGrow:1,backgroundColor:"#F4F7F1",borderRadius:10,padding:9},nutrientName:{color:"#667366",fontSize:10,fontWeight:"700"},nutrientValue:{color:"#1C281E",fontSize:14,fontWeight:"900",marginTop:3},
  section:{color:"#1C281E",fontSize:14,fontWeight:"900",marginTop:7}
 });
-export default function MealPlanner({language,targetCalories,onAdded}:{language:Language;targetCalories:number;onAdded?:()=>void}) {
+export default function MealPlanner({language,targetCalories,targetProtein,targetCarbs,targetFat,onAdded}:{language:Language;targetCalories:number;targetProtein?:number;targetCarbs?:number;targetFat?:number;onAdded?:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
  const w=ar?{title:"مخطط الوجبات",subtitle:"أنشئ خطة يومية أو أسبوعية وفق هدف السعرات.",all:"كل الأطعمة",veg:"نباتي",high:"غني بالبروتين",generate:"إنشاء خطة",loading:"جارٍ إعداد الخطة…",today:"خطة اليوم",week:"الخطة الأسبوعية",add:"إضافة خطة اليوم إلى المفكرة",added:"تمت إضافة جميع وجبات اليوم إلى المفكرة.",breakfast:"الفطور",lunch:"الغداء",dinner:"العشاء",snacks:"وجبات خفيفة",empty:"لا توجد أطعمة كافية في قاعدة البيانات. أضف أو استورد الأطعمة أولاً.",error:"تعذر إضافة الخطة.",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",sugar:"السكريات",satFat:"الدهون المشبعة",cholesterol:"الكوليسترول",water:"الماء",nutrition:"إجمالي القيم الغذائية لخطة اليوم",micros:"الفيتامينات والمعادن والعناصر الأخرى",unknown:"لا تتوفر بيانات غذائية إضافية لهذه الأطعمة."}
  :fr?{title:"Planificateur de repas",subtitle:"Créez un plan quotidien ou hebdomadaire selon votre objectif calorique.",all:"Tous les aliments",veg:"Végétarien",high:"Riche en protéines",generate:"Générer le plan",loading:"Création du plan…",today:"Plan du jour",week:"Plan de la semaine",add:"Ajouter le plan du jour au journal",added:"Tous les repas du jour ont été ajoutés au journal.",breakfast:"Petit-déjeuner",lunch:"Déjeuner",dinner:"Dîner",snacks:"Collations",empty:"Pas assez d’aliments dans la base. Importez ou ajoutez des aliments.",error:"Impossible d’ajouter le plan.",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",sugar:"Sucres",satFat:"Graisses saturées",cholesterol:"Cholestérol",water:"Eau",nutrition:"Valeurs nutritionnelles totales du jour",micros:"Vitamines, minéraux et autres nutriments",unknown:"Aucune autre donnée nutritionnelle disponible pour ces aliments."}
@@ -52,22 +52,62 @@ export default function MealPlanner({language,targetCalories,onAdded}:{language:
   return()=>{live=false;};
  },[plan]);
  const generate=()=>{
-  const plant=/apple|banana|orange|berry|fruit|vegetable|broccoli|spinach|carrot|potato|tomato|rice|oat|bread|pasta|bean|lentil|chickpea|nut|seed|tofu|yogurt|milk|egg|cheese|avocado|corn|cucumber|pepper|mushroom|onion/i;
+  // Meal-specific food roles prevent unsuitable combinations (for example, chicken at breakfast).
   const meat=/beef|pork|chicken|turkey|lamb|meat|fish|salmon|tuna|shrimp|prawn|sausage|bacon|ham|seafood/i;
-  let pool=foods.filter(f=>f.calories!==null&&f.calories>20&&f.protein_g!==null&&f.carbs_g!==null&&f.fat_g!==null);
-  if(preference==="vegetarian")pool=pool.filter(f=>plant.test(f.name)&&!meat.test(f.name));
-  if(preference==="high")pool=pool.filter(f=>(f.protein_g??0)>=8);
-  if(pool.length<4){Alert.alert(w.empty);return;}
+  const poultryFish=/chicken|turkey|beef|pork|lamb|fish|salmon|tuna|shrimp|prawn|seafood|sausage|bacon|ham/i;
+  const dairyEgg=/egg|yogurt|milk|cheese|cottage|kefir|skyr/i;
+  const grain=/oat|bread|rice|pasta|cereal|quinoa|couscous|bulgur|toast|pancake/i;
+  const fruit=/apple|banana|orange|berry|fruit|grape|melon|pear|peach|mango|pineapple/i;
+  const vegetable=/vegetable|broccoli|spinach|carrot|tomato|cucumber|pepper|mushroom|onion|lettuce|zucchini|cabbage|cauliflower/i;
+  const starch=/potato|sweet potato|corn|rice|pasta|bread|oat|quinoa|couscous|bulgur|grain/i;
+  const plantProtein=/bean|lentil|chickpea|tofu|soy|nut|seed|pea/i;
+  let pool=foods.filter(f=>f.calories!==null&&f.calories>0&&f.protein_g!==null&&f.carbs_g!==null&&f.fat_g!==null);
+  if(preference==="vegetarian")pool=pool.filter(f=>!meat.test(f.name));
+  if(preference==="high")pool=pool.filter(f=>(f.protein_g??0)>=5);
+  if(pool.length<6){Alert.alert(w.empty);return;}
+  const pick=(items:FoodRecord[],used:Set<number>,day:number,slot:number,role:number)=>{
+   const available=items.filter(f=>!used.has(f.id));
+   const list=(available.length?available:items).slice().sort((a,b)=>{
+    const score=(f:FoodRecord)=>role===0?(f.protein_g??0)*2+(f.fiber_g??0)*.3:role===1?(f.carbs_g??0)*1.2+(f.fiber_g??0)*.4:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
+    return score(b)-score(a);
+   });
+   if(!list.length)return null;
+   return list[(day*3+slot*5+role*7)%Math.min(list.length,Math.max(1,Math.min(8,list.length)))];
+  };
   const built:PlanDay[]=[];
+  const mealRoles:Record<Meal,{groups:RegExp[];base:number[]}> = {
+   breakfast:{groups:[new RegExp(dairyEgg.source+"|"+plantProtein.source,"i"),grain,fruit],base:[130,45,100]},
+   lunch:{groups:[new RegExp(meat.source+"|"+dairyEgg.source+"|"+plantProtein.source,"i"),starch,vegetable],base:[130,150,120]},
+   dinner:{groups:[new RegExp(meat.source+"|"+dairyEgg.source+"|"+plantProtein.source,"i"),starch,vegetable],base:[120,110,150]},
+   snacks:{groups:[new RegExp(dairyEgg.source+"|"+fruit.source+"|"+plantProtein.source,"i"),new RegExp(fruit.source+"|"+plantProtein.source+"|"+dairyEgg.source,"i")],base:[100,60]}
+  };
+  const mealTargetMacros={protein:targetProtein??targetCalories*.20/4,carbs:targetCarbs??targetCalories*.50/4,fat:targetFat??targetCalories*.30/9};
   for(let day=0;day<7;day++){
    const used=new Set<number>();const items:PlanItem[]=[];
-   for(const meal of meals){
-    const target=targetCalories*shares[meal];
-    const candidates=pool.filter(f=>!used.has(f.id)).sort((a,b)=>Math.abs((a.calories??0)-target/1.6)-Math.abs((b.calories??0)-target/1.6)).slice(0,12);
-    const chosen=candidates[Math.floor(Math.random()*candidates.length)]??pool[Math.floor(Math.random()*pool.length)];
-    used.add(chosen.id);
-    const grams=Math.max(40,Math.min(350,Math.round(target/(chosen.calories??100)*100)));
-    items.push({meal,food:chosen,grams});
+   for(let slot=0;slot<meals.length;slot++){
+    const meal=meals[slot],target=targetCalories*shares[meal],definition=mealRoles[meal];
+    const selected: {food:FoodRecord;base:number}[]=[];
+    definition.groups.forEach((pattern,role)=>{
+     // Breakfast explicitly excludes meat and seafood even when the user selects "all foods".
+     let candidates=pool.filter(f=>pattern.test(f.name)&&(meal!=="breakfast"||!poultryFish.test(f.name)));
+     if(meal==="snacks")candidates=candidates.filter(f=>!poultryFish.test(f.name));
+     const food=pick(candidates,used,day,slot,role);
+     if(food&&!selected.some(item=>item.food.id===food.id)){selected.push({food,base:definition.base[role]??80});used.add(food.id);}
+    });
+    // If the catalogue lacks a role, use another food suitable for that meal type, never force meat into breakfast/snacks.
+    if(selected.length<2){
+     const fallback=pool.filter(f=>!used.has(f.id)&&(meal!=="breakfast"&&!((meal==="snacks")?poultryFish.test(f.name):false))&&(meal!=="breakfast"||!poultryFish.test(f.name)));
+     const extra=pick(fallback,used,day,slot,3);
+     if(extra){selected.push({food:extra,base:80});used.add(extra.id);}
+    }
+    if(!selected.length)continue;
+    const baseCalories=selected.reduce((sum,item)=>sum+(item.food.calories??0)*item.base/100,0);
+    // Scale portions toward the meal's calorie share while keeping practical serving limits.
+    const scale=baseCalories>0?Math.max(.55,Math.min(1.65,target/baseCalories)):1;
+    selected.forEach(item=>{
+     const grams=Math.max(meal==="snacks"?25:35,Math.min(meal==="snacks"?180:300,Math.round(item.base*scale)));
+     items.push({meal,food:item.food,grams});
+    });
    }
    const date=new Date();date.setDate(date.getDate()+day);built.push({date,items});
   }
