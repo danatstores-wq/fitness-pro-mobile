@@ -68,7 +68,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   const pick=(items:FoodRecord[],used:Set<number>,day:number,slot:number,role:number)=>{
    const available=items.filter(f=>!used.has(f.id));
    const list=(available.length?available:items).slice().sort((a,b)=>{
-    const kcal=Math.max(1,f.calories??1);\n    const proteinDensity=(f.protein_g??0)/kcal,carbDensity=(f.carbs_g??0)/kcal,fatDensity=(f.fat_g??0)/kcal;\n    const score=(f:FoodRecord)=>role===0?proteinDensity*(1+macroShares.protein*3)+fatDensity*(1+macroShares.fat)+(f.fiber_g??0)/100:role===1?carbDensity*(1+macroShares.carbs*3)+(f.fiber_g??0)/100:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
+    const score=(f:FoodRecord)=>{\n     const kcal=Math.max(1,f.calories??1);\n     const proteinDensity=(f.protein_g??0)/kcal,carbDensity=(f.carbs_g??0)/kcal,fatDensity=(f.fat_g??0)/kcal;\n     return role===0?proteinDensity*(1+macroShares.protein*3)+fatDensity*(1+macroShares.fat)+(f.fiber_g??0)/100:role===1?carbDensity*(1+macroShares.carbs*3)+(f.fiber_g??0)/100:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);\n    };
     return score(b)-score(a);
    });
    if(!list.length)return null;
