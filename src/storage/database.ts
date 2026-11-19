@@ -1,6 +1,7 @@
 import * as SQLite from "expo-sqlite";
 
 export type StoredProfile = {
+  name?: string;
   age: number;
   sex: "male" | "female";
   height_cm: number;
@@ -25,6 +26,7 @@ async function database() {
         PRAGMA foreign_keys = ON;
         CREATE TABLE IF NOT EXISTS user_profile (
           id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
+          name TEXT NOT NULL DEFAULT '',
           age INTEGER NOT NULL,
           sex TEXT NOT NULL,
           height_cm REAL NOT NULL,
@@ -163,6 +165,7 @@ async function database() {
       const profileColumns = await db.getAllAsync<{ name: string }>("PRAGMA table_info(user_profile)");
       const profileNames = new Set(profileColumns.map(column => column.name));
       const profileAdditions: Record<string, string> = {
+        name: "TEXT NOT NULL DEFAULT ''",
         formula_setting: "TEXT NOT NULL DEFAULT 'mifflin_st_jeor'",
         language: "TEXT NOT NULL DEFAULT 'en'",
         unit_system: "TEXT NOT NULL DEFAULT 'metric'", waist_cm: "REAL", hip_cm: "REAL", neck_cm: "REAL", body_fat_percent: "REAL", muscle_mass_kg: "REAL"
@@ -215,24 +218,24 @@ async function database() {
 
 export async function loadProfile(): Promise<StoredProfile | null> {
   const db = await database();
-  return db.getFirstAsync<StoredProfile>("SELECT age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg FROM user_profile WHERE id = 1");
+  return db.getFirstAsync<StoredProfile>("SELECT name, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg FROM user_profile WHERE id = 1");
 }
 
 export async function saveProfile(profile: StoredProfile) {
   const db = await database();
   await db.runAsync(
     `INSERT INTO user_profile
-      (id, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (id, name, age, sex, height_cm, current_weight_kg, target_weight_kg, activity_level, fitness_objective, updated_at, formula_setting, language, unit_system, waist_cm, hip_cm, neck_cm, body_fat_percent, muscle_mass_kg)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
-      age=excluded.age, sex=excluded.sex, height_cm=excluded.height_cm,
+      name=excluded.name, age=excluded.age, sex=excluded.sex, height_cm=excluded.height_cm,
       current_weight_kg=excluded.current_weight_kg, target_weight_kg=excluded.target_weight_kg,
       activity_level=excluded.activity_level, fitness_objective=excluded.fitness_objective,
       updated_at=excluded.updated_at, formula_setting=excluded.formula_setting,
       language=excluded.language, unit_system=excluded.unit_system,
       waist_cm=excluded.waist_cm, hip_cm=excluded.hip_cm, neck_cm=excluded.neck_cm,
       body_fat_percent=excluded.body_fat_percent, muscle_mass_kg=excluded.muscle_mass_kg`,
-    profile.age, profile.sex, profile.height_cm, profile.current_weight_kg,
+    profile.name ?? '', profile.age, profile.sex, profile.height_cm, profile.current_weight_kg,
     profile.target_weight_kg, profile.activity_level, profile.fitness_objective,
     new Date().toISOString(), profile.formula_setting ?? "mifflin_st_jeor",
     profile.language ?? "en", profile.unit_system ?? "metric",
