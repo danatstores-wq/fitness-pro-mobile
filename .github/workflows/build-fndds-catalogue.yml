@@ -4,6 +4,10 @@ on:
   push:
     paths:
       - "scripts/import-usda-foundation.mjs"
+      - "scripts/build-food-name-review.mjs"
+      - "src/data/usda-foundation-foods.ts"
+      - "src/data/usda-fndds-foods.ts"
+      - "src/i18n-food.ts"
       - ".github/workflows/build-fndds-catalogue.yml"
 
 permissions:
@@ -26,11 +30,13 @@ jobs:
             --output /tmp/fndds.zip
       - name: Generate compressed catalogue
         run: node scripts/import-usda-foundation.mjs /tmp/fndds.zip src/data/usda-fndds-foods.ts
-      - name: Commit generated catalogue
+      - name: Generate English Arabic French food review CSV
+        run: node scripts/build-food-name-review.mjs
+      - name: Commit generated catalogue and review file
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/data/usda-fndds-foods.ts
+          git add src/data/usda-fndds-foods.ts docs/food-name-review.csv
           if git diff --cached --quiet; then
             echo "Catalogue is already up to date."
           else
