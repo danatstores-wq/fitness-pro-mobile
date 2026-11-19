@@ -72,6 +72,12 @@ function calculate(profile: Profile) {
 
 export default function App() {
   const [language, setLanguage] = useState<Language>("en");
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowWelcome(false), 4000);
+    return () => clearTimeout(timer);
+  }, []);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [saved, setSaved] = useState(false);
@@ -247,6 +253,33 @@ export default function App() {
     }
   };
 
+  if (showWelcome) {
+    return (
+      <SafeAreaView style={styles.splashContainer}>
+        <StatusBar barStyle="light-content" />
+        <Image
+          source={require("./assets/images/welcome.jpg")}
+          style={styles.splashImage}
+          resizeMode="cover"
+          accessibilityLabel="FITNESS PRO welcome"
+        />
+        <View style={styles.splashShade} />
+        <View style={styles.splashContent}>
+          <Text style={styles.splashEyebrow}>DANAT / WELLNESS</Text>
+          <Text style={styles.splashTitle}>FITNESS PRO</Text>
+          <View style={styles.splashAccent} />
+          <Text style={styles.splashWelcome}>Welcome to FITNESS PRO</Text>
+          <Text style={styles.splashArabic}>مرحباً بك في FITNESS PRO</Text>
+          <Text style={styles.splashFrench}>Bienvenue sur FITNESS PRO</Text>
+        </View>
+        <View style={styles.splashFooter}>
+          <View style={styles.splashFooterDot} />
+          <Text style={styles.splashFooterText}>YOUR HEALTH. YOUR JOURNEY.</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" />
@@ -416,6 +449,19 @@ function Choice({ title, active, onPress }: { title: string; active: boolean; on
 }
 
 const styles = StyleSheet.create({
+  splashContainer: { flex: 1, backgroundColor: "#090D0B", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  splashImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
+  splashShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(5, 10, 7, 0.62)" },
+  splashContent: { width: "100%", maxWidth: 480, paddingHorizontal: 28, alignItems: "center", justifyContent: "center", flex: 1 },
+  splashEyebrow: { color: "#EFFF00", fontSize: 11, fontWeight: "800", letterSpacing: 4, marginBottom: 12 },
+  splashTitle: { color: "#F2F0E8", fontSize: 34, fontWeight: "900", letterSpacing: 3, textAlign: "center" },
+  splashAccent: { width: 58, height: 4, borderRadius: 4, backgroundColor: "#EFFF00", marginTop: 20, marginBottom: 28 },
+  splashWelcome: { color: "#F2F0E8", fontSize: 19, fontWeight: "800", textAlign: "center", marginBottom: 13 },
+  splashArabic: { color: "#F2F0E8", fontSize: 20, fontWeight: "700", textAlign: "center", marginBottom: 13, writingDirection: "rtl" },
+  splashFrench: { color: "#F2F0E8", fontSize: 18, fontWeight: "700", textAlign: "center" },
+  splashFooter: { position: "absolute", bottom: 28, flexDirection: "row", alignItems: "center", gap: 9 },
+  splashFooterDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#EFFF00" },
+  splashFooterText: { color: "#F2F0E8", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   safe: { flex: 1, backgroundColor: "#050806", alignItems: "center" },
   appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#202820" },
   header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: "#343B32" },
