@@ -4,7 +4,7 @@ import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutriti
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image,
-  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Linking
+  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Language, translations, rtl } from "./src/i18n";
@@ -13,7 +13,7 @@ import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 
-type Tab = "dashboard" | "diary" | "progress" | "profile";
+type Tab = "dashboard" | "diary" | "progress" | "profile" | "contact";
 type Profile = {
   name: string; age: string; sex: "male" | "female"; height: string; weight: string;
   targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive"; ibwFormula: "devine" | "robinson";
@@ -381,6 +381,18 @@ export default function App() {
   </Card>
   <Card><Text style={styles.cardTitle}>{t.logWeight}</Text><TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/><GoldButton title={t.logWeight} onPress={addWeight}/></Card>
 </ScrollView>}
+{tab === "contact" && <ScrollView contentContainerStyle={[styles.content, { flexGrow: 1, justifyContent: "center" }]}>
+  <View style={styles.contactWelcome}>
+    <View style={styles.contactIconCircle}><Ionicons name="mail" size={38} color={GREEN} /></View>
+    <Text style={styles.contactEyebrow}>DANAT WELLNESS</Text>
+    <Text style={[styles.contactTitle, direction]}>{language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"}</Text>
+    <Text style={[styles.contactDescription, direction]}>{language === "ar" ? "يسعدنا سماع رأيك. لأي استفسار أو مساعدة، يمكنك التواصل معنا عبر البريد الإلكتروني:" : language === "fr" ? "Nous serons ravis de vous aider. Pour toute question ou assistance, contactez-nous par e-mail :" : "We’re happy to hear from you. For questions or support, please reach us by email:"}</Text>
+    <View style={styles.contactEmailBox}>
+      <Ionicons name="mail-outline" size={21} color={GREEN} />
+      <Text selectable style={styles.contactEmail}>IT@danat-gulf.com</Text>
+    </View>
+  </View>
+</ScrollView>}
 {tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
@@ -458,9 +470,9 @@ export default function App() {
             <Text style={[styles.tabLabel, tab === key && styles.activeTab]} numberOfLines={1}>{label}</Text>
           </Pressable>
         )}
-        <Pressable onPress={() => Linking.openURL("mailto:IT@danat-gulf.com")} style={styles.tabItem} accessibilityRole="link" accessibilityLabel={language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"}>
-          <Ionicons name="mail-outline" size={23} color="#C5D0C2" />
-          <Text style={styles.tabLabel} numberOfLines={1}>{language === "ar" ? "اتصل بنا" : language === "fr" ? "Contact" : "Contact"}</Text>
+        <Pressable onPress={() => setTab("contact")} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"} accessibilityState={{ selected: tab === "contact" }}>
+          <Ionicons name={tab === "contact" ? "mail" : "mail-outline"} size={23} color={tab === "contact" ? GREEN : "#C5D0C2"} />
+          <Text style={[styles.tabLabel, tab === "contact" && styles.activeTab]} numberOfLines={1}>{language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"}</Text>
         </Pressable>
       </View>
       </View>
@@ -607,6 +619,13 @@ const styles = StyleSheet.create({
   openDiaryButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
   goldButton: { backgroundColor: "#263A2C", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14, borderWidth: 1, borderColor: "#263A2C" },
   goldButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14 },
+  contactWelcome: { backgroundColor: "#FFFFFF", borderRadius: 26, borderWidth: 1, borderColor: "#DDE6D9", padding: 28, alignItems: "center", shadowColor: "#263A2C", shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  contactIconCircle: { width: 82, height: 82, borderRadius: 41, backgroundColor: "#EEF4E9", borderWidth: 1, borderColor: "#DDE6D9", alignItems: "center", justifyContent: "center", marginBottom: 22 },
+  contactEyebrow: { color: GREEN, fontSize: 10, fontWeight: "900", letterSpacing: 3, marginBottom: 9 },
+  contactTitle: { color: IVORY, fontSize: 28, fontWeight: "900", textAlign: "center", marginBottom: 12 },
+  contactDescription: { color: MUTED, fontSize: 14, lineHeight: 23, textAlign: "center", marginBottom: 24 },
+  contactEmailBox: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: "#EEF4E9", borderRadius: 14, borderWidth: 1, borderColor: "#DDE6D9", paddingHorizontal: 12, paddingVertical: 16 },
+  contactEmail: { color: GREEN, fontSize: 16, fontWeight: "800" },
   tabBar: { flexDirection: "row", backgroundColor: "#263A2C", borderTopWidth: 1, borderTopColor: "#3D5541", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#C5D0C2", fontSize: 21, fontWeight: "500" },
