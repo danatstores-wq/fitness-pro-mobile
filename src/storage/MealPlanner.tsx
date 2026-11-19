@@ -68,7 +68,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   const pick=(items:FoodRecord[],used:Set<number>,day:number,slot:number,role:number)=>{
    const available=items.filter(f=>!used.has(f.id));
    const list=(available.length?available:items).slice().sort((a,b)=>{
-    const score=(f:FoodRecord)=>role===0?(f.protein_g??0)*2+(f.fiber_g??0)*.3:role===1?(f.carbs_g??0)*1.2+(f.fiber_g??0)*.4:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
+    const kcal=Math.max(1,f.calories??1);\n    const proteinDensity=(f.protein_g??0)/kcal,carbDensity=(f.carbs_g??0)/kcal,fatDensity=(f.fat_g??0)/kcal;\n    const score=(f:FoodRecord)=>role===0?proteinDensity*(1+macroShares.protein*3)+fatDensity*(1+macroShares.fat)+(f.fiber_g??0)/100:role===1?carbDensity*(1+macroShares.carbs*3)+(f.fiber_g??0)/100:role===2?(f.fiber_g??0)*2+(f.calories??0)*.02:(f.protein_g??0)+(f.fiber_g??0);
     return score(b)-score(a);
    });
    if(!list.length)return null;
@@ -81,7 +81,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
    dinner:{groups:[new RegExp(meat.source+"|"+dairyEgg.source+"|"+plantProtein.source,"i"),starch,vegetable],base:[120,110,150]},
    snacks:{groups:[new RegExp(dairyEgg.source+"|"+fruit.source+"|"+plantProtein.source,"i"),new RegExp(fruit.source+"|"+plantProtein.source+"|"+dairyEgg.source,"i")],base:[100,60]}
   };
-  const mealTargetMacros={protein:targetProtein??targetCalories*.20/4,carbs:targetCarbs??targetCalories*.50/4,fat:targetFat??targetCalories*.30/9};
+  const mealTargetMacros={protein:targetProtein??targetCalories*.20/4,carbs:targetCarbs??targetCalories*.50/4,fat:targetFat??targetCalories*.30/9};\n  const macroShares={protein:mealTargetMacros.protein*4/Math.max(1,targetCalories),carbs:mealTargetMacros.carbs*4/Math.max(1,targetCalories),fat:mealTargetMacros.fat*9/Math.max(1,targetCalories)};
   for(let day=0;day<7;day++){
    const used=new Set<number>();const items:PlanItem[]=[];
    for(let slot=0;slot<meals.length;slot++){
