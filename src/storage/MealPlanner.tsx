@@ -10,12 +10,12 @@ type PlanDay = { date: Date; items: PlanItem[] };
 const meals: Meal[] = ["breakfast", "lunch", "dinner", "snacks"];
 const shares: Record<Meal, number> = { breakfast: .25, lunch: .35, dinner: .30, snacks: .10 };
 const styles = StyleSheet.create({
- wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#191C19",borderColor:"#343A32",borderWidth:1,borderRadius:16,padding:14,gap:9},
- title:{color:"#F2F0E9",fontSize:20,fontWeight:"900"},muted:{color:"#9A9D96",fontSize:12,lineHeight:18},
- gold:{color:"#D7B66D",fontWeight:"800"},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- chip:{borderWidth:1,borderColor:"#55594F",borderRadius:10,paddingVertical:9,paddingHorizontal:12},active:{borderColor:"#D7B66D",backgroundColor:"#30291D"},
- button:{backgroundColor:"#D7B66D",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#171813",fontWeight:"900"},
- day:{color:"#F2F0E9",fontSize:14,fontWeight:"800"},food:{color:"#F2F0E9",fontSize:13,fontWeight:"700"},line:{borderTopWidth:1,borderColor:"#30352F",paddingTop:8,gap:4}
+ wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#DDE6D9",borderWidth:1,borderRadius:16,padding:14,gap:9},
+ title:{color:"#1C281E",fontSize:20,fontWeight:"900"},muted:{color:"#667366",fontSize:12,lineHeight:18},
+ gold:{color:"#D8F500",fontWeight:"800"},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
+ chip:{borderWidth:1,borderColor:"#667366",borderRadius:10,paddingVertical:9,paddingHorizontal:12},active:{borderColor:"#D8F500",backgroundColor:"#EEF4E9"},
+ button:{backgroundColor:"#D8F500",padding:13,borderRadius:11,alignItems:"center"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
+ day:{color:"#1C281E",fontSize:14,fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700"},line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:8,gap:4}
 });
 export default function MealPlanner({language,targetCalories}:{language:Language;targetCalories:number}) {
  const ar=language==="ar", fr=language==="fr";
