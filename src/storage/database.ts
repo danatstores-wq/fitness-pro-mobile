@@ -39,6 +39,7 @@ async function database() {
           language TEXT NOT NULL DEFAULT 'en',
           unit_system TEXT NOT NULL DEFAULT 'metric', waist_cm REAL, hip_cm REAL, neck_cm REAL, body_fat_percent REAL, muscle_mass_kg REAL
         );
+        CREATE TABLE IF NOT EXISTS local_profile_photo (id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1), data_uri TEXT NOT NULL, updated_at TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS seed_imports (
           seed_key TEXT PRIMARY KEY NOT NULL,
           imported_count INTEGER NOT NULL,
@@ -773,4 +774,23 @@ export async function ensureFoundationFoodsImported(records: ImportedFoodRecord[
 
 export async function ensureFnddsFoodsImported(source: ImportedFoodRecord[] | (() => Promise<ImportedFoodRecord[]>)) {
   return ensureFoodCatalogueImported("usda_fndds_2021_2023_v2_micronutrients", source);
+}
+
+
+// Profile photos are deliberately stored only in this device-local SQLite database.
+export async function getProfilePhotoDataUri(): Promise<string | null> {
+  const db = await database();
+  const row = await db.getFirstAsync<{ data_uri: string }>("SELECT data_uri FROM local_profile_photo WHERE id = 1");
+  return row?.data_uri ?? null;
+}
+
+export async function saveProfilePhotoDataUri(dataUri: string): Promise<void> {
+  if (!dataUri.startsWith("data:image/")) throw new Error("A valid image is required.");
+  const db = await database();
+  await db.runAsync("INSERT INTO local_profile_photo (id, data_uri, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET data_uri=excluded.data_uri, updated_at=excluded.updated_at", dataUri, new Date().toISOString());
+}
+
+export async function deleteProfilePhoto(): Promise<void> {
+  const db = await database();
+  await db.runAsync("DELETE FROM local_profile_photo WHERE id = 1");
 }
