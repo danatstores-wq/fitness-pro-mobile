@@ -24,7 +24,7 @@ function translate(name, language) {
   for (const [english, arabic, french] of dictionary) {
     const replacement = language === "ar" ? arabic : french;
     if (!replacement) continue;
-    const escaped = english.replace(/[.*+?^${}()|[\\]\\]/g, "\\english.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")");
+    const escaped = [...english].map(ch => ".*+?^${}()|[]\\\\".includes(ch) ? "\\" + ch : ch).join("");
     result = result.replace(new RegExp("\\b" + escaped + "\\b", "gi"), replacement);
   }
   return result.replace(/,\s*/g, " · ").replace(/\s+/g, " ").trim();
