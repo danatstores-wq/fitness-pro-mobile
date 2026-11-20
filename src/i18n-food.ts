@@ -182,6 +182,7 @@ const foodWords: Record<string, [string, string]> = {
   "anchovies": ["أنشوفة", "anchois"],
   "calamari": ["كاليماري", "calamar"],
   "scallop": ["إسكالوب بحري", "pétoncle"],
+  "chicken adobo": ["دجاج مطهو على الطريقة الفلبينية", "Poulet à l’adobo"],
   "bison": ["بيسون", "bison"],
   "egg white": ["بياض البيض", "blanc d’œuf"],
   "egg whole": ["بيضة كاملة", "œuf entier"],
