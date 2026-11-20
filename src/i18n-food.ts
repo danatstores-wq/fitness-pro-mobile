@@ -1010,7 +1010,6 @@ const foodWords: Record<string, [string, string]> = {
   "masa": ["عجينة الذرة", "pâte de maïs"],
   "of": ["من", "de"],
   "to": ["إلى", "à"],
-  "d": ["", ""]
 
 };
 
