@@ -55,4 +55,6 @@ fs.writeFileSync("docs/food-name-review.csv", "\uFEFF" + csvContent, "utf8");
 console.log("Foundation foods: " + foundation.length);
 console.log("FNDDS foods: " + fndds.length);
 console.log("Unique food names in review file: " + rows.length);
-console.log("Arabic fully rendered: " + rows.filter(row => /[\\u0600-\\u06FF]/.test(row[1]) && !/[A-Za-z]/.test(row[1])).length);\nconsole.log("French review rows: " + rows.length);\nconsole.log("Review file: docs/food-name-review.csv");
+console.log("Arabic fully rendered: " + rows.filter(row => /[\\u0600-\\u06FF]/.test(row[1]) && !/[A-Za-z]/.test(row[1])).length);
+console.log("French review rows: " + rows.length);
+console.log("Review file: docs/food-name-review.csv");
