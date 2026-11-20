@@ -1,6 +1,7 @@
 import type { Language } from "./i18n";
 
 const foodWords: Record<string, [string, string]> = {
+  "Antipasto with ham, fish, cheese, vegetables": ["مقبلات مع لحم خنزير مُعالَج، وسمك، وجبن، وخضروات", "Antipasto au jambon, au poisson, au fromage et aux légumes"],
   "Adobo, with noodles": ["نودلز بالأدوبو", "Nouilles à l’adobo"],
   "Adobo, with rice": ["أرز بالأدوبو", "Riz à l’adobo"],
   "Agave liquid sweetener": ["مُحلٍّ سائل من الأغاف", "Édulcorant liquide à l’agave"],
