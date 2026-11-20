@@ -1,6 +1,17 @@
 import type { Language } from "./i18n";
 
 const foodWords: Record<string, [string, string]> = {
+  "Adobo, with noodles": ["نودلز بالأدوبو", "Nouilles à l’adobo"],
+  "Adobo, with rice": ["أرز بالأدوبو", "Riz à l’adobo"],
+  "Agave liquid sweetener": ["مُحلٍّ سائل من الأغاف", "Édulcorant liquide à l’agave"],
+  "Alcoholic malt beverage": ["مشروب شعير كحولي", "Boisson alcoolisée au malt"],
+  "Alcoholic malt beverage, sweetened": ["مشروب شعير كحولي مُحلّى", "Boisson alcoolisée au malt sucrée"],
+  "Animal fat or drippings": ["دهون حيوانية أو عصارة الطهي", "Graisse animale ou jus de cuisson"],
+  "Anisette toast": ["خبز محمّص باليانسون", "Pain grillé à l’anis"],
+  "Apple, candied": ["تفاح مُسكّر", "Pomme confite"],
+  "Artichokes, stuffed": ["خرشوف محشي", "Artichauts farcis"],
+  "Asian stir fry vegetables, cooked, fat added": ["خضروات آسيوية مطهوة بالقلي السريع مع دهون مضافة", "Légumes asiatiques sautés avec matière grasse ajoutée"],
+  "Asian stir fry vegetables, cooked, no added fat": ["خضروات آسيوية مطهوة بالقلي السريع دون دهون مضافة", "Légumes asiatiques sautés sans matière grasse ajoutée"],
   "dry": ["جاف", "جاف"],
   "added": ["مضاف", "ajouté"],
   "white": ["أبيض", "blanc"],
