@@ -313,7 +313,7 @@ export default function App() {
           </View>
           <View style={styles.languageSelector}>{(["en", "ar", "fr"] as Language[]).map(code => <Pressable key={code} accessibilityRole="button" accessibilityLabel={code === "en" ? "English" : code === "ar" ? "العربية" : "Français"} onPress={() => setLanguage(code)} style={[styles.languageButton, language === code && styles.languageButtonActive]}><Text style={[styles.languageText, language !== code && styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>
         </View>
-      </View>
+      </View>}
 
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.dashboardContent}>
