@@ -129,18 +129,26 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
   // Start Safari camera only from a direct tap; iOS may block automatic camera startup.
   const startWebCamera = () => {
     setWebError("");
-    if (!videoRef.current) {
+    const video = videoRef.current;
+    if (!video) {
       setWebError(ar ? "تعذر تجهيز الكاميرا. أغلق الماسح وافتحه مجدداً." : fr ? "La caméra n’est pas prête. Fermez puis rouvrez le scanner." : "Camera is not ready. Close and reopen the scanner.");
       return;
     }
     try {
       const reader = new BrowserMultiFormatReader();
-      const controlsPromise = reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
-        if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
-      });
+      // Explicitly request the rear camera on phones. The generic device helper
+      // can select an unsuitable/default camera in iOS Safari.
+      const controlsPromise = reader.decodeFromConstraints(
+        { audio: false, video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } },
+        video,
+        (result) => {
+          if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
+        }
+      );
       setWebStarted(true);
       controlsPromise.then((controls) => {
         webControls.current = controls;
+        void video.play().catch(() => {});
       }).catch((error) => {
         setWebStarted(false);
         const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
