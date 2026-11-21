@@ -4,7 +4,6 @@ import { Language } from "../i18n";
 import { localizeFoodName, localizeNutrientName, normalizeFoodSearch } from "../i18n-food";
 import MealPlanner from "./MealPlanner";
 import CustomMealBuilder from "./CustomMealBuilder";
-import BarcodeScanner from "./BarcodeScanner";
 import {
   addFoodToMeal, createFood, FoodRecord, getDailyMealFoods, MealFoodRecord,
   nutritionForQuantity, removeMealFood, searchFoods, getFoodNutrients, getFoodServings, getDailyNutrientTotals, FoodNutrientDetail, searchFoodsByNutrient, NutrientFoodResult
@@ -80,13 +79,12 @@ const parseOptional = (v: string) => v.trim() === "" ? null : Number(v.replace("
 const nutrientUnit = (name: string) => /Vitamin A|Vitamin D|Vitamin K|Biotin|Folate|Vitamin B12|Selenium|Iodine/.test(name) ? "µg" : "mg";
 const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? null : values.reduce<number>((s,v) => s + (v ?? 0), 0);
 
-export default function FoodDiary({ language, targetCalories = 2000, targetProtein, targetCarbs, targetFat }: { language: Language; targetCalories?: number; targetProtein?: number; targetCarbs?: number; targetFat?: number }) {
+export default function FoodDiary({ language, targetCalories = 2000, targetProtein, targetCarbs, targetFat, scannedFood = null, onScannedFoodHandled }: { language: Language; targetCalories?: number; targetProtein?: number; targetCarbs?: number; targetFat?: number; scannedFood?: FoodRecord | null; onScannedFoodHandled?: () => void }) {
   const t = words[language], rtl = language === "ar";
   const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [plannerMode, setPlannerMode] = useState(false);
   const [customMealMode, setCustomMealMode] = useState(false);
-  const [scannerVisible, setScannerVisible] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<typeof foodCategories[number] | null>(null);
   const [results, setResults] = useState<FoodRecord[]>([]);
@@ -113,6 +111,14 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
   const [rankedLoading, setRankedLoading] = useState(false);
   const load = useCallback(async () => setFoods(await getDailyMealFoods()), []);
   useEffect(() => { load().catch(e => console.warn("Food diary load failed", e)); }, [load]);
+  useEffect(() => {
+    if (!scannedFood) return;
+    setSelected(scannedFood);
+    setSelectedCategory(null);
+    setQuery("");
+    setQuantity("100");
+    onScannedFoodHandled?.();
+  }, [scannedFood, onScannedFoodHandled]);
   useEffect(() => { getDailyNutrientTotals().then(setDailyMicros).catch(e => console.warn("Daily nutrient totals unavailable", e)); }, [foods]);
   useEffect(() => {
     let live = true;
@@ -185,9 +191,7 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
     <View style={s.meals}>
       <Pressable onPress={()=>setPlannerMode(true)} style={s.mealTab}><Text style={s.mealText}>{t.planner}</Text></Pressable>
        <Pressable onPress={()=>setCustomMealMode(true)} style={s.mealTab}><Text style={s.mealText}>{language==="ar"?"وجبة مخصصة":language==="fr"?"Repas personnalisé":"Custom meal"}</Text></Pressable>
-      <Pressable onPress={()=>setScannerVisible(true)} style={s.mealTab}><Text style={s.mealText}>{t.scanner}</Text></Pressable>
     </View>
-    <BarcodeScanner visible={scannerVisible} onClose={()=>setScannerVisible(false)} onFound={food=>{setSelected(food);setSelectedCategory(null);setQuery("");setQuantity("100");}} language={language} />
     <View style={s.card}>
       <Text style={[s.label,{textAlign}]}>{t.calories}</Text><Text style={s.calorie}>{fmt(totals.calories)} kcal</Text>
       <View style={s.macros}><Text style={s.macro}>{t.protein}: {fmt(totals.protein)} g</Text><Text style={s.macro}>{t.carbs}: {fmt(totals.carbs)} g</Text><Text style={s.macro}>{t.fats}: {fmt(totals.fat)} g</Text></View>
