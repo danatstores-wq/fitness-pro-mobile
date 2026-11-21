@@ -316,8 +316,8 @@ export default function App() {
       </View>}
 
       <View style={{ flex: 1 }}>
-        {tab === "dashboard" && <ScrollView contentContainerStyle={styles.dashboardContent}>
-  <ImageBackground source={require("./assets/images/background.jpg")} imageStyle={styles.dashboardBackgroundImage} style={styles.dashboardHero}>
+        {tab === "dashboard" && <ImageBackground source={require("./assets/images/background.jpg")} style={styles.dashboardScreenBackground} imageStyle={styles.dashboardScreenBackgroundImage}><ScrollView contentContainerStyle={styles.dashboardContent}>
+  <View style={styles.dashboardHero}>
     <View style={styles.dashboardHeroOverlay}/>
     <View style={[styles.dashboardBrandRow,isRTL && styles.rowReverse]}>
       <Image source={require("./assets/images/danat-logo.png")} style={styles.dashboardBrandLogo} resizeMode="contain" />
@@ -331,7 +331,17 @@ export default function App() {
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
     </View>
-  </ImageBackground>
+    <Pressable onPress={()=>setTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
+      <View style={styles.dashboardGreetingAvatar}>
+        {profilePhotoUri ? <Image source={{uri:profilePhotoUri}} style={styles.dashboardGreetingAvatarImage}/> : <Ionicons name="person" size={29} color="#FFFFFF"/>}
+      </View>
+      <View style={{flex:1}}>
+        <Text style={[styles.dashboardGreetingHi,direction]}>{language==="ar"?"مرحباً":language==="fr"?"Bonjour":"Hi,"}</Text>
+        <Text style={[styles.dashboardGreetingName,direction]} numberOfLines={1}>{profile.name.trim() || (language==="ar"?"صديقي":language==="fr"?"Ami":"there")}</Text>
+      </View>
+      <Ionicons name={isRTL?"chevron-back":"chevron-forward"} size={19} color="#FFFFFF"/>
+    </Pressable>
+  </View>
   {!hydrated ? <View style={styles.dashboardLoading}><Text style={styles.dashboardLoadingText}>{t.loadingDashboard}</Text></View> : <>
     <View style={[styles.calorieHero,styles.dashboardCalories]}>
       <View style={styles.dashboardFlame}><Ionicons name="flame" size={43} color="#FF9D00"/></View>
@@ -370,7 +380,7 @@ export default function App() {
       </View>
     </View>
   </>}
-</ScrollView>}{tab === "diary" && (!hydrated
+</ScrollView></ImageBackground>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -539,9 +549,17 @@ const styles = StyleSheet.create({
   languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
   dashboardContent: { paddingBottom: 18, backgroundColor: "#061B3A", gap: 0 },
-  dashboardHero: { height: 340, paddingHorizontal: 20, paddingTop: 17, justifyContent: "flex-start", overflow: "hidden", backgroundColor: "#06366D" },
+  dashboardScreenBackground: { flex: 1, backgroundColor: "#06366D" },
+  dashboardScreenBackgroundImage: { resizeMode: "cover", opacity: 1 },
+  dashboardGreetingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 25, paddingHorizontal: 2, zIndex: 1 },
+  dashboardGreetingAvatar: { width: 58, height: 58, borderRadius: 29, overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,35,78,0.78)", borderWidth: 2, borderColor: "#FFD400" },
+  dashboardGreetingAvatarImage: { width: "100%", height: "100%" },
+  dashboardGreetingHi: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
+  dashboardGreetingName: { color: "#FFD400", fontSize: 21, fontWeight: "900", marginTop: 1 },
+
+  dashboardHero: { minHeight: 300, paddingHorizontal: 20, paddingTop: 17, paddingBottom: 20, justifyContent: "flex-start", overflow: "hidden", backgroundColor: "rgba(0,32,75,0.24)" },
   dashboardBackgroundImage: { resizeMode: "cover", opacity: 1 },
-  dashboardHeroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,20,55,0.13)" },
+  dashboardHeroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,20,55,0.12)" },
   dashboardBrandRow: { flexDirection: "row", alignItems: "center", gap: 10, zIndex: 1 },
   dashboardBrandLogo: { width: 56, height: 56 },
   dashboardBrandTitle: { color: "#FFFFFF", fontSize: 23, fontWeight: "900", fontStyle: "italic", letterSpacing: -0.5 },
@@ -551,7 +569,7 @@ const styles = StyleSheet.create({
   dashboardHeroMessage: { marginTop: 49, maxWidth: "55%", zIndex: 1 },
   dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
   dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
-  dashboardCalories: { marginHorizontal: 17, marginTop: -2, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,32,75,0.96)", borderColor: "#168CF0", gap: 9 },
+  dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,32,75,0.88)", borderColor: "#168CF0", gap: 9 },
   dashboardFlame: { width: 43, alignItems: "center" },
   dashboardCalorieBlock: { flex: 1, minWidth: 65 },
   dashboardCalorieValue: { color: "#FFFFFF", fontSize: 27, fontWeight: "900" },
@@ -565,7 +583,7 @@ const styles = StyleSheet.create({
   dashboardGoalRingText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900" },
   dashboardGoalRingCaption: { color: "#DDEBFF", fontSize: 7, textAlign: "center" },
   dashboardTiles: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 17, gap: 10, justifyContent: "space-between", marginBottom: 17 },
-  dashboardTile: { width: "30%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 5, backgroundColor: "#0873D5", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
+  dashboardTile: { width: "30%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 5, backgroundColor: "rgba(8,115,213,0.88)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
   dashboardTileIcon: { width: 61, height: 61, marginBottom: 3 },
   dashboardTileLabel: { color: "#FFFFFF", fontSize: 13, lineHeight: 16, fontWeight: "900", textAlign: "center" },
   dashboardNutrition: { marginHorizontal: 14, borderRadius: 18, paddingHorizontal: 17, paddingTop: 15, paddingBottom: 13, backgroundColor: "#F3F7FC", borderWidth: 1, borderColor: "#D7E7F8" },
