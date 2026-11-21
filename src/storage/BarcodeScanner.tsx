@@ -24,6 +24,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
   const videoRef = useRef<any>(null);
   const webControls = useRef<{ stop: () => void } | undefined>(undefined);
   const [webStarted, setWebStarted] = useState(false);
+  const [nativeStarted, setNativeStarted] = useState(false);
   const scannerLookup = useRef<(result: BarcodeScanningResult) => Promise<void>>(async () => {});
   const [webError, setWebError] = useState("");
   useEffect(() => { if (visible) scanned.current = false; }, [visible]);
@@ -161,6 +162,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       webControls.current?.stop();
       webControls.current = undefined;
       setWebStarted(false);
+      setNativeStarted(false);
     }
   }, [visible]);
 
@@ -190,13 +192,17 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
             <Text style={styles.muted}>{ar ? "يلزم السماح باستخدام الكاميرا لمسح المنتجات." : fr ? "L’autorisation de la caméra est nécessaire." : "Camera permission is needed to scan products."}</Text>
             <Pressable style={styles.button} onPress={requestPermission}><Text style={styles.buttonText}>{ar ? "السماح بالكاميرا" : fr ? "Autoriser la caméra" : "Allow camera"}</Text></Pressable>
           </>
+        ) : !nativeStarted ? (
+          <Pressable style={styles.button} onPress={() => setNativeStarted(true)}>
+            <Text style={styles.buttonText}>{ar ? "تشغيل الكاميرا" : fr ? "Démarrer la caméra" : "Start camera"}</Text>
+          </Pressable>
         ) : (
           <CameraView
             style={styles.camera}
             facing="back"
             barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39", "code93", "itf14", "codabar", "qr", "pdf417", "aztec", "datamatrix"] }}
             onBarcodeScanned={loading ? undefined : lookup}
-            onMountError={(event) => Alert.alert(title, event.message || (ar ? "تعذر تشغيل الكاميرا." : fr ? "Impossible de démarrer la caméra." : "Could not start the camera."))}
+            onMountError={(event) => { setNativeStarted(false); Alert.alert(title, event.message || (ar ? "تعذر تشغيل الكاميرا." : fr ? "Impossible de démarrer la caméra." : "Could not start the camera.")); }}
           />
         )}
         {!!webError && <Text style={styles.webError}>{webError}</Text>}
