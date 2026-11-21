@@ -64,7 +64,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         return null;
       };
       const productName = String(p.product_name || p.product_name_en || p.generic_name || "Packaged food").trim();
-      const cleanTag = (tag: unknown) => String(tag).replace(/^[a-z]{2}:/i, "").replace(/-/g, " ").trim().replace(/\\be(\\d+)\\b/gi, (_match, digits) => "E" + digits).replace(/\\b[a-z]/g, letter => letter.toUpperCase());
+      const cleanTag = (tag: unknown) => String(tag).replace(/^[a-z]{2}:/i, "").replace(/-/g, " ").trim().replace(/\be(\d+)\b/gi, (_match, digits) => "E" + digits).replace(/\b[a-z]/g, letter => letter.toUpperCase());
       const tagsText = (value: unknown) => Array.isArray(value) ? value.map(cleanTag).filter(Boolean).join(", ") : "";
       const ingredientText = String(
         (language === "ar" ? p.ingredients_text_ar : language === "fr" ? p.ingredients_text_fr : p.ingredients_text_en) ||
