@@ -110,7 +110,7 @@ export default function ReminderSettings({language}:{language:Language}) {
     finally{setBusy(false);}
   };
   const line=(label:string,enabled:boolean,onToggle:(v:boolean)=>void,time:string,onTime:(v:string)=>void)=><View style={{flexDirection:"row",alignItems:"center",gap:9,marginTop:12}}><Switch value={enabled} onValueChange={onToggle} trackColor={{false:"#244A73",true:"#1686E8"}} thumbColor={enabled?GOLD:"#58718D"}/><Text style={{color:"#17324D",fontWeight:"700",flex:1}}>{label}</Text><TextInput value={time} onChangeText={onTime} keyboardType="numbers-and-punctuation" maxLength={5} placeholder="HH:MM" placeholderTextColor={MUTED} style={{width:82,color:"#17324D",backgroundColor:"#FFFFFF",borderColor:"#C9D9E8",borderWidth:1,borderRadius:9,padding:9,textAlign:"center"}}/></View>;
-  return <View style={{backgroundColor:PANEL,borderColor:"#244A73",borderWidth:1,borderRadius:18,padding:16,marginBottom:12}}>
+  return <View style={{backgroundColor:PANEL,borderColor:"#D8E5F1",borderWidth:1,borderRadius:18,padding:16,marginBottom:12}}>
     <Text style={{color:"#1686E8",fontSize:12,fontWeight:"900",letterSpacing:1.2}}>{t.title}</Text><Text style={{color:MUTED,fontSize:12,lineHeight:18,marginTop:7}}>{t.sub}</Text>
     {line(t.breakfast,p.breakfast_enabled,v=>update("breakfast_enabled",v),p.breakfast_time,v=>update("breakfast_time",v))}
     {line(t.lunch,p.lunch_enabled,v=>update("lunch_enabled",v),p.lunch_time,v=>update("lunch_time",v))}
@@ -121,7 +121,7 @@ export default function ReminderSettings({language}:{language:Language}) {
       <Text style={{color:MUTED,fontSize:11,marginTop:12}}>{t.every}</Text><TextInput value={String(p.water_interval_minutes)} onChangeText={v=>update("water_interval_minutes",Number(v.replace(/[^0-9]/g,""))||0)} keyboardType="number-pad" style={{color:"#17324D",backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#C9D9E8",borderRadius:9,padding:10,marginTop:5}}/>
       <View style={{flexDirection:"row",gap:12,marginTop:8}}>
         <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.from}</Text><TextInput value={p.water_start_time} onChangeText={v=>update("water_start_time",v)} maxLength={5} placeholder="08:00" placeholderTextColor={MUTED} style={{color:"#17324D",backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#C9D9E8",borderRadius:9,padding:10,marginTop:5}}/></View>
-        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.to}</Text><TextInput value={p.water_end_time} onChangeText={v=>update("water_end_time",v)} maxLength={5} placeholder="22:00" placeholderTextColor={MUTED} style={{color:"#F5F8FC",backgroundColor:"#0D2A4D",borderWidth:1,borderColor:"#244A73",borderRadius:9,padding:10,marginTop:5}}/></View>
+        <View style={{flex:1}}><Text style={{color:MUTED,fontSize:11}}>{t.to}</Text><TextInput value={p.water_end_time} onChangeText={v=>update("water_end_time",v)} maxLength={5} placeholder="22:00" placeholderTextColor={MUTED} style={{color:"#17324D",backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#C9D9E8",borderRadius:9,padding:10,marginTop:5}}/></View>
       </View>
     </View>
     {Platform.OS==="web"&&<Text style={{color:MUTED,fontSize:11,lineHeight:17,marginTop:12}}>{t.web}</Text>}
