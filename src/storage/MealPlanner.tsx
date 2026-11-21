@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
  wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#D8E5F1",borderWidth:1,borderRadius:16,padding:14,gap:9},
  title:{color:"#17324D",fontSize:20,fontWeight:"900"},muted:{color:"#53677D",fontSize:12,lineHeight:18},
  gold:{color:"#1686E8",fontWeight:"800"},row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- chip:{borderWidth:1,borderColor:"#D5E2F0",borderRadius:10,paddingVertical:9,paddingHorizontal:12,backgroundColor:"#FFFFFF"},active:{borderColor:"#1686E8",backgroundColor:"#1686E8"},
+ chip:{borderWidth:1,borderColor:"#D5E2F0",borderRadius:10,paddingVertical:9,paddingHorizontal:12,backgroundColor:"#FFFFFF"},active:{borderColor:"#0B65BD",backgroundColor:"#0B65BD"},
  button:{backgroundColor:"#1686E8",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#1686E8"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
  day:{color:"#17324D",fontSize:14,fontWeight:"800"},food:{color:"#17324D",fontSize:13,fontWeight:"700"},line:{borderTopWidth:1,borderColor:"#D8E5F1",paddingTop:8,gap:4},
  nutrientGrid:{flexDirection:"row",flexWrap:"wrap",gap:8,marginTop:5},nutrient:{width:"48%",flexGrow:1,backgroundColor:"#F2F8FF",borderRadius:10,padding:9},nutrientName:{color:"#53677D",fontSize:10,fontWeight:"700"},nutrientValue:{color:"#17324D",fontSize:14,fontWeight:"900",marginTop:3},
