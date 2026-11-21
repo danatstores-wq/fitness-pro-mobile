@@ -7,14 +7,14 @@ import { addCustomMealToDiary, CustomMealSummary, FoodNutrientDetail, FoodRecord
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
 type Ingredient = { food: FoodRecord; grams: string; nutrients: FoodNutrientDetail[] };
 const styles = StyleSheet.create({
- wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#DDE6D9",borderWidth:1,borderRadius:16,padding:14,gap:10},
- title:{color:"#1C281E",fontSize:20,fontWeight:"900"},muted:{color:"#667366",fontSize:12,lineHeight:18},
- input:{backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:10,padding:11,color:"#1C281E"},
+ wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#10294A",borderColor:"#244A73",borderWidth:1,borderRadius:16,padding:14,gap:10},
+ title:{color:"#F5F8FC",fontSize:20,fontWeight:"900"},muted:{color:"#A8B8CC",fontSize:12,lineHeight:18},
+ input:{backgroundColor:"#071A33",borderColor:"#244A73",borderWidth:1,borderRadius:10,padding:11,color:"#F5F8FC"},
  row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- button:{backgroundColor:"#263A2C",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#263A2C"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
- outline:{borderWidth:1,borderColor:"#263A2C",backgroundColor:"#263A2C",padding:11,borderRadius:10,alignItems:"center"},
- outlineText:{color:"#FFFFFF",fontWeight:"800"},food:{color:"#1C281E",fontSize:13,fontWeight:"700",flex:1},
- line:{borderTopWidth:1,borderColor:"#E3EADF",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#F7F9F5",borderColor:"#DDE6D9",borderWidth:1,borderRadius:9,padding:8,color:"#1C281E"},chip:{padding:9,borderRadius:9,backgroundColor:"#263A2C"},removeButton:{paddingHorizontal:10,paddingVertical:8,borderRadius:9,backgroundColor:"#FCEEEE",borderWidth:1,borderColor:"#E8CACA"},removeText:{color:"#A33B3B",fontSize:11,fontWeight:"800"}
+ button:{backgroundColor:"#08264A",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#08264A"},buttonText:{color:"#10294A",fontWeight:"900"},
+ outline:{borderWidth:1,borderColor:"#08264A",backgroundColor:"#08264A",padding:11,borderRadius:10,alignItems:"center"},
+ outlineText:{color:"#10294A",fontWeight:"800"},food:{color:"#F5F8FC",fontSize:13,fontWeight:"700",flex:1},
+ line:{borderTopWidth:1,borderColor:"#244A73",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#071A33",borderColor:"#244A73",borderWidth:1,borderRadius:9,padding:8,color:"#F5F8FC"},chip:{padding:9,borderRadius:9,backgroundColor:"#08264A"},removeButton:{paddingHorizontal:10,paddingVertical:8,borderRadius:9,backgroundColor:"#4A2430",borderWidth:1,borderColor:"#74414C"},removeText:{color:"#FF8585",fontSize:11,fontWeight:"800"}
 });
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
@@ -74,9 +74,9 @@ export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{la
   <Pressable style={styles.outline} onPress={onBack}><Text style={styles.outlineText}>{w.back}</Text></Pressable>
   <View style={styles.card}>
    <Text style={styles.title}>{w.title}</Text><Text style={styles.muted}>{w.empty}</Text>
-   <TextInput value={name} onChangeText={setName} placeholder={w.name} placeholderTextColor="#758274" style={styles.input}/>
-   <TextInput value={query} onChangeText={setQuery} placeholder={w.search} placeholderTextColor="#758274" style={styles.input}/>
-   <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder={w.grams} placeholderTextColor="#758274" style={styles.input}/>
+   <TextInput value={name} onChangeText={setName} placeholder={w.name} placeholderTextColor="#A8B8CC" style={styles.input}/>
+   <TextInput value={query} onChangeText={setQuery} placeholder={w.search} placeholderTextColor="#A8B8CC" style={styles.input}/>
+   <TextInput value={grams} onChangeText={setGrams} keyboardType="decimal-pad" placeholder={w.grams} placeholderTextColor="#A8B8CC" style={styles.input}/>
    {results.map(food=><Pressable key={food.id} onPress={()=>addIngredient(food)} disabled={loadingFood} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(food.name,language)}</Text><Text style={styles.outlineText}>＋</Text></View><Text style={styles.muted}>{food.calories==null?"—":Math.round(food.calories)+" kcal"} / 100 g</Text></Pressable>)}
    {items.length===0?<Text style={styles.muted}>{w.empty}</Text>:items.map((item,index)=><View key={index} style={styles.line}><View style={styles.row}><Text style={styles.food}>{localizeFoodName(item.food.name,language)}</Text><Text style={styles.muted}>{w.weight}</Text><TextInput value={item.grams} onChangeText={value=>updateIngredientWeight(index,value)} keyboardType="decimal-pad" selectTextOnFocus style={styles.weightInput} accessibilityLabel={`${w.weight}: ${localizeFoodName(item.food.name,language)}`} /><Text style={styles.muted}>g</Text><Pressable accessibilityRole="button" accessibilityLabel={`${w.remove}: ${localizeFoodName(item.food.name,language)}`} onPress={()=>setItems(old=>old.filter((_,i)=>i!==index))} style={styles.removeButton}><Text style={styles.removeText}>× {w.remove}</Text></Pressable></View><Text style={styles.muted}>{Math.round(nutritionForQuantity(item.food,Math.max(0,Number(item.grams)||0)).calories??0)} kcal</Text></View>)}
    {items.length>0&&<Text style={styles.muted}>{w.total}: {totalWeight.toFixed(1)} g · {Math.round(totals.calories)} kcal · {totals.protein.toFixed(1)} g protein · {totals.carbs.toFixed(1)} g carbs · {totals.fat.toFixed(1)} g fat</Text>}
