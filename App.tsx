@@ -401,7 +401,7 @@ export default function App() {
   <Card><Text style={styles.cardTitle}>{t.weightTrend}</Text>{weightLog.length?<><View style={styles.chartBars}>{[...weightLog].slice(0,12).reverse().map((entry,index,arr)=>{const vals=arr.map(x=>x.weight_kg),min=Math.min(...vals),max=Math.max(...vals),height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#1686E8"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>{weightLog.slice(0,5).map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString()}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</>:<Text style={styles.muted}>{t.emptyProgress}</Text>}</Card>
   <Card><Text style={styles.cardTitle}>{t.logWeight}</Text><TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/><GoldButton title={t.logWeight} onPress={addWeight}/></Card>
 </ScrollView>}
-{tab === "activity" && <ActivityTracker language={language}/>}
+{tab === "activity" && <ActivityTracker language={language} weightKg={Number(profile.weight) || 0}/>}
 {tab === "challenges" && <ChallengeTracker language={language}/>}
 {tab === "goals" && <ScrollView contentContainerStyle={styles.content}>
   <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={styles.pageTitle}>{language==="ar"?"أهدافك":language==="fr"?"Vos objectifs":"Your Goals"}</Text><Text style={styles.introNote}>{language==="ar"?"حدد أهدافك الشخصية واحفظها في ملفك.":language==="fr"?"Définissez et enregistrez vos objectifs.":"Set and save your personal fitness targets."}</Text></View>
@@ -508,19 +508,54 @@ export default function App() {
 }
 
 
-function ActivityTracker({language}:{language:Language}) {
+function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}) {
  const ar=language==="ar",fr=language==="fr";
  const [logs,setLogs]=useState<Awaited<ReturnType<typeof getActivityLogs>>>([]);
- const [kind,setKind]=useState("Walking"),[duration,setDuration]=useState(""),[calories,setCalories]=useState(""),[notes,setNotes]=useState("");
- const [loading,setLoading]=useState(true);
- const names=ar?["المشي","الجري","الدراجة","تمارين القوة","السباحة","اليوغا","أخرى"]:fr?["Marche","Course","Vélo","Musculation","Natation","Yoga","Autre"]:["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
+ const [kind,setKind]=useState("Walking"),[duration,setDuration]=useState("");
+ const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
+ const names=ar?["المشي","الجري","ركوب الدراجة","تمارين القوة","السباحة","اليوغا","نشاط آخر"]:fr?["Marche","Course","Vélo","Musculation","Natation","Yoga","Autre"]:["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
  const kinds=["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
+ const metValues:Record<string,number>={Walking:3.5,Running:8,Cycling:6.8,"Strength training":5,Swimming:6,Yoga:2.5,Other:4};
+ const mins=Number(duration);
+ const estimatedCalories=weightKg>0&&Number.isFinite(mins)&&mins>0
+   ? Math.round((metValues[kind]*3.5*weightKg/200)*mins) : null;
  const refresh=async()=>{setLogs(await getActivityLogs());setLoading(false);};
  useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
- const save=async()=>{const mins=Number(duration),kcal=calories.trim()?Number(calories):null;if(!Number.isFinite(mins)||mins<=0||(kcal!==null&&(!Number.isFinite(kcal)||kcal<0))){Alert.alert(ar?"أدخل مدة صحيحة":"Enter a valid duration");return;}try{await addActivityLog(kind,Math.round(mins),kcal,notes);setDuration("");setCalories("");setNotes("");await refresh();}catch{Alert.alert("Could not save activity");}};
- return <ScrollView contentContainerStyle={styles.content}><View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={styles.pageTitle}>{ar?"النشاط اليومي":fr?"Activité quotidienne":"Daily Activity"}</Text><Text style={styles.introNote}>{ar?"سجّل تمارينك ونشاطك يدوياً.":fr?"Enregistrez manuellement vos entraînements.":"Manually record your workouts and movement."}</Text></View>
- <Card><Text style={styles.cardTitle}>{ar?"إضافة نشاط":fr?"Ajouter une activité":"ADD ACTIVITY"}</Text><Text style={styles.fieldLabel}>{ar?"نوع النشاط":fr?"Type d’activité":"Activity type"}</Text><View style={styles.choiceWrap}>{names.map((n,i)=><Choice key={kinds[i]} title={n} active={kind===kinds[i]} onPress={()=>setKind(kinds[i])}/>)}</View><Field label={ar?"المدة بالدقائق":fr?"Durée en minutes":"Duration (minutes)"} value={duration} onChangeText={setDuration} keyboardType="number-pad"/><Field label={ar?"السعرات المحروقة (اختياري)":fr?"Calories brûlées (facultatif)":"Calories burned (optional)"} value={calories} onChangeText={setCalories} keyboardType="decimal-pad"/><Field label={ar?"ملاحظات":fr?"Notes":"Notes"} value={notes} onChangeText={setNotes}/><GoldButton title={ar?"حفظ النشاط":fr?"Enregistrer":"Save Activity"} onPress={save}/></Card>
- <Card><Text style={styles.cardTitle}>{ar?"سجل النشاط":fr?"Historique":"ACTIVITY HISTORY"}</Text>{loading?<Text style={styles.muted}>…</Text>:logs.length===0?<Text style={styles.muted}>{ar?"لا يوجد نشاط مسجل بعد.":fr?"Aucune activité enregistrée.":"No activities recorded yet."}</Text>:logs.map(x=><View key={x.id} style={[styles.spaceBetween,{paddingVertical:8,borderBottomWidth:1,borderBottomColor:"#244A73"}]}><View style={{flex:1}}><Text style={styles.valueText}>{names[kinds.indexOf(x.activity)]||x.activity}</Text><Text style={styles.muted}>{new Date(x.logged_at).toLocaleDateString()} · {x.duration_minutes} min</Text>{x.notes?<Text style={styles.muted}>{x.notes}</Text>:null}</View>{x.calories_burned!==null?<Text style={styles.valueText}>{x.calories_burned} kcal</Text>:null}</View>)}</Card></ScrollView>;
+ const save=async()=>{
+   if(!Number.isFinite(mins)||mins<=0){Alert.alert(ar?"أدخل مدة صحيحة":fr?"Saisissez une durée valide":"Enter a valid duration");return;}
+   if(weightKg<=0){Alert.alert(ar?"أضف وزنك أولاً في الملف الشخصي":fr?"Ajoutez d’abord votre poids dans le profil":"Add your current weight in Profile first");return;}
+   if(estimatedCalories===null)return;
+   try{setSaving(true);await addActivityLog(kind,Math.round(mins),estimatedCalories);setDuration("");await refresh();}
+   catch{Alert.alert(ar?"تعذر حفظ النشاط":fr?"Impossible d’enregistrer l’activité":"Could not save activity");}
+   finally{setSaving(false);}
+ };
+ return <ScrollView contentContainerStyle={styles.content}>
+  <View style={styles.dashboardIntro}>
+   <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View>
+   <Text style={styles.pageTitle}>{ar?"النشاط اليومي":fr?"Activité quotidienne":"Daily Activity"}</Text>
+   <Text style={styles.introNote}>{ar?"اختر نشاطك وأدخل مدته فقط. سيحسب التطبيق السعرات المحروقة تلقائياً.":fr?"Choisissez une activité et sa durée. L’application estime automatiquement les calories brûlées.":"Choose your activity and enter its duration. The app estimates calories burned automatically."}</Text>
+  </View>
+  <Card>
+   <Text style={styles.cardTitle}>{ar?"تسجيل نشاط":fr?"Enregistrer une activité":"LOG AN ACTIVITY"}</Text>
+   <Text style={styles.fieldLabel}>{ar?"نوع النشاط":fr?"Type d’activité":"Activity type"}</Text>
+   <View style={styles.choiceWrap}>{names.map((n,i)=><Choice key={kinds[i]} title={n} active={kind===kinds[i]} onPress={()=>setKind(kinds[i])}/>)}</View>
+   <Field label={ar?"المدة (بالدقائق)":fr?"Durée (minutes)":"Duration (minutes)"} value={duration} onChangeText={setDuration} keyboardType="number-pad"/>
+   <View style={{backgroundColor:"#EAF4FF",borderRadius:14,padding:16,marginTop:10,marginBottom:14}}>
+    <Text style={{color:"#23466C",fontSize:13,fontWeight:"700"}}>{ar?"السعرات المحروقة المقدّرة":fr?"Calories brûlées estimées":"ESTIMATED CALORIES BURNED"}</Text>
+    <Text style={{color:"#0875D1",fontSize:30,fontWeight:"900",marginTop:4}}>{estimatedCalories===null?"—":estimatedCalories+" kcal"}</Text>
+    <Text style={{color:"#526B85",fontSize:12,marginTop:3}}>{ar?"تقدير يعتمد على وزنك ونوع النشاط ومدته.":fr?"Estimation basée sur votre poids, l’activité et sa durée.":"Estimate based on your saved weight, activity type and duration."}</Text>
+    {weightKg<=0&&<Text style={{color:"#9A5A00",fontSize:12,marginTop:6}}>{ar?"أدخل وزنك في الملف الشخصي لتفعيل الحساب.":fr?"Ajoutez votre poids dans le profil pour activer le calcul.":"Add your weight in Profile to enable the calculation."}</Text>}
+   </View>
+   <GoldButton title={saving?(ar?"جارٍ الحفظ…":fr?"Enregistrement…":"Saving…"):(ar?"حفظ النشاط":fr?"Enregistrer l’activité":"Save Activity")} onPress={save}/>
+  </Card>
+  <Card>
+   <Text style={styles.cardTitle}>{ar?"سجل النشاط":fr?"Historique":"ACTIVITY HISTORY"}</Text>
+   {loading?<Text style={styles.muted}>…</Text>:logs.length===0?<Text style={styles.muted}>{ar?"لا يوجد نشاط مسجل بعد.":fr?"Aucune activité enregistrée.":"No activities recorded yet."}</Text>:logs.map(x=><View key={x.id} style={[styles.spaceBetween,{paddingVertical:8,borderBottomWidth:1,borderBottomColor:"#244A73"}]}>
+    <View style={{flex:1}}><Text style={styles.valueText}>{names[kinds.indexOf(x.activity)]||x.activity}</Text><Text style={styles.muted}>{new Date(x.logged_at).toLocaleDateString()} · {x.duration_minutes} {ar?"دقيقة":fr?"min":"min"}</Text></View>
+    <Text style={styles.valueText}>{x.calories_burned===null?"—":Math.round(x.calories_burned)+" kcal"}</Text>
+   </View>)}
+  </Card>
+ </ScrollView>;
 }
 function ChallengeTracker({language}:{language:Language}) {
  const ar=language==="ar",fr=language==="fr",now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
