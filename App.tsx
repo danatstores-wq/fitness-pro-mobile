@@ -3,7 +3,7 @@ import * as ImagePicker from "expo-image-picker";
 import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
-  SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image,
+  SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -317,14 +317,15 @@ export default function App() {
 
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
-<View style={styles.dashboardIntro}>
+<ImageBackground source={require("./assets/images/welcome.jpg")} imageStyle={styles.dashboardHeroImage} style={styles.dashboardIntro}>
+   <View style={styles.dashboardHeroShade}/>
   <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>{t.today}</Text></View>
   <View style={[styles.greetingRow, isRTL && styles.rowReverse]}>
     <View style={styles.greetingAvatar}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.greetingAvatarImage} /> : <Text style={styles.avatarFallback}>👤</Text>}</View>
     <Text style={[styles.greeting,direction,{ flex: 1 }]}>{profile.name.trim() ? (language === 'ar' ? `مرحباً، ${profile.name.trim()}` : language === 'fr' ? `Bonjour, ${profile.name.trim()}` : `Hi, ${profile.name.trim()}`) : t.greeting}</Text>
   </View>
   <Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text>
-</View>
+</ImageBackground>
 {!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
   <View style={styles.calorieHero}>
     <View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><Text style={styles.sectionMeta}>{t.dailyTarget.toUpperCase()}</Text></View>
@@ -527,9 +528,11 @@ const styles = StyleSheet.create({
   languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
-  dashboardIntro: { paddingTop: 3, paddingBottom: 7 },
-  todayPill: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, backgroundColor: "#12345B", borderWidth: 1, borderColor: "#244A73" },
-  todayPillText: { color: "#DCE9F8", fontSize: 9, fontWeight: "800", letterSpacing: 1.5 },
+  dashboardIntro: { minHeight: 205, padding: 18, justifyContent: "flex-end", borderRadius: 22, overflow: "hidden", backgroundColor: "#08264A", gap: 7 },
+  dashboardHeroImage: { borderRadius: 22, opacity: 0.96 },
+  dashboardHeroShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(3, 18, 40, 0.34)" },
+  todayPill: { alignSelf: "flex-start", flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 20, backgroundColor: "rgba(8, 38, 74, 0.82)", borderWidth: 1, borderColor: "#FFC928" },
+  todayPillText: { color: "#FFFFFF", fontSize: 9, fontWeight: "800", letterSpacing: 1.5 },
   sectionTitle: { color: IVORY, fontSize: 15, fontWeight: "900", letterSpacing: 0.5 },
   calorieDashboard: { flexDirection: "row", alignItems: "center", gap: 18, marginTop: 18 },
   calorieRing: { width: 142, height: 142, borderRadius: 71, borderWidth: 9, borderColor: "#FFC928", backgroundColor: "#12345B", alignItems: "center", justifyContent: "center", shadowColor: "#FFC928", shadowOpacity: 0.13, shadowRadius: 14, elevation: 3 },
@@ -553,7 +556,7 @@ const styles = StyleSheet.create({
   dashboardFootnote: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 3, paddingTop: 2 },
   dashboardFootnoteText: { color: "#A8B8CC", fontSize: 8, fontWeight: "800", letterSpacing: 1 },
 
-  greeting: { color: IVORY, fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
+  greeting: { color: "#FFFFFF", fontSize: 29, lineHeight: 36, fontWeight: "700", letterSpacing: -0.8, marginTop: 8 },
   greetingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 },
   greetingAvatar: { width: 54, height: 54, borderRadius: 27, overflow: "hidden", backgroundColor: "#153B66", borderWidth: 2, borderColor: "#FFC928", alignItems: "center", justifyContent: "center" },
   greetingAvatarImage: { width: "100%", height: "100%" },
@@ -565,7 +568,7 @@ const styles = StyleSheet.create({
   photoButton: { alignSelf: "flex-start", backgroundColor: "#08264A", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
   photoButtonText: { color: "#10294A", fontSize: 11, fontWeight: "800" },
   removePhotoText: { color: "#FF7777", fontSize: 11, fontWeight: "700" },
-  introNote: { color: MUTED, fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
+  introNote: { color: "#E3F0FF", fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GREEN, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
   pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
   card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#244A73", padding: 19, marginBottom: 2 },
