@@ -24,9 +24,9 @@ type Profile = {
 
 const GOLD = "#FFC928";
 const GREEN = "#1686E8";
-const BG = "#071A33";
-const PANEL = "#10294A";
-const MUTED = "#A8B8CC";
+const BG = "#F2F8FF";
+const PANEL = "#FFFFFF";
+const MUTED = "#53677D";
 const IVORY = "#F5F8FC";
 const initialProfile: Profile = {
   name: '', age: "", sex: "male", height: "", weight: "", targetWeight: "",
@@ -601,9 +601,9 @@ const styles = StyleSheet.create({
   splashFooter: { position: "absolute", bottom: 28, flexDirection: "row", alignItems: "center", gap: 9, backgroundColor: "rgba(255, 255, 255, 0.88)", borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9 },
   splashFooterDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: "#FFC928" },
   splashFooterText: { color: "#F5F8FC", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
-  safe: { flex: 1, backgroundColor: "#06162B", alignItems: "center" },
-  appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#244A73" },
-  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, backgroundColor: "rgba(8,38,74,0.72)", borderBottomWidth: 1, borderBottomColor: "#173D68" },
+  safe: { flex: 1, backgroundColor: "#EAF3FC", alignItems: "center" },
+  appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#D5E4F2" },
+  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, backgroundColor: "rgba(255,255,255,0.94)", borderBottomWidth: 1, borderBottomColor: "#D5E4F2" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
   logoImage: { width: 46, height: 46 },
@@ -704,12 +704,12 @@ const styles = StyleSheet.create({
   photoButton: { alignSelf: "flex-start", backgroundColor: "#08264A", borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
   photoButtonText: { color: "#10294A", fontSize: 11, fontWeight: "800" },
   removePhotoText: { color: "#FF7777", fontSize: 11, fontWeight: "700" },
-  introNote: { color: "#E3F0FF", fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
+  introNote: { color: "#40566D", fontSize: 13, marginTop: 7, letterSpacing: 0.2 },
   eyebrow: { color: GREEN, fontSize: 9, letterSpacing: 2.6, fontWeight: "800", marginBottom: 3 },
-  pageTitle: { color: IVORY, fontSize: 29, fontWeight: "700", letterSpacing: -0.7, marginBottom: 4 },
-  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#244A73", padding: 19, marginBottom: 2 },
-  cardTitle: { color: IVORY, fontSize: 13, fontWeight: "800", letterSpacing: 1.5, marginBottom: 7 },
-  muted: { color: MUTED, fontSize: 12, lineHeight: 19 },
+  pageTitle: { color: "#17324D", fontSize: 29, fontWeight: "800", letterSpacing: -0.7, marginBottom: 4 },
+  card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#D8E5F1", padding: 19, marginBottom: 2, shadowColor: "#31516F", shadowOpacity: 0.07, shadowRadius: 9, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
+  cardTitle: { color: "#17324D", fontSize: 13, fontWeight: "900", letterSpacing: 1.1, marginBottom: 7 },
+  muted: { color: "#53677D", fontSize: 12, lineHeight: 19 },
   calorieHero: { backgroundColor: "#12345B", borderRadius: 22, borderWidth: 1, borderColor: "#244A73", padding: 21, marginBottom: 2 },
   heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
   heroLabel: { color: "#A8B8CC", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
