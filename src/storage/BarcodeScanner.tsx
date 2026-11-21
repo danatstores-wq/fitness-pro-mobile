@@ -7,7 +7,7 @@ type Props = { visible: boolean; onClose: () => void; onFound: (food: FoodRecord
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: "#071A33", justifyContent: "center", padding: 18 },
   title: { color: "#F5F8FC", fontSize: 20, fontWeight: "900", textAlign: "center", marginBottom: 12 },
-  camera: { height: 390, borderRadius: 18, overflow: "hidden" },
+  camera: { width: "100%", height: 390, borderRadius: 18, overflow: "hidden", backgroundColor: "#10294A" },
   muted: { color: "#A8B8CC", fontSize: 13, textAlign: "center", marginVertical: 12 },
   button: { backgroundColor: "#FFC928", borderRadius: 11, padding: 13, alignItems: "center", marginTop: 12 },
   buttonText: { color: "#10294A", fontWeight: "900" },
@@ -134,7 +134,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
             style={styles.camera}
             facing="back"
             barcodeScannerSettings={{ barcodeTypes: ["ean13", "ean8", "upc_a", "upc_e", "code128", "code39", "code93", "itf14", "codabar", "qr", "pdf417", "aztec", "datamatrix"] }}
-            onBarcodeScanned={lookup}
+            onBarcodeScanned={loading ? undefined : lookup}
+            onMountError={(event) => Alert.alert(title, event.message || (ar ? "تعذر تشغيل الكاميرا." : fr ? "Impossible de démarrer la caméra." : "Could not start the camera."))}
           />
         )}
         {loading && <Text style={styles.loading}>{ar ? "جارٍ البحث عن المنتج…" : fr ? "Recherche du produit…" : "Looking up product…"}</Text>}
