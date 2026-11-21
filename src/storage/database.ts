@@ -155,6 +155,11 @@ async function database() {
           calories_burned REAL,
           notes TEXT
         );
+        CREATE TABLE IF NOT EXISTS challenge_checkins (
+          challenge_id TEXT NOT NULL,
+          completed_day TEXT NOT NULL,
+          PRIMARY KEY (challenge_id, completed_day)
+        );
         CREATE INDEX IF NOT EXISTS idx_measurements_date ON measurements(recorded_at);
         CREATE INDEX IF NOT EXISTS idx_meals_date ON meals(eaten_at);
         CREATE INDEX IF NOT EXISTS idx_foods_name ON foods(name);
@@ -253,6 +258,31 @@ export async function addWeightMeasurement(weightKg: number) {
 export async function getWeightMeasurements(): Promise<{ id: number; recorded_at: string; weight_kg: number }[]> {
   const db = await database();
   return db.getAllAsync("SELECT id, recorded_at, weight_kg FROM measurements WHERE measurement_type = 'weight' ORDER BY recorded_at DESC LIMIT 100");
+}
+
+
+export type ActivityLog = { id: number; logged_at: string; activity: string; duration_minutes: number | null; calories_burned: number | null; notes: string | null };
+
+export async function addActivityLog(activity: string, durationMinutes: number, caloriesBurned: number | null, notes = ""): Promise<void> {
+  const db = await database();
+  await db.runAsync("INSERT INTO activity_logs (logged_at, activity, duration_minutes, calories_burned, notes) VALUES (?, ?, ?, ?, ?)", new Date().toISOString(), activity, durationMinutes, caloriesBurned, notes);
+}
+
+export async function getActivityLogs(): Promise<ActivityLog[]> {
+  const db = await database();
+  return db.getAllAsync<ActivityLog>("SELECT id, logged_at, activity, duration_minutes, calories_burned, notes FROM activity_logs ORDER BY logged_at DESC LIMIT 100");
+}
+
+export async function getChallengeCheckins(): Promise<{ challenge_id: string; completed_day: string }[]> {
+  const db = await database();
+  return db.getAllAsync("SELECT challenge_id, completed_day FROM challenge_checkins ORDER BY completed_day DESC");
+}
+
+export async function toggleChallengeCheckin(challengeId: string, day: string): Promise<void> {
+  const db = await database();
+  const existing = await db.getFirstAsync<{ challenge_id: string }>("SELECT challenge_id FROM challenge_checkins WHERE challenge_id = ? AND completed_day = ?", challengeId, day);
+  if (existing) await db.runAsync("DELETE FROM challenge_checkins WHERE challenge_id = ? AND completed_day = ?", challengeId, day);
+  else await db.runAsync("INSERT INTO challenge_checkins (challenge_id, completed_day) VALUES (?, ?)", challengeId, day);
 }
 
 export async function getDatabaseStatus() {
