@@ -7,14 +7,14 @@ import { addCustomMealToDiary, CustomMealSummary, FoodNutrientDetail, FoodRecord
 type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
 type Ingredient = { food: FoodRecord; grams: string; nutrients: FoodNutrientDetail[] };
 const styles = StyleSheet.create({
- wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#10294A",borderColor:"#244A73",borderWidth:1,borderRadius:16,padding:14,gap:10},
- title:{color:"#F5F8FC",fontSize:20,fontWeight:"900"},muted:{color:"#A8B8CC",fontSize:12,lineHeight:18},
- input:{backgroundColor:"#071A33",borderColor:"#244A73",borderWidth:1,borderRadius:10,padding:11,color:"#F5F8FC"},
+ wrap:{gap:12,paddingBottom:28},card:{backgroundColor:"#FFFFFF",borderColor:"#D8E5F1",borderWidth:1,borderRadius:16,padding:14,gap:10},
+ title:{color:"#17324D",fontSize:20,fontWeight:"900"},muted:{color:"#53677D",fontSize:12,lineHeight:18},
+ input:{backgroundColor:"#FFFFFF",borderColor:"#C9D9E8",borderWidth:1,borderRadius:10,padding:11,color:"#17324D"},
  row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- button:{backgroundColor:"#08264A",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#08264A"},buttonText:{color:"#10294A",fontWeight:"900"},
- outline:{borderWidth:1,borderColor:"#08264A",backgroundColor:"#08264A",padding:11,borderRadius:10,alignItems:"center"},
- outlineText:{color:"#10294A",fontWeight:"800"},food:{color:"#F5F8FC",fontSize:13,fontWeight:"700",flex:1},
- line:{borderTopWidth:1,borderColor:"#244A73",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#071A33",borderColor:"#244A73",borderWidth:1,borderRadius:9,padding:8,color:"#F5F8FC"},chip:{padding:9,borderRadius:9,backgroundColor:"#08264A"},removeButton:{paddingHorizontal:10,paddingVertical:8,borderRadius:9,backgroundColor:"#4A2430",borderWidth:1,borderColor:"#74414C"},removeText:{color:"#FF8585",fontSize:11,fontWeight:"800"}
+ button:{backgroundColor:"#1686E8",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#08264A"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
+ outline:{borderWidth:1,borderColor:"#1686E8",backgroundColor:"#1686E8",padding:11,borderRadius:10,alignItems:"center"},
+ outlineText:{color:"#FFFFFF",fontWeight:"800"},food:{color:"#17324D",fontSize:13,fontWeight:"700",flex:1},
+ line:{borderTopWidth:1,borderColor:"#D8E5F1",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#FFFFFF",borderColor:"#C9D9E8",borderWidth:1,borderRadius:9,padding:8,color:"#17324D"},chip:{padding:9,borderRadius:9,backgroundColor:"#1686E8"},removeButton:{paddingHorizontal:10,paddingVertical:8,borderRadius:9,backgroundColor:"#4A2430",borderWidth:1,borderColor:"#74414C"},removeText:{color:"#FF8585",fontSize:11,fontWeight:"800"}
 });
 export default function CustomMealBuilder({language,mealType,onBack,onAdded}:{language:Language;mealType:MealType;onBack:()=>void;onAdded:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
