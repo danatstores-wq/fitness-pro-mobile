@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
+import { BrowserMultiFormatReader } from "@zxing/browser";
 import { createFood, FoodRecord, getFoodBySourceId } from "./database";
 
 type Props = { visible: boolean; onClose: () => void; onFound: (food: FoodRecord) => void; language: "en" | "ar" | "fr" };
@@ -21,6 +22,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
   const [loading, setLoading] = useState(false);
   const scanned = useRef(false);
   const videoRef = useRef<any>(null);
+  const webControls = useRef<{ stop: () => void } | undefined>(undefined);
+  const [webStarted, setWebStarted] = useState(false);
   const scannerLookup = useRef<(result: BarcodeScanningResult) => Promise<void>>(async () => {});
   const [webError, setWebError] = useState("");
   useEffect(() => { if (visible) scanned.current = false; }, [visible]);
@@ -122,32 +125,46 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
 
   scannerLookup.current = lookup;
 
-  // Safari on iPhone needs a browser video-stream decoder. Expo Camera's native
-  // barcode callback is retained below for installed iOS and Android builds.
-  useEffect(() => {
-    if (!visible || Platform.OS !== "web") return;
-    let active = true;
-    let controls: { stop: () => void } | undefined;
+  // Start Safari camera only from a direct tap; iOS may block automatic camera startup.
+  const startWebCamera = () => {
     setWebError("");
-    (async () => {
-      try {
-        const { BrowserMultiFormatReader } = await import("@zxing/browser");
-        if (!active || !videoRef.current) return;
-        const reader = new BrowserMultiFormatReader();
-        controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
-          if (active && result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
-        });
-        if (!active) controls.stop();
-      } catch (error) {
-        if (!active) return;
-        const detail = error instanceof Error ? error.message : String(error);
-        setWebError(detail.toLowerCase().includes("permission")
-          ? (ar ? "يرجى السماح باستخدام الكاميرا في Safari." : fr ? "Autorisez l’accès à la caméra dans Safari." : "Please allow camera access in Safari.")
-          : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start the camera. Check HTTPS and allow camera access."));
-      }
-    })();
-    return () => { active = false; controls?.stop(); };
+    if (!videoRef.current) {
+      setWebError(ar ? "تعذر تجهيز الكاميرا. أغلق الماسح وافتحه مجدداً." : fr ? "La caméra n’est pas prête. Fermez puis rouvrez le scanner." : "Camera is not ready. Close and reopen the scanner.");
+      return;
+    }
+    try {
+      const reader = new BrowserMultiFormatReader();
+      const controlsPromise = reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
+        if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
+      });
+      setWebStarted(true);
+      controlsPromise.then((controls) => {
+        webControls.current = controls;
+      }).catch((error) => {
+        setWebStarted(false);
+        const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        setWebError(detail.includes("permission") || detail.includes("notallowed")
+          ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات Safari." : fr ? "Autorisez la caméra dans les réglages de Safari." : "Allow camera access in Safari settings.")
+          : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
+      });
+    } catch (error) {
+      setWebStarted(false);
+      const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+      setWebError(detail.includes("permission") || detail.includes("notallowed")
+        ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات Safari." : fr ? "Autorisez la caméra dans les réglages de Safari." : "Allow camera access in Safari settings.")
+        : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
+    }
+  };
+
+  useEffect(() => {
+    if (!visible) {
+      webControls.current?.stop();
+      webControls.current = undefined;
+      setWebStarted(false);
+    }
   }, [visible]);
+
+  useEffect(() => () => { webControls.current?.stop(); }, []);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -158,9 +175,16 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
           {ar ? "المعلومات من قاعدة Open Food Facts وقد تختلف حسب المنتج." : fr ? "Données Open Food Facts : la couverture et les valeurs disponibles varient selon le produit." : "Nutrition data comes from Open Food Facts. Product coverage and label completeness vary."}
         </Text>
         {Platform.OS === "web" ? (
-          <View style={styles.camera}>
-            {React.createElement("video" as any, { ref: videoRef, autoPlay: true, muted: true, playsInline: true, style: { width: "100%", height: "100%", objectFit: "cover" } })}
-          </View>
+          <>
+            <View style={styles.camera}>
+              {React.createElement("video" as any, { ref: videoRef, autoPlay: true, muted: true, playsInline: true, style: { width: "100%", height: "100%", objectFit: "cover" } })}
+            </View>
+            {!webStarted && (
+              <Pressable style={styles.button} onPress={startWebCamera}>
+                <Text style={styles.buttonText}>{ar ? "تشغيل الكاميرا" : fr ? "Démarrer la caméra" : "Start camera"}</Text>
+              </Pressable>
+            )}
+          </>
         ) : !permission ? <ActivityIndicator /> : !permission.granted ? (
           <>
             <Text style={styles.muted}>{ar ? "يلزم السماح باستخدام الكاميرا لمسح المنتجات." : fr ? "L’autorisation de la caméra est nécessaire." : "Camera permission is needed to scan products."}</Text>
