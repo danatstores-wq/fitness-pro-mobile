@@ -618,7 +618,7 @@ function ChallengeTracker({language}:{language:Language}) {
      <GoldButton title={done?(ar?"إلغاء تسجيل اليوم":fr?"Annuler le pointage du jour":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":fr?"Valider aujourd’hui":"Check in today")} onPress={()=>toggle(c.id)}/>
    </Card>;
   })}
- <Text style={styles.muted}>{ar?"للمتابعة الشخصية فقط؛ لا تمنح هذه التحديات نقاط ألعاب أو مكافآت مالية.":fr?"Suivi personnel uniquement, sans points de jeu ni récompense financière.":"Personal tracking only: challenges do not award game points or financial rewards."}</Text></ScrollView>;
+ </ScrollView>;
 }
 
 function Card({ children }: { children: React.ReactNode }) {
