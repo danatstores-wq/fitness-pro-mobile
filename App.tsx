@@ -316,7 +316,7 @@ export default function App() {
       </View>}
 
       <View style={{ flex: 1 }}>
-        {tab === "dashboard" && <ImageBackground source={require("./assets/images/background.jpg")} style={styles.dashboardScreenBackground} imageStyle={styles.dashboardScreenBackgroundImage}><ScrollView contentContainerStyle={styles.dashboardContent}>
+        {tab === "dashboard" && <View style={styles.dashboardScreenBackground}><Image source={require("./assets/images/background.jpg")} style={styles.dashboardScreenBackgroundImage} resizeMode="cover" /><ScrollView contentContainerStyle={styles.dashboardContent}>
   <View style={styles.dashboardHero}>
     <View style={styles.dashboardHeroOverlay}/>
     <View style={[styles.dashboardBrandRow,isRTL && styles.rowReverse]}>
@@ -380,7 +380,7 @@ export default function App() {
       </View>
     </View>
   </>}
-</ScrollView></ImageBackground>}{tab === "diary" && (!hydrated
+</ScrollView></View>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -548,9 +548,9 @@ const styles = StyleSheet.create({
   languageButtonActive: { backgroundColor: GOLD, borderColor: GOLD },
   languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
-  dashboardContent: { paddingBottom: 18, backgroundColor: "#061B3A", gap: 0 },
-  dashboardScreenBackground: { flex: 1, backgroundColor: "#06366D" },
-  dashboardScreenBackgroundImage: { resizeMode: "cover", opacity: 1 },
+  dashboardContent: { paddingBottom: 18, backgroundColor: "transparent", gap: 0 },
+  dashboardScreenBackground: { flex: 1, position: "relative", overflow: "hidden", backgroundColor: "#06366D" },
+  dashboardScreenBackgroundImage: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, width: "100%", height: "100%", opacity: 1 },
   dashboardGreetingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 25, paddingHorizontal: 2, zIndex: 1 },
   dashboardGreetingAvatar: { width: 58, height: 58, borderRadius: 29, overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,35,78,0.78)", borderWidth: 2, borderColor: "#FFD400" },
   dashboardGreetingAvatarImage: { width: "100%", height: "100%" },
