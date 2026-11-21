@@ -316,50 +316,61 @@ export default function App() {
       </View>
 
       <View style={{ flex: 1 }}>
-        {tab === "dashboard" && <ScrollView contentContainerStyle={styles.content}>
-<ImageBackground source={require("./assets/images/welcome.jpg")} imageStyle={styles.dashboardHeroImage} style={styles.dashboardIntro}>
-   <View style={styles.dashboardHeroShade}/>
-  <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>{t.today}</Text></View>
-  <View style={[styles.greetingRow, isRTL && styles.rowReverse]}>
-    <View style={styles.greetingAvatar}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.greetingAvatarImage} /> : <Text style={styles.avatarFallback}>👤</Text>}</View>
-    <Text style={[styles.greeting,direction,{ flex: 1 }]}>{profile.name.trim() ? (language === 'ar' ? `مرحباً، ${profile.name.trim()}` : language === 'fr' ? `Bonjour, ${profile.name.trim()}` : `Hi, ${profile.name.trim()}`) : t.greeting}</Text>
-  </View>
-  <Text style={[styles.introNote,direction]}>{t.dashboardSub}</Text>
-</ImageBackground>
-{!hydrated ? <Card><Text style={styles.muted}>{t.loadingDashboard}</Text></Card> : <>
-  <View style={styles.calorieHero}>
-    <View style={styles.heroTopline}><Text style={styles.heroLabel}>{t.calories.toUpperCase()}</Text><Text style={styles.sectionMeta}>{t.dailyTarget.toUpperCase()}</Text></View>
-    <View style={styles.calorieDashboard}>
-      <View style={styles.calorieRing}>
-        <View style={styles.calorieRingInner}>
-          <Text style={styles.ringCaption}>{t.consumed.toUpperCase()}</Text>
-          <Text style={styles.ringValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
-          <Text style={styles.ringUnit}>KCAL</Text>
-        </View>
+        {tab === "dashboard" && <ScrollView contentContainerStyle={styles.dashboardContent}>
+  <ImageBackground source={require("./assets/images/background.jpg")} imageStyle={styles.dashboardBackgroundImage} style={styles.dashboardHero}>
+    <View style={styles.dashboardHeroOverlay}/>
+    <View style={[styles.dashboardBrandRow,isRTL && styles.rowReverse]}>
+      <Image source={require("./assets/images/danat-logo.png")} style={styles.dashboardBrandLogo} resizeMode="contain" />
+      <View style={{flex:1}}>
+        <Text style={styles.dashboardBrandTitle}>FITNESS <Text style={styles.dashboardBrandAccent}>PRO</Text></Text>
+        <Text style={styles.dashboardBrandSubtitle}>BY DANAT</Text>
       </View>
-      <View style={styles.calorieSummary}>
-        <Text style={styles.calorieNumber}>{metrics ? metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : "2,000"}</Text>
-        <Text style={styles.heroSubline}>{t.dailyGoal.toUpperCase()}</Text>
-        <View style={styles.remainingPanel}>
-          <Text style={styles.remainingValue}>{dailyIntake.calories===null?"—":Math.max(0,Math.round((metrics?.calories||2000)-dailyIntake.calories)).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
-          <Text style={styles.remainingLabel}>{t.remaining.toUpperCase()}</Text>
-        </View>
+      <Pressable onPress={()=>setTab("profile")} style={styles.dashboardSettings}><Ionicons name="settings-sharp" size={23} color="#FFFFFF"/></Pressable>
+    </View>
+    <View style={styles.dashboardHeroMessage}>
+      <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
+      <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
+    </View>
+  </ImageBackground>
+  {!hydrated ? <View style={styles.dashboardLoading}><Text style={styles.dashboardLoadingText}>{t.loadingDashboard}</Text></View> : <>
+    <View style={[styles.calorieHero,styles.dashboardCalories]}>
+      <View style={styles.dashboardFlame}><Ionicons name="flame" size={43} color="#FF9D00"/></View>
+      <View style={styles.dashboardCalorieBlock}>
+        <Text style={styles.dashboardCalorieValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
+        <Text style={styles.dashboardCalorieLabel}>{t.calories}</Text>
+      </View>
+      <View style={styles.dashboardCalorieDivider}/>
+      <View style={styles.dashboardGoalBlock}>
+        <Text style={styles.dashboardGoalLabel}>{t.dailyGoal}</Text>
+        <Text style={styles.dashboardGoalValue}>{metrics?metrics.calories.toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US"):"2,000"}</Text>
+        <Text style={styles.dashboardGoalPercent}>{Math.min(100,Math.round(((dailyIntake.calories||0)/(metrics?.calories||2000))*100))}%</Text>
+      </View>
+      <View style={styles.dashboardGoalRing}><Text style={styles.dashboardGoalRingText}>{Math.max(0,Math.round((metrics?.calories||2000)-(dailyIntake.calories||0))).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text><Text style={styles.dashboardGoalRingCaption}>{t.remaining}</Text></View>
+    </View>
+    <View style={styles.dashboardTiles}>
+      {([
+        ["food-diary.png",language==="ar"?"سجل الطعام":language==="fr"?"Journal alimentaire":"Food Diary","diary"],
+        ["progress.png",t.progress,"progress"],
+        ["weight.png",t.currentWeight,"progress"],
+        ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","profile"],
+        ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","profile"],
+        ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","progress"]
+      ] as [string,string,Tab][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>setTab(target)} style={styles.dashboardTile}>
+        <Image source={asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="weight.png"?require("./assets/images/weight.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="contain"/>
+        <Text style={styles.dashboardTileLabel}>{label}</Text>
+      </Pressable>)}
+    </View>
+    <View style={styles.dashboardNutrition}>
+      <View style={styles.dashboardNutritionHeading}><Text style={styles.dashboardNutritionTitle}>{language==="ar"?"تغذيتك اليوم":language==="fr"?"Nutrition du jour":"Today's Nutrition"}</Text><Pressable onPress={()=>setTab("diary")}><Text style={styles.dashboardNutritionLink}>{language==="ar"?"عرض التفاصيل":language==="fr"?"Voir détails":"View Details"} ›</Text></Pressable></View>
+      <View style={styles.dashboardNutritionBar}><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.carbs||0)*4,backgroundColor:"#16B85A"}]}/><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.protein||0)*4,backgroundColor:"#168CF0"}]}/><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.fats||0)*9,backgroundColor:"#FF941F"}]}/></View>
+      <View style={styles.dashboardNutritionLabels}>
+        <View><Text style={styles.dashboardNutritionPercent}>{Math.round((dailyIntake.carbs||0)*4/Math.max(1,(dailyIntake.carbs||0)*4+(dailyIntake.protein||0)*4+(dailyIntake.fats||0)*9)*100)}%</Text><Text style={styles.dashboardNutritionMacro}>{t.carbs}</Text></View>
+        <View><Text style={styles.dashboardNutritionPercent}>{Math.round((dailyIntake.protein||0)*4/Math.max(1,(dailyIntake.carbs||0)*4+(dailyIntake.protein||0)*4+(dailyIntake.fats||0)*9)*100)}%</Text><Text style={styles.dashboardNutritionMacro}>{t.protein}</Text></View>
+        <View><Text style={styles.dashboardNutritionPercent}>{Math.round((dailyIntake.fats||0)*9/Math.max(1,(dailyIntake.carbs||0)*4+(dailyIntake.protein||0)*4+(dailyIntake.fats||0)*9)*100)}%</Text><Text style={styles.dashboardNutritionMacro}>{t.fats}</Text></View>
       </View>
     </View>
-    <View style={styles.progressTrack}><View style={[styles.progressFill,{width:(Math.min(100,((dailyIntake.calories||0)/(metrics?.calories||2000))*100))+"%"}]}/></View>
-    <View style={styles.spaceBetween}><Text style={styles.muted}>{t.dailyGoal}: {metrics?.calories||2000} kcal</Text><Text style={styles.greenText}>{Math.min(100,Math.round(((dailyIntake.calories||0)/(metrics?.calories||2000))*100))}%</Text></View>
-  </View>
-  <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.macroBalance}</Text><Text style={styles.sectionMeta}>{t.dailyGoals}</Text></View>
-  <View style={styles.macroGrid}>
-    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.protein}</Text><Text style={styles.macroTileValue}>{dailyIntake.protein===null?"0":Math.round(dailyIntake.protein)}<Text style={styles.macroTileUnit}> / {metrics?.protein||125} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.protein||0)/(metrics?.protein||125))*100)+"%",backgroundColor:GOLD}]}/></View></View>
-    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.carbs}</Text><Text style={styles.macroTileValue}>{dailyIntake.carbs===null?"0":Math.round(dailyIntake.carbs)}<Text style={styles.macroTileUnit}> / {metrics?.carbs||225} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.carbs||0)/(metrics?.carbs||225))*100)+"%",backgroundColor:GREEN}]}/></View></View>
-    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.fats}</Text><Text style={styles.macroTileValue}>{dailyIntake.fats===null?"0":Math.round(dailyIntake.fats)}<Text style={styles.macroTileUnit}> / {metrics?.fats||62} g</Text></Text><View style={styles.miniTrack}><View style={[styles.miniFill,{width:Math.min(100,((dailyIntake.fats||0)/(metrics?.fats||62))*100)+"%",backgroundColor:"#1686E8"}]}/></View></View>
-    <View style={styles.macroTile}><Text style={styles.macroTileLabel}>{t.currentWeight}</Text><Text style={styles.macroTileValue}>{profile.weight||"—"}<Text style={styles.macroTileUnit}> {profile.weight?t.kg:""}</Text></Text><Text style={styles.macroTileHint}>{t.progress}</Text></View>
-  </View>
-  {!metrics && <Text style={[styles.muted,{textAlign:isRTL?"right":"left"}]}>{t.optionalProfileNote}</Text>}
-  <Pressable accessibilityRole="button" onPress={()=>setTab("diary")} style={styles.openDiaryButton}><Text style={styles.openDiaryButtonText}>{t.openFoodDiary}</Text><Text style={styles.openDiaryArrow}>›</Text></Pressable>
-  <View style={styles.dashboardFootnote}><Text style={styles.dashboardFootnoteText}>{t.mealsLogged}: {dailyIntake.calories!==null && dailyIntake.calories>0 ? "✓" : "0"}</Text><Text style={styles.dashboardFootnoteText}>DANAT WELLNESS</Text></View>
-</>}</ScrollView>}{tab === "diary" && (!hydrated
+  </>}
+</ScrollView>}{tab === "diary" && (!hydrated
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
@@ -527,6 +538,47 @@ const styles = StyleSheet.create({
   languageButtonActive: { backgroundColor: GOLD, borderColor: GOLD },
   languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
+  dashboardContent: { paddingBottom: 18, backgroundColor: "#061B3A", gap: 0 },
+  dashboardHero: { height: 340, paddingHorizontal: 20, paddingTop: 17, justifyContent: "flex-start", overflow: "hidden", backgroundColor: "#06366D" },
+  dashboardBackgroundImage: { resizeMode: "cover", opacity: 1 },
+  dashboardHeroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,20,55,0.13)" },
+  dashboardBrandRow: { flexDirection: "row", alignItems: "center", gap: 10, zIndex: 1 },
+  dashboardBrandLogo: { width: 56, height: 56 },
+  dashboardBrandTitle: { color: "#FFFFFF", fontSize: 23, fontWeight: "900", fontStyle: "italic", letterSpacing: -0.5 },
+  dashboardBrandAccent: { color: "#FFD400" },
+  dashboardBrandSubtitle: { color: "#FFFFFF", fontSize: 11, letterSpacing: 2.4, marginTop: 1 },
+  dashboardSettings: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  dashboardHeroMessage: { marginTop: 49, maxWidth: "55%", zIndex: 1 },
+  dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
+  dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
+  dashboardCalories: { marginHorizontal: 17, marginTop: -2, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(0,32,75,0.96)", borderColor: "#168CF0", gap: 9 },
+  dashboardFlame: { width: 43, alignItems: "center" },
+  dashboardCalorieBlock: { flex: 1, minWidth: 65 },
+  dashboardCalorieValue: { color: "#FFFFFF", fontSize: 27, fontWeight: "900" },
+  dashboardCalorieLabel: { color: "#FFFFFF", fontSize: 12, fontWeight: "600" },
+  dashboardCalorieDivider: { width: 1, height: 63, backgroundColor: "rgba(255,255,255,0.65)" },
+  dashboardGoalBlock: { flex: 1, minWidth: 62, paddingLeft: 7 },
+  dashboardGoalLabel: { color: "#FFFFFF", fontSize: 11 },
+  dashboardGoalValue: { color: "#FFFFFF", fontSize: 22, fontWeight: "900" },
+  dashboardGoalPercent: { color: "#FFD400", fontSize: 16, fontWeight: "900" },
+  dashboardGoalRing: { width: 67, height: 67, borderRadius: 34, borderWidth: 7, borderColor: "#FFD400", borderLeftColor: "#168CF0", alignItems: "center", justifyContent: "center" },
+  dashboardGoalRingText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900" },
+  dashboardGoalRingCaption: { color: "#DDEBFF", fontSize: 7, textAlign: "center" },
+  dashboardTiles: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 17, gap: 10, justifyContent: "space-between", marginBottom: 17 },
+  dashboardTile: { width: "31.5%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 5, backgroundColor: "#0873D5", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
+  dashboardTileIcon: { width: 61, height: 61, marginBottom: 3 },
+  dashboardTileLabel: { color: "#FFFFFF", fontSize: 13, lineHeight: 16, fontWeight: "900", textAlign: "center" },
+  dashboardNutrition: { marginHorizontal: 14, borderRadius: 18, paddingHorizontal: 17, paddingTop: 15, paddingBottom: 13, backgroundColor: "#F3F7FC", borderWidth: 1, borderColor: "#D7E7F8" },
+  dashboardNutritionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  dashboardNutritionTitle: { color: "#09254C", fontSize: 17, fontWeight: "900" },
+  dashboardNutritionLink: { color: "#1265B4", fontSize: 11, fontWeight: "700" },
+  dashboardNutritionBar: { height: 12, borderRadius: 8, overflow: "hidden", flexDirection: "row", backgroundColor: "#DDE5EF", gap: 0 },
+  dashboardNutritionSegment: { height: 12 },
+  dashboardNutritionLabels: { flexDirection: "row", justifyContent: "space-around", paddingTop: 9 },
+  dashboardNutritionPercent: { color: "#0B2345", fontSize: 15, fontWeight: "900", textAlign: "center" },
+  dashboardNutritionMacro: { color: "#0B2345", fontSize: 11, textAlign: "center" },
+  dashboardLoading: { margin: 18, padding: 20, backgroundColor: "#FFFFFF", borderRadius: 14 },
+  dashboardLoadingText: { color: "#09254C", textAlign: "center" },
   content: { paddingHorizontal: 22, paddingTop: 25, paddingBottom: 34, gap: 15 },
   dashboardIntro: { minHeight: 205, padding: 18, justifyContent: "flex-end", borderRadius: 22, overflow: "hidden", backgroundColor: "#08264A", gap: 7 },
   dashboardHeroImage: { borderRadius: 22, opacity: 0.96 },
