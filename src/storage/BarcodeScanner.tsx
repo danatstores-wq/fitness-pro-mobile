@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import { createFood, FoodRecord, getFoodBySourceId } from "./database";
 
@@ -12,13 +12,17 @@ const styles = StyleSheet.create({
   button: { backgroundColor: "#FFC928", borderRadius: 11, padding: 13, alignItems: "center", marginTop: 12 },
   buttonText: { color: "#10294A", fontWeight: "900" },
   close: { padding: 12, alignItems: "center" },
-  loading: { color: "#1686E8", textAlign: "center", marginTop: 12 }
+  loading: { color: "#1686E8", textAlign: "center", marginTop: 12 },
+  webError: { color: "#FFD4D4", fontSize: 12, textAlign: "center", marginTop: 10 }
 });
 type NutrimentMap = Record<string, unknown>;
 export default function BarcodeScanner({ visible, onClose, onFound, language }: Props) {
   const [permission, requestPermission] = useCameraPermissions();
   const [loading, setLoading] = useState(false);
   const scanned = useRef(false);
+  const videoRef = useRef<any>(null);
+  const scannerLookup = useRef<(result: BarcodeScanningResult) => Promise<void>>(async () => {});
+  const [webError, setWebError] = useState("");
   useEffect(() => { if (visible) scanned.current = false; }, [visible]);
   const ar = language === "ar", fr = language === "fr";
   const title = ar ? "امسح الباركود" : fr ? "Scanner le code-barres" : "Scan product barcode";
@@ -116,6 +120,35 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     }
   };
 
+  scannerLookup.current = lookup;
+
+  // Safari on iPhone needs a browser video-stream decoder. Expo Camera's native
+  // barcode callback is retained below for installed iOS and Android builds.
+  useEffect(() => {
+    if (!visible || Platform.OS !== "web") return;
+    let active = true;
+    let controls: { stop: () => void } | undefined;
+    setWebError("");
+    (async () => {
+      try {
+        const { BrowserMultiFormatReader } = await import("@zxing/browser");
+        if (!active || !videoRef.current) return;
+        const reader = new BrowserMultiFormatReader();
+        controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
+          if (active && result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
+        });
+        if (!active) controls.stop();
+      } catch (error) {
+        if (!active) return;
+        const detail = error instanceof Error ? error.message : String(error);
+        setWebError(detail.toLowerCase().includes("permission")
+          ? (ar ? "يرجى السماح باستخدام الكاميرا في Safari." : fr ? "Autorisez l’accès à la caméra dans Safari." : "Please allow camera access in Safari.")
+          : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start the camera. Check HTTPS and allow camera access."));
+      }
+    })();
+    return () => { active = false; controls?.stop(); };
+  }, [visible]);
+
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -124,7 +157,11 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         <Text style={styles.muted}>
           {ar ? "المعلومات من قاعدة Open Food Facts وقد تختلف حسب المنتج." : fr ? "Données Open Food Facts : la couverture et les valeurs disponibles varient selon le produit." : "Nutrition data comes from Open Food Facts. Product coverage and label completeness vary."}
         </Text>
-        {!permission ? <ActivityIndicator /> : !permission.granted ? (
+        {Platform.OS === "web" ? (
+          <View style={styles.camera}>
+            {React.createElement("video" as any, { ref: videoRef, autoPlay: true, muted: true, playsInline: true, style: { width: "100%", height: "100%", objectFit: "cover" } })}
+          </View>
+        ) : !permission ? <ActivityIndicator /> : !permission.granted ? (
           <>
             <Text style={styles.muted}>{ar ? "يلزم السماح باستخدام الكاميرا لمسح المنتجات." : fr ? "L’autorisation de la caméra est nécessaire." : "Camera permission is needed to scan products."}</Text>
             <Pressable style={styles.button} onPress={requestPermission}><Text style={styles.buttonText}>{ar ? "السماح بالكاميرا" : fr ? "Autoriser la caméra" : "Allow camera"}</Text></Pressable>
@@ -138,6 +175,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
             onMountError={(event) => Alert.alert(title, event.message || (ar ? "تعذر تشغيل الكاميرا." : fr ? "Impossible de démarrer la caméra." : "Could not start the camera."))}
           />
         )}
+        {!!webError && <Text style={styles.webError}>{webError}</Text>}
         {loading && <Text style={styles.loading}>{ar ? "جارٍ البحث عن المنتج…" : fr ? "Recherche du produit…" : "Looking up product…"}</Text>}
         <Pressable style={styles.close} onPress={onClose}><Text style={styles.muted}>{close}</Text></Pressable>
       </View>
