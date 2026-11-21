@@ -12,8 +12,9 @@ import FoodDiary from "./src/storage/FoodDiary";
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
+import { addActivityLog, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 
-type Tab = "dashboard" | "diary" | "progress" | "profile" | "contact";
+type Tab = "dashboard" | "diary" | "progress" | "weight" | "activity" | "goals" | "challenges" | "profile" | "contact";
 type Profile = {
   name: string; age: string; sex: "male" | "female"; height: string; weight: string;
   targetWeight: string; activity: "sedentary" | "light" | "moderate" | "active" | "veryActive"; ibwFormula: "devine" | "robinson";
@@ -362,10 +363,10 @@ export default function App() {
       {([
         ["food-diary.png",language==="ar"?"سجل الطعام":language==="fr"?"Journal alimentaire":"Food Diary","diary"],
         ["progress.png",t.progress,"progress"],
-        ["weight.png",t.currentWeight,"progress"],
-        ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","profile"],
-        ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","profile"],
-        ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","progress"]
+        ["weight.png",t.currentWeight,"weight"],
+        ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","activity"],
+        ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
+        ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
       ] as [string,string,Tab][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>setTab(target)} style={styles.dashboardTile}>
         <Image source={asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="weight.png"?require("./assets/images/weight.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="contain"/>
         <Text style={styles.dashboardTileLabel}>{label}</Text>
@@ -388,21 +389,24 @@ export default function App() {
             : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} targetProtein={metrics?.protein} targetCarbs={metrics?.carbs} targetFat={metrics?.fats} />)}
 
         {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
-  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={[styles.introNote,direction]}>{t.weightTrend}</Text></View>
-  <View style={styles.progressHero}>
-    <Text style={styles.heroLabel}>{t.currentWeight.toUpperCase()}</Text>
-    <View style={styles.spaceBetween}><Text style={styles.progressWeight}>{weightLog.length ? weightLog[weightLog.length-1].weight_kg+" "+t.kg : (profile.weight ? profile.weight+" "+t.kg : "—")}</Text><Text style={styles.progressTrendMark}>↗</Text></View>
-    <Text style={styles.muted}>{weightLog.length ? new Date(weightLog[weightLog.length-1].recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US") : t.emptyProgress}</Text>
-    {profile.targetWeight ? <View style={styles.targetWeightPill}><Text style={styles.targetWeightText}>{t.targetWeight}: {profile.targetWeight} {t.kg}</Text></View> : null}
-  </View>
-  <Card>
-    <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>{t.weightTrend}</Text><Text style={styles.sectionMeta}>{weightLog.length} {t.logWeight.toUpperCase()}</Text></View>
-    {weightLog.length ? <>
-      <View style={styles.chartBars}>{weightLog.slice(-12).map((entry,index,arr)=>{const values=arr.map(x=>x.weight_kg);const min=Math.min(...values),max=Math.max(...values);const height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#1686E8"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
-      <View style={styles.weightList}>{weightLog.slice(-5).reverse().map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</View>
-    </> : <Text style={styles.muted}>{t.emptyProgress}</Text>}
-  </Card>
+  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={styles.introNote}>{language==="ar"?"ملخص شامل لتقدمك الصحي واللياقي":language==="fr"?"Aperçu de vos progrès santé et fitness":"Your overall health and fitness overview."}</Text></View>
+  <View style={styles.statRow}><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{(weightLog[0]?.weight_kg ?? profile.weight) || "—"}</Text><Text style={styles.muted}>{t.currentWeight} ({t.kg})</Text></View><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{profile.targetWeight || "—"}</Text><Text style={styles.muted}>{t.targetWeight} ({t.kg})</Text></View></View>
+  <Card><Text style={styles.cardTitle}>WEIGHT TRACKING</Text><Text style={styles.muted}>{weightLog.length} {language==="ar"?"قياساً مسجلاً":language==="fr"?"mesures enregistrées":"weight entries recorded"}</Text><GoldButton title={language==="ar"?"فتح سجل الوزن":language==="fr"?"Ouvrir le suivi":"Open Weight Tracker"} onPress={()=>setTab("weight")}/></Card>
+  <Card><Text style={styles.cardTitle}>ACTIVITY</Text><Text style={styles.muted}>{language==="ar"?"سجّل تمارينك ومدتها والسعرات المحروقة.":language==="fr"?"Enregistrez vos entraînements et leur durée.":"Record workouts, duration and estimated calories burned."}</Text><GoldButton title={language==="ar"?"فتح النشاط":"Open Activity"} onPress={()=>setTab("activity")}/></Card>
+  <Card><Text style={styles.cardTitle}>GOALS & CHALLENGES</Text><View style={{flexDirection:"row",gap:8}}><View style={{flex:1}}><GoldButton title={language==="ar"?"الأهداف":"Goals"} onPress={()=>setTab("goals")}/></View><View style={{flex:1}}><GoldButton title={language==="ar"?"التحديات":"Challenges"} onPress={()=>setTab("challenges")}/></View></View></Card>
+</ScrollView>}
+{tab === "weight" && <ScrollView contentContainerStyle={styles.content}>
+  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{language==="ar"?"تتبع الوزن":language==="fr"?"Suivi du poids":"Weight Tracker"}</Text><Text style={styles.introNote}>{t.weightTrend}</Text></View>
+  <View style={styles.progressHero}><Text style={styles.heroLabel}>{t.currentWeight.toUpperCase()}</Text><Text style={styles.progressWeight}>{weightLog[0]?.weight_kg ? weightLog[0].weight_kg+" "+t.kg : (profile.weight ? profile.weight+" "+t.kg : "—")}</Text>{profile.targetWeight?<View style={styles.targetWeightPill}><Text style={styles.targetWeightText}>{t.targetWeight}: {profile.targetWeight} {t.kg}</Text></View>:null}</View>
+  <Card><Text style={styles.cardTitle}>{t.weightTrend}</Text>{weightLog.length?<><View style={styles.chartBars}>{[...weightLog].slice(0,12).reverse().map((entry,index,arr)=>{const vals=arr.map(x=>x.weight_kg),min=Math.min(...vals),max=Math.max(...vals),height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#1686E8"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>{weightLog.slice(0,5).map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString()}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</>:<Text style={styles.muted}>{t.emptyProgress}</Text>}</Card>
   <Card><Text style={styles.cardTitle}>{t.logWeight}</Text><TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/><GoldButton title={t.logWeight} onPress={addWeight}/></Card>
+</ScrollView>}
+{tab === "activity" && <ActivityTracker language={language}/>}
+{tab === "challenges" && <ChallengeTracker language={language}/>}
+{tab === "goals" && <ScrollView contentContainerStyle={styles.content}>
+  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={styles.pageTitle}>{language==="ar"?"أهدافك":language==="fr"?"Vos objectifs":"Your Goals"}</Text><Text style={styles.introNote}>{language==="ar"?"حدد أهدافك الشخصية واحفظها في ملفك.":language==="fr"?"Définissez et enregistrez vos objectifs.":"Set and save your personal fitness targets."}</Text></View>
+  <Card><Text style={styles.cardTitle}>{language==="ar"?"الهدف الرئيسي":"PRIMARY TARGET"}</Text><Field label={t.targetWeight+" ("+t.kg+")"} value={profile.targetWeight} onChangeText={v=>change("targetWeight",v)} keyboardType="decimal-pad"/><Text style={styles.fieldLabel}>{language==="ar"?"هدف اللياقة":"Fitness objective"}</Text><View style={styles.choiceWrap}><Choice title={language==="ar"?"خسارة الوزن":"Lose weight"} active={profile.objective==="lose"} onPress={()=>change("objective","lose")}/><Choice title={language==="ar"?"الحفاظ":"Maintain"} active={profile.objective==="maintain"} onPress={()=>change("objective","maintain")}/><Choice title={language==="ar"?"زيادة الوزن":"Gain weight"} active={profile.objective==="gain"} onPress={()=>change("objective","gain")}/></View><Text style={styles.fieldLabel}>{language==="ar"?"مستوى النشاط":"Activity level"}</Text><View style={styles.choiceWrap}>{(["sedentary","light","moderate","active","veryActive"] as Profile["activity"][]).map((level,i)=><Choice key={level} title={(language==="ar"?["قليل الحركة","خفيف","متوسط","نشط","نشط جداً"]:["Sedentary","Light","Moderate","Active","Very active"])[i]} active={profile.activity===level} onPress={()=>change("activity",level)}/>)}</View><Text style={styles.muted}>{language==="ar"?"تُستخدم هذه الإعدادات لحساب السعرات والماكروز اليومية المقترحة.":"These settings calculate your estimated daily calories and macros."}</Text><GoldButton title={language==="ar"?"حفظ الأهداف":"Save Goals"} onPress={saveProfile}/></Card>
+  {metrics&&<Card><Text style={styles.cardTitle}>ESTIMATED DAILY TARGETS</Text><MetricLine label={t.calories} value={metrics.calories+" kcal"}/><MetricLine label={t.protein} value={metrics.protein+" g"}/><MetricLine label={t.carbs} value={metrics.carbs+" g"}/><MetricLine label={t.fats} value={metrics.fats+" g"}/></Card>}
 </ScrollView>}
 {tab === "contact" && <ScrollView contentContainerStyle={[styles.content, { flexGrow: 1, justifyContent: "center" }]}>
   <View style={styles.contactWelcome}>
@@ -501,6 +505,32 @@ export default function App() {
       </View>
     </SafeAreaView>
   );
+}
+
+
+function ActivityTracker({language}:{language:Language}) {
+ const ar=language==="ar",fr=language==="fr";
+ const [logs,setLogs]=useState<Awaited<ReturnType<typeof getActivityLogs>>>([]);
+ const [kind,setKind]=useState("Walking"),[duration,setDuration]=useState(""),[calories,setCalories]=useState(""),[notes,setNotes]=useState("");
+ const [loading,setLoading]=useState(true);
+ const names=ar?["المشي","الجري","الدراجة","تمارين القوة","السباحة","اليوغا","أخرى"]:fr?["Marche","Course","Vélo","Musculation","Natation","Yoga","Autre"]:["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
+ const kinds=["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
+ const refresh=async()=>{setLogs(await getActivityLogs());setLoading(false);};
+ useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
+ const save=async()=>{const mins=Number(duration),kcal=calories.trim()?Number(calories):null;if(!Number.isFinite(mins)||mins<=0||(kcal!==null&&(!Number.isFinite(kcal)||kcal<0))){Alert.alert(ar?"أدخل مدة صحيحة":"Enter a valid duration");return;}try{await addActivityLog(kind,Math.round(mins),kcal,notes);setDuration("");setCalories("");setNotes("");await refresh();}catch{Alert.alert("Could not save activity");}};
+ return <ScrollView contentContainerStyle={styles.content}><View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={styles.pageTitle}>{ar?"النشاط اليومي":fr?"Activité quotidienne":"Daily Activity"}</Text><Text style={styles.introNote}>{ar?"سجّل تمارينك ونشاطك يدوياً.":fr?"Enregistrez manuellement vos entraînements.":"Manually record your workouts and movement."}</Text></View>
+ <Card><Text style={styles.cardTitle}>{ar?"إضافة نشاط":fr?"Ajouter une activité":"ADD ACTIVITY"}</Text><Text style={styles.fieldLabel}>{ar?"نوع النشاط":fr?"Type d’activité":"Activity type"}</Text><View style={styles.choiceWrap}>{names.map((n,i)=><Choice key={kinds[i]} title={n} active={kind===kinds[i]} onPress={()=>setKind(kinds[i])}/>)}</View><Field label={ar?"المدة بالدقائق":fr?"Durée en minutes":"Duration (minutes)"} value={duration} onChangeText={setDuration} keyboardType="number-pad"/><Field label={ar?"السعرات المحروقة (اختياري)":fr?"Calories brûlées (facultatif)":"Calories burned (optional)"} value={calories} onChangeText={setCalories} keyboardType="decimal-pad"/><Field label={ar?"ملاحظات":fr?"Notes":"Notes"} value={notes} onChangeText={setNotes}/><GoldButton title={ar?"حفظ النشاط":fr?"Enregistrer":"Save Activity"} onPress={save}/></Card>
+ <Card><Text style={styles.cardTitle}>{ar?"سجل النشاط":fr?"Historique":"ACTIVITY HISTORY"}</Text>{loading?<Text style={styles.muted}>…</Text>:logs.length===0?<Text style={styles.muted}>{ar?"لا يوجد نشاط مسجل بعد.":fr?"Aucune activité enregistrée.":"No activities recorded yet."}</Text>:logs.map(x=><View key={x.id} style={[styles.spaceBetween,{paddingVertical:8,borderBottomWidth:1,borderBottomColor:"#244A73"}]}><View style={{flex:1}}><Text style={styles.valueText}>{names[kinds.indexOf(x.activity)]||x.activity}</Text><Text style={styles.muted}>{new Date(x.logged_at).toLocaleDateString()} · {x.duration_minutes} min</Text>{x.notes?<Text style={styles.muted}>{x.notes}</Text>:null}</View>{x.calories_burned!==null?<Text style={styles.valueText}>{x.calories_burned} kcal</Text>:null}</View>)}</Card></ScrollView>;
+}
+function ChallengeTracker({language}:{language:Language}) {
+ const ar=language==="ar",fr=language==="fr",today=new Date().toISOString().slice(0,10);
+ const [checks,setChecks]=useState<{challenge_id:string;completed_day:string}[]>([]),[loading,setLoading]=useState(true);
+ const challenges=[{id:"walk7",title:ar?"تحدي المشي 7 أيام":fr?"Défi marche 7 jours":"7-Day Walking Challenge",desc:ar?"سجّل المشي كل يوم لمدة أسبوع.":fr?"Cochez chaque jour de marche.":"Check in each day you complete a walk.",goal:7},{id:"fitness30",title:ar?"تحدي اللياقة 30 يوماً":fr?"Défi fitness 30 jours":"30-Day Fitness Challenge",desc:ar?"أكمل نشاطاً بدنياً كل يوم.":fr?"Faites une activité chaque jour.":"Complete a physical activity each day.",goal:30},{id:"water7",title:ar?"تحدي شرب الماء":fr?"Défi hydratation":"Water Habit Challenge",desc:ar?"سجّل الأيام التي تحقق فيها هدف الماء.":fr?"Cochez les jours où vous atteignez votre objectif d’eau.":"Check in when you meet your daily water goal.",goal:7},{id:"streak5",title:ar?"سلسلة التمارين":fr?"Régularité sportive":"Workout Consistency",desc:ar?"حافظ على الاستمرارية وسجّل أيام التمرين.":fr?"Cochez vos jours d’entraînement.":"Build consistency by checking in on workout days.",goal:5}];
+ const refresh=async()=>{setChecks(await getChallengeCheckins());setLoading(false);};useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
+ const toggle=async(id:string)=>{await toggleChallengeCheckin(id,today);await refresh();};
+ return <ScrollView contentContainerStyle={styles.content}><View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={styles.pageTitle}>{ar?"التحديات":fr?"Défis":"Challenges"}</Text><Text style={styles.introNote}>{ar?"ابنِ عادات صحية وسجّل إنجازك اليومي.":fr?"Créez de bonnes habitudes et suivez vos progrès.":"Build healthy habits and manually track your daily check-ins."}</Text></View>
+ {loading?<Card><Text style={styles.muted}>…</Text></Card>:challenges.map(c=>{const count=checks.filter(x=>x.challenge_id===c.id).length,done=checks.some(x=>x.challenge_id===c.id&&x.completed_day===today);return <Card key={c.id}><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{c.title}</Text><Text style={styles.sectionMeta}>{count}/{c.goal}</Text></View><Text style={styles.muted}>{c.desc}</Text><View style={styles.progressTrack}><View style={[styles.progressFill,{width:Math.min(100,count/c.goal*100)+"%"}]}/></View><GoldButton title={done?(ar?"إلغاء تسجيل اليوم":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":"Check in today")} onPress={()=>toggle(c.id)}/></Card>;})}
+ <Text style={styles.muted}>{ar?"للمتابعة الشخصية فقط؛ لا تمنح هذه التحديات نقاط ألعاب أو مكافآت مالية.":fr?"Suivi personnel uniquement, sans points de jeu ni récompense financière.":"Personal tracking only: challenges do not award game points or financial rewards."}</Text></ScrollView>;
 }
 
 function Card({ children }: { children: React.ReactNode }) {
