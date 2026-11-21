@@ -304,7 +304,7 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.appFrame}>
-      <View style={styles.header}>
+      {tab !== "dashboard" && <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
           <View style={{ flex: 1 }}>
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   dashboardGoalRingText: { color: "#FFFFFF", fontSize: 11, fontWeight: "900" },
   dashboardGoalRingCaption: { color: "#DDEBFF", fontSize: 7, textAlign: "center" },
   dashboardTiles: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 17, gap: 10, justifyContent: "space-between", marginBottom: 17 },
-  dashboardTile: { width: "31.5%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 5, backgroundColor: "#0873D5", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
+  dashboardTile: { width: "30%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "center", paddingVertical: 9, paddingHorizontal: 5, backgroundColor: "#0873D5", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
   dashboardTileIcon: { width: 61, height: 61, marginBottom: 3 },
   dashboardTileLabel: { color: "#FFFFFF", fontSize: 13, lineHeight: 16, fontWeight: "900", textAlign: "center" },
   dashboardNutrition: { marginHorizontal: 14, borderRadius: 18, paddingHorizontal: 17, paddingTop: 15, paddingBottom: 13, backgroundColor: "#F3F7FC", borderWidth: 1, borderColor: "#D7E7F8" },
