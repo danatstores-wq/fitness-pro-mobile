@@ -304,6 +304,7 @@ export default function App() {
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.appFrame}>
+      <Image source={require("./assets/images/background.jpg")} style={styles.appBackgroundImage} resizeMode="cover" />
       {tab !== "dashboard" && <View style={styles.header}>
         <View style={[styles.brand, isRTL && styles.rowReverse]}>
           <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
@@ -316,7 +317,7 @@ export default function App() {
       </View>}
 
       <View style={{ flex: 1 }}>
-        {tab === "dashboard" && <View style={styles.dashboardScreenBackground}><Image source={require("./assets/images/background.jpg")} style={styles.dashboardScreenBackgroundImage} resizeMode="cover" /><ScrollView contentContainerStyle={styles.dashboardContent}>
+        {tab === "dashboard" && <View style={styles.dashboardScreenBackground}><ScrollView contentContainerStyle={styles.dashboardContent}>
   <View style={styles.dashboardHero}>
     <View style={styles.dashboardHeroOverlay}/>
     <View style={[styles.dashboardBrandRow,isRTL && styles.rowReverse]}>
@@ -537,7 +538,7 @@ const styles = StyleSheet.create({
   splashFooterText: { color: "#F5F8FC", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   safe: { flex: 1, backgroundColor: "#06162B", alignItems: "center" },
   appFrame: { flex: 1, width: "100%", maxWidth: 480, alignSelf: "center", backgroundColor: BG, borderLeftWidth: 1, borderRightWidth: 1, borderColor: "#244A73" },
-  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, backgroundColor: "#08264A", borderBottomWidth: 1, borderBottomColor: "#173D68" },
+  header: { paddingHorizontal: 23, paddingTop: 13, paddingBottom: 16, backgroundColor: "rgba(8,38,74,0.72)", borderBottomWidth: 1, borderBottomColor: "#173D68" },
   brand: { flexDirection: "row", alignItems: "center", gap: 13 },
   rowReverse: { flexDirection: "row-reverse" },
   logoImage: { width: 46, height: 46 },
@@ -549,8 +550,8 @@ const styles = StyleSheet.create({
   languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
   dashboardContent: { paddingBottom: 18, backgroundColor: "transparent", gap: 0 },
-  dashboardScreenBackground: { flex: 1, position: "relative", overflow: "hidden", backgroundColor: "#06366D" },
-  dashboardScreenBackgroundImage: { position: "absolute", top: 0, right: 0, bottom: 0, left: 0, width: "100%", height: "100%", opacity: 1 },
+  dashboardScreenBackground: { flex: 1, position: "relative", overflow: "hidden", backgroundColor: "transparent" },
+  appBackgroundImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%", opacity: 1 },
   dashboardGreetingRow: { flexDirection: "row", alignItems: "center", gap: 12, marginTop: 25, paddingHorizontal: 2, zIndex: 1 },
   dashboardGreetingAvatar: { width: 58, height: 58, borderRadius: 29, overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0,35,78,0.78)", borderWidth: 2, borderColor: "#FFD400" },
   dashboardGreetingAvatarImage: { width: "100%", height: "100%" },
@@ -699,7 +700,7 @@ const styles = StyleSheet.create({
   contactDescription: { color: MUTED, fontSize: 14, lineHeight: 23, textAlign: "center", marginBottom: 24 },
   contactEmailBox: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: "#12345B", borderRadius: 14, borderWidth: 1, borderColor: "#244A73", paddingHorizontal: 12, paddingVertical: 16 },
   contactEmail: { color: GREEN, fontSize: 16, fontWeight: "800" },
-  tabBar: { flexDirection: "row", backgroundColor: "#08264A", borderTopWidth: 1, borderTopColor: "#173D68", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  tabBar: { flexDirection: "row", backgroundColor: "rgba(8,38,74,0.78)", borderTopWidth: 1, borderTopColor: "#173D68", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#6F89A8", fontSize: 21, fontWeight: "500" },
   tabLabel: { color: "#D5DED2", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
