@@ -422,7 +422,7 @@ export default function App() {
 </ScrollView>}
 {tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
+            <Text style={[styles.pageTitle, direction, { color: "#FFFFFF" }]}>{t.profile}</Text>
             <Card>
               <View style={styles.profilePhotoSection}>
                 <View style={styles.profilePhotoPreview}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profilePhotoImage} /> : <Text style={styles.profilePhotoPlaceholder}>👤</Text>}</View>
