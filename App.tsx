@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import BarcodeScanner from "./src/storage/BarcodeScanner";
+import { readTodaySteps, requestAndReadTodaySteps } from "./src/storage/healthSteps";
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
@@ -84,6 +85,7 @@ export default function App() {
   }, []);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [scannerVisible, setScannerVisible] = useState(false);
+  const [stepsEnabled, setStepsEnabled] = useState(false);
   const [scannedFood, setScannedFood] = useState<FoodRecord | null>(null);
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
@@ -422,7 +424,7 @@ export default function App() {
     <Text style={styles.muted}>{language==="ar"?"إعادة الضبط تحذف سجل القياسات فقط ولا تغيّر الوزن في الملف الشخصي.":language==="fr"?"La réinitialisation efface uniquement l’historique, pas le poids du profil.":"Reset clears measurement history only; your Profile weight is kept."}</Text>
   </Card>
 </ScrollView>}
-{tab === "activity" && <ActivityTracker language={language} weightKg={Number(profile.weight) || 0}/>}
+{tab === "activity" && <ActivityTracker language={language} weightKg={Number(profile.weight) || 0} stepsEnabled={stepsEnabled} setStepsEnabled={setStepsEnabled}/>}
 {tab === "challenges" && <ChallengeTracker language={language}/>}
 {tab === "goals" && <ScrollView contentContainerStyle={styles.content}>
   <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,{color:"#FFFFFF"}]}>{language==="ar"?"أهدافك":language==="fr"?"Vos objectifs":"Your Goals"}</Text><Text style={[styles.introNote,{color:"#FFFFFF"}]}>{language==="ar"?"حدد أهدافك الشخصية واحفظها في ملفك.":language==="fr"?"Définissez et enregistrez vos objectifs.":"Set and save your personal fitness targets."}</Text></View>
@@ -535,11 +537,12 @@ export default function App() {
 }
 
 
-function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}) {
+function ActivityTracker({language,weightKg,stepsEnabled,setStepsEnabled}:{language:Language;weightKg:number;stepsEnabled:boolean;setStepsEnabled:(enabled:boolean)=>void}) {
  const ar=language==="ar",fr=language==="fr";
  const [logs,setLogs]=useState<Awaited<ReturnType<typeof getActivityLogs>>>([]);
  const [kind,setKind]=useState("Walking"),[duration,setDuration]=useState("");
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false);
+ const [steps,setSteps]=useState<number|null>(null),[stepsLoading,setStepsLoading]=useState(false),[stepsMessage,setStepsMessage]=useState("");
  const names=ar?["المشي","الجري","ركوب الدراجة","تمارين القوة","السباحة","اليوغا","نشاط آخر"]:fr?["Marche","Course","Vélo","Musculation","Natation","Yoga","Autre"]:["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
  const kinds=["Walking","Running","Cycling","Strength training","Swimming","Yoga","Other"];
  const metValues:Record<string,number>={Walking:3.5,Running:8,Cycling:6.8,"Strength training":5,Swimming:6,Yoga:2.5,Other:4};
@@ -547,6 +550,25 @@ function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}
  const estimatedCalories=weightKg>0&&Number.isFinite(mins)&&mins>0
    ? Math.round((metValues[kind]*3.5*weightKg/200)*mins) : null;
  const refresh=async()=>{setLogs(await getActivityLogs());setLoading(false);};
+ const refreshSteps=async()=>{
+  setStepsLoading(true);setStepsMessage("");
+  try{
+   const result=await readTodaySteps();
+   if(!result.available){setSteps(null);setStepsMessage(ar?"عداد الخطوات التلقائي متاح في التطبيق المثبّت فقط، وليس في Safari.":fr?"Le comptage automatique est disponible dans l’application installée, pas dans Safari.":"Automatic step counting is available in the installed app, not Safari.");}
+   else setSteps(result.steps);
+  }catch(error){setStepsMessage(ar?"تعذر قراءة عدد الخطوات. تحقق من أذونات الصحة.":fr?"Impossible de lire les pas. Vérifiez les autorisations santé.":"Could not read steps. Check the health permissions.");}
+  finally{setStepsLoading(false);}
+ };
+ const connectSteps=async()=>{
+  setStepsLoading(true);setStepsMessage("");
+  try{
+   const result=await requestAndReadTodaySteps();
+   if(!result.available){setStepsMessage(ar?"افتح التطبيق المثبّت لاستخدام Apple Health أو Health Connect.":fr?"Ouvrez l’application installée pour utiliser Apple Health ou Health Connect.":"Open the installed app to use Apple Health or Health Connect.");}
+   else{setStepsEnabled(true);setSteps(result.steps);}
+  }catch(error){setStepsMessage(ar?"لم يتم منح إذن قراءة الخطوات. يمكنك السماح به من إعدادات الصحة.":fr?"L’accès aux pas n’a pas été accordé. Autorisez-le dans les réglages santé.":"Step access was not granted. You can allow it in your health settings.");}
+  finally{setStepsLoading(false);}
+ };
+ useEffect(()=>{if(stepsEnabled)void refreshSteps();},[stepsEnabled]);
  const dayKey=(value:string)=>{const d=new Date(value);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
  const grouped=logs.reduce<Record<string,typeof logs>>((acc,item)=>{const key=dayKey(item.logged_at);(acc[key]??=[]).push(item);return acc;},{});
  const dayBounds=(key:string)=>{const [y,m,d]=key.split("-").map(Number);const start=new Date(y,m-1,d);const end=new Date(y,m-1,d+1);return {start:start.toISOString(),end:end.toISOString()};};
@@ -571,6 +593,25 @@ function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}
    <Text style={[styles.pageTitle,{color:"#FFFFFF"}]}>{ar?"النشاط اليومي":fr?"Activité quotidienne":"Daily Activity"}</Text>
    <Text style={[styles.introNote,{color:"#FFFFFF"}]}>{ar?"اختر نشاطك وأدخل مدته فقط. سيحسب التطبيق السعرات المحروقة تلقائياً.":fr?"Choisissez une activité et sa durée. L’application estime automatiquement les calories brûlées.":"Choose your activity and enter its duration. The app estimates calories burned automatically."}</Text>
   </View>
+  <Card>
+   <Text style={styles.cardTitle}>{ar?"الخطوات اليومية التلقائية":fr?"PAS QUOTIDIENS AUTOMATIQUES":"AUTOMATIC DAILY STEPS"}</Text>
+   <Text style={styles.muted}>{ar?"اقرأ إجمالي خطوات اليوم من Apple Health أو Health Connect. تبقى بيانات الخطوات منفصلة عن سجل التمارين اليدوي.":fr?"Lisez le total des pas du jour depuis Apple Health ou Health Connect. Ces données restent séparées des activités saisies manuellement.":"Read today's step total from Apple Health or Health Connect. Step data stays separate from manually logged workouts."}</Text>
+   {stepsEnabled?(
+    <View style={{backgroundColor:"#EAF4FF",borderRadius:14,padding:16,marginTop:12}}>
+     <Text style={{color:"#23466C",fontSize:13,fontWeight:"800"}}>{ar?"خطوات اليوم":fr?"PAS AUJOURD’HUI":"STEPS TODAY"}</Text>
+     <Text style={{color:"#0875D1",fontSize:34,fontWeight:"900",marginTop:4}}>{steps===null?"—":steps.toLocaleString(language==="ar"?"ar":language==="fr"?"fr-FR":"en-US")}</Text>
+     <Pressable onPress={()=>void refreshSteps()} disabled={stepsLoading} style={{alignSelf:"flex-start",marginTop:8,paddingVertical:8,paddingHorizontal:12,backgroundColor:"#D7EAFE",borderRadius:9}}>
+      <Text style={{color:"#174A7B",fontWeight:"800"}}>{stepsLoading?(ar?"جارٍ التحديث…":fr?"Actualisation…":"Refreshing…"):(ar?"تحديث الخطوات":fr?"Actualiser les pas":"Refresh steps")}</Text>
+     </Pressable>
+    </View>
+   ):(
+    <View style={{marginTop:12}}>
+     <GoldButton title={stepsLoading?(ar?"جارٍ الاتصال…":fr?"Connexion…":"Connecting…"):(ar?"ربط الصحة وقراءة الخطوات":fr?"Connecter Santé et lire les pas":"Connect Health & Read Steps")} onPress={()=>void connectSteps()}/>
+     {Platform.OS==="web"&&<Text style={[styles.muted,{marginTop:8}]}>{ar?"يتطلب ذلك إصدار التطبيق المثبّت؛ لا يستطيع Safari الوصول إلى Apple Health مباشرة.":fr?"La version installée est nécessaire ; Safari ne peut pas accéder directement à Apple Health.":"The installed app is required; Safari cannot access Apple Health directly."}</Text>}
+    </View>
+   )}
+   {!!stepsMessage&&<Text style={{color:"#9A5A00",fontSize:12,marginTop:10}}>{stepsMessage}</Text>}
+  </Card>
   <Card>
    <Text style={styles.cardTitle}>{ar?"تسجيل نشاط":fr?"Enregistrer une activité":"LOG AN ACTIVITY"}</Text>
    <Text style={styles.fieldLabel}>{ar?"نوع النشاط":fr?"Type d’activité":"Activity type"}</Text>
