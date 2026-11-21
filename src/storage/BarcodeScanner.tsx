@@ -64,6 +64,15 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         return null;
       };
       const productName = String(p.product_name || p.product_name_en || p.generic_name || "Packaged food").trim();
+      const cleanTag = (tag: unknown) => String(tag).replace(/^[a-z]{2}:/i, "").replace(/-/g, " ").replace(/\\b(e)(\\d)/gi, "E$2").trim();
+      const tagsText = (value: unknown) => Array.isArray(value) ? value.map(cleanTag).filter(Boolean).join(", ") : "";
+      const ingredientText = String(
+        (language === "ar" ? p.ingredients_text_ar : language === "fr" ? p.ingredients_text_fr : p.ingredients_text_en) ||
+        p.ingredients_text || p.ingredients_text_with_allergens || ""
+      ).trim();
+      const allergensText = String(p.allergens || "").trim() || tagsText(p.allergens_tags);
+      const tracesText = String(p.traces || "").trim() || tagsText(p.traces_tags);
+      const additivesText = String(p.additives || "").trim() || tagsText(p.additives_original_tags?.length ? p.additives_original_tags : p.additives_tags);
       const brand = String(p.brands || "").split(",")[0].trim();
       const displayName = brand ? productName + " · " + brand : productName;
       const sugars = val("sugars_100g");
@@ -104,6 +113,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
         cholesterol_mg: cholesterol === null ? null : cholesterol * 1000,
         water_g: water, source: "open_food_facts", sourceId: barcode,
+        ingredients_text: ingredientText || null, allergens_text: allergensText || null,
+        traces_text: tracesText || null, additives_text: additivesText || null,
         dataQuality: "third_party", nutrients
       });
       const food: FoodRecord = {
@@ -111,7 +122,9 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         fiber_g: fiber, sugar_g: sugars, saturated_fat_g: saturated, trans_fat_g: trans,
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
         cholesterol_mg: cholesterol === null ? null : cholesterol * 1000,
-        water_g: water, data_quality: "third_party"
+        water_g: water, data_quality: "third_party", source: "open_food_facts",
+        ingredients_text: ingredientText || null, allergens_text: allergensText || null,
+        traces_text: tracesText || null, additives_text: additivesText || null
       };
       onFound(food);
       onClose();
