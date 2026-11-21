@@ -1,6 +1,7 @@
 import type { Language } from "./i18n";
+import { foodTranslations as reviewedFoodTranslations } from "./data/food-translations-reviewed";
 
-const foodWords: Record<string, [string, string]> = {
+const legacyFoodWords: Record<string, [string, string]> = {
   "Asian chicken or turkey garden salad with crispy noodles, chicken and/or turkey, lettuce, fruit, nuts, crispy noodles, no dressing": ["سلطة خضروات آسيوية بالدجاج أو الديك الرومي، مع نودلز مقرمشة وفاكهة ومكسرات، دون صلصة", "Salade composée asiatique au poulet ou à la dinde, avec nouilles croustillantes, fruits et fruits à coque, sans sauce"],
   "Antipasto with ham, fish, cheese, vegetables": ["مقبلات مع لحم خنزير مُعالَج، وسمك، وجبن، وخضروات", "Antipasto au jambon, au poisson, au fromage et aux légumes"],
   "Adobo, with noodles": ["نودلز بالأدوبو", "Nouilles à l’adobo"],
@@ -1545,6 +1546,8 @@ const foodWords: Record<string, [string, string]> = {
   "Hamburger (McDonalds)": ["هامبرغر (ماكدونالدز)", "Hamburger (McDonald’s)"],
   "Hamburger slider": ["برغر صغير", "Mini-hamburger"],
 };
+
+const foodWords: Record<string, [string, string]> = { ...legacyFoodWords, ...reviewedFoodTranslations };
 
 const phrases = Object.keys(foodWords).sort((a,b)=>b.length-a.length);
 export function localizeFoodName(name: string, language: Language): string {
