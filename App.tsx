@@ -13,7 +13,7 @@ import BarcodeScanner from "./src/storage/BarcodeScanner";
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
-import { addActivityLog, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
+import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 
 type Tab = "dashboard" | "diary" | "progress" | "weight" | "activity" | "goals" | "challenges" | "profile" | "contact";
 type Profile = {
@@ -547,6 +547,11 @@ function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}
  const estimatedCalories=weightKg>0&&Number.isFinite(mins)&&mins>0
    ? Math.round((metValues[kind]*3.5*weightKg/200)*mins) : null;
  const refresh=async()=>{setLogs(await getActivityLogs());setLoading(false);};
+ const dayKey=(value:string)=>{const d=new Date(value);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
+ const grouped=logs.reduce<Record<string,typeof logs>>((acc,item)=>{const key=dayKey(item.logged_at);(acc[key]??=[]).push(item);return acc;},{});
+ const dayBounds=(key:string)=>{const [y,m,d]=key.split("-").map(Number);const start=new Date(y,m-1,d);const end=new Date(y,m-1,d+1);return {start:start.toISOString(),end:end.toISOString()};};
+ const askDeleteOne=(id:number)=>Alert.alert(ar?"حذف النشاط؟":fr?"Supprimer l’activité ?":"Delete activity?",ar?"سيتم حذف هذا النشاط فقط.":fr?"Seule cette activité sera supprimée.":"Only this activity will be deleted.",[{text:ar?"إلغاء":fr?"Annuler":"Cancel",style:"cancel"},{text:ar?"حذف":fr?"Supprimer":"Delete",style:"destructive",onPress:async()=>{await deleteActivityLog(id);await refresh();}}]);
+ const askDeleteDay=(key:string)=>Alert.alert(ar?"حذف نشاطات اليوم؟":fr?"Supprimer toute la journée ?":"Delete the full day?",ar?"سيتم حذف جميع أنشطة هذا اليوم.":fr?"Toutes les activités de cette journée seront supprimées.":"All activities recorded on this day will be deleted.",[{text:ar?"إلغاء":fr?"Annuler":"Cancel",style:"cancel"},{text:ar?"حذف اليوم":fr?"Supprimer la journée":"Delete day",style:"destructive",onPress:async()=>{const b=dayBounds(key);await deleteActivityLogsForDay(b.start,b.end);await refresh();}}]);
  useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
  const save=async()=>{
    if(!Number.isFinite(mins)||mins<=0){Alert.alert(ar?"أدخل مدة صحيحة":fr?"Saisissez une durée valide":"Enter a valid duration");return;}
@@ -576,11 +581,22 @@ function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}
    <GoldButton title={saving?(ar?"جارٍ الحفظ…":fr?"Enregistrement…":"Saving…"):(ar?"حفظ النشاط":fr?"Enregistrer l’activité":"Save Activity")} onPress={save}/>
   </Card>
   <Card>
-   <Text style={styles.cardTitle}>{ar?"سجل النشاط":fr?"Historique":"ACTIVITY HISTORY"}</Text>
-   {loading?<Text style={styles.muted}>…</Text>:logs.length===0?<Text style={styles.muted}>{ar?"لا يوجد نشاط مسجل بعد.":fr?"Aucune activité enregistrée.":"No activities recorded yet."}</Text>:logs.map(x=><View key={x.id} style={[styles.spaceBetween,{paddingVertical:8,borderBottomWidth:1,borderBottomColor:"#244A73"}]}>
-    <View style={{flex:1}}><Text style={styles.valueText}>{names[kinds.indexOf(x.activity)]||x.activity}</Text><Text style={styles.muted}>{new Date(x.logged_at).toLocaleDateString()} · {x.duration_minutes} {ar?"دقيقة":fr?"min":"min"}</Text></View>
-    <Text style={styles.valueText}>{x.calories_burned===null?"—":Math.round(x.calories_burned)+" kcal"}</Text>
-   </View>)}
+   <Text style={styles.cardTitle}>{ar?"إجمالي السعرات اليومية وسجل النشاط":fr?"Total quotidien et historique":"DAILY CALORIES & ACTIVITY HISTORY"}</Text>
+   {loading?<Text style={styles.muted}>…</Text>:logs.length===0?<Text style={styles.muted}>{ar?"لا يوجد نشاط مسجل بعد.":fr?"Aucune activité enregistrée.":"No activities recorded yet."}</Text>:Object.entries(grouped).map(([day,items])=>{
+    const total=items.reduce((sum,x)=>sum+(Number(x.calories_burned)||0),0);
+    const dateLabel=new Date(day+"T12:00:00").toLocaleDateString(language==="ar"?"ar":language==="fr"?"fr":"en",{weekday:"long",year:"numeric",month:"short",day:"numeric"});
+    return <View key={day} style={{paddingTop:12,paddingBottom:8,borderBottomWidth:1,borderBottomColor:"#D8E5F1"}}>
+     <View style={[styles.spaceBetween,{alignItems:"center",marginBottom:8}]}>
+      <View style={{flex:1}}><Text style={styles.valueText}>{dateLabel}</Text><Text style={{color:"#0875D1",fontSize:18,fontWeight:"900",marginTop:3}}>{Math.round(total)} kcal {ar?"إجمالي اليوم":fr?"total du jour":"daily total"}</Text></View>
+      <Pressable onPress={()=>askDeleteDay(day)} style={{backgroundColor:"#FDECEC",paddingHorizontal:10,paddingVertical:8,borderRadius:9}}><Text style={{color:"#B42318",fontSize:11,fontWeight:"800"}}>{ar?"حذف اليوم":fr?"Effacer la journée":"Delete day"}</Text></Pressable>
+     </View>
+     {items.map(x=><View key={x.id} style={[styles.spaceBetween,{paddingVertical:8,borderTopWidth:1,borderTopColor:"#E5EDF5",alignItems:"center"}]}>
+      <View style={{flex:1}}><Text style={styles.valueText}>{names[kinds.indexOf(x.activity)]||x.activity}</Text><Text style={styles.muted}>{x.duration_minutes} {ar?"دقيقة":fr?"min":"min"} · {new Date(x.logged_at).toLocaleTimeString(language==="ar"?"ar":language==="fr"?"fr":"en",{hour:"2-digit",minute:"2-digit"})}</Text></View>
+      <Text style={styles.valueText}>{x.calories_burned===null?"—":Math.round(x.calories_burned)+" kcal"}</Text>
+      <Pressable onPress={()=>askDeleteOne(x.id)} style={{marginLeft:10,padding:7}}><Ionicons name="trash-outline" size={19} color="#B42318"/></Pressable>
+     </View>)}
+    </View>;
+   })}
   </Card>
  </ScrollView>;
 }
@@ -818,9 +834,9 @@ const styles = StyleSheet.create({
   contactDescription: { color: "#53677D", fontSize: 14, lineHeight: 23, textAlign: "center", marginBottom: 24 },
   contactEmailBox: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: "#F2F8FF", borderRadius: 14, borderWidth: 1, borderColor: "#D8E5F1", paddingHorizontal: 12, paddingVertical: 16 },
   contactEmail: { color: GREEN, fontSize: 16, fontWeight: "800" },
-  tabBar: { flexDirection: "row", backgroundColor: "#FFFFFF", borderTopWidth: 1, borderTopColor: "#D5E4F2", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  tabBar: { flexDirection: "row", backgroundColor: "#102A4C", borderTopWidth: 1, borderTopColor: "#24466D", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#6F89A8", fontSize: 21, fontWeight: "500" },
-  tabLabel: { color: "#53677D", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
+  tabLabel: { color: "#D5E2F1", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
   activeTab: { color: GREEN }
 });
