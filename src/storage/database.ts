@@ -260,6 +260,20 @@ export async function getWeightMeasurements(): Promise<{ id: number; recorded_at
   return db.getAllAsync("SELECT id, recorded_at, weight_kg FROM measurements WHERE measurement_type = 'weight' ORDER BY recorded_at DESC LIMIT 100");
 }
 
+export async function updateWeightMeasurement(id: number, weightKg: number): Promise<void> {
+  if (!Number.isFinite(weightKg) || weightKg <= 0) throw new Error("Weight must be greater than zero.");
+  const db = await database();
+  await db.runAsync(
+    "UPDATE measurements SET weight_kg = ?, value = ? WHERE id = ? AND measurement_type = 'weight'",
+    weightKg, weightKg, id
+  );
+}
+
+export async function clearWeightMeasurements(): Promise<void> {
+  const db = await database();
+  await db.runAsync("DELETE FROM measurements WHERE measurement_type = 'weight'");
+}
+
 
 export type ActivityLog = { id: number; logged_at: string; activity: string; duration_minutes: number | null; calories_burned: number | null; notes: string | null };
 
