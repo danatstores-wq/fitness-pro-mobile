@@ -550,8 +550,12 @@ function ActivityTracker({language,weightKg}:{language:Language;weightKg:number}
  const dayKey=(value:string)=>{const d=new Date(value);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;};
  const grouped=logs.reduce<Record<string,typeof logs>>((acc,item)=>{const key=dayKey(item.logged_at);(acc[key]??=[]).push(item);return acc;},{});
  const dayBounds=(key:string)=>{const [y,m,d]=key.split("-").map(Number);const start=new Date(y,m-1,d);const end=new Date(y,m-1,d+1);return {start:start.toISOString(),end:end.toISOString()};};
- const askDeleteOne=(id:number)=>Alert.alert(ar?"حذف النشاط؟":fr?"Supprimer l’activité ?":"Delete activity?",ar?"سيتم حذف هذا النشاط فقط.":fr?"Seule cette activité sera supprimée.":"Only this activity will be deleted.",[{text:ar?"إلغاء":fr?"Annuler":"Cancel",style:"cancel"},{text:ar?"حذف":fr?"Supprimer":"Delete",style:"destructive",onPress:async()=>{await deleteActivityLog(id);await refresh();}}]);
- const askDeleteDay=(key:string)=>Alert.alert(ar?"حذف نشاطات اليوم؟":fr?"Supprimer toute la journée ?":"Delete the full day?",ar?"سيتم حذف جميع أنشطة هذا اليوم.":fr?"Toutes les activités de cette journée seront supprimées.":"All activities recorded on this day will be deleted.",[{text:ar?"إلغاء":fr?"Annuler":"Cancel",style:"cancel"},{text:ar?"حذف اليوم":fr?"Supprimer la journée":"Delete day",style:"destructive",onPress:async()=>{const b=dayBounds(key);await deleteActivityLogsForDay(b.start,b.end);await refresh();}}]);
+ const confirmDelete=(title:string,message:string,onConfirm:()=>Promise<void>)=>{
+  if(Platform.OS==="web"){if(typeof window!=="undefined"&&window.confirm(title+"\\n\\n"+message))void onConfirm();return;}
+  Alert.alert(title,message,[{text:ar?"إلغاء":fr?"Annuler":"Cancel",style:"cancel"},{text:ar?"حذف":fr?"Supprimer":"Delete",style:"destructive",onPress:()=>{void onConfirm();}}]);
+ };
+ const askDeleteOne=(id:number)=>confirmDelete(ar?"حذف النشاط؟":fr?"Supprimer l’activité ?":"Delete activity?",ar?"سيتم حذف هذا النشاط فقط.":fr?"Seule cette activité sera supprimée.":"Only this activity will be deleted.",async()=>{await deleteActivityLog(id);await refresh();});
+ const askDeleteDay=(key:string)=>confirmDelete(ar?"حذف نشاطات اليوم؟":fr?"Supprimer toute la journée ?":"Delete the full day?",ar?"سيتم حذف جميع أنشطة هذا اليوم.":fr?"Toutes les activités de cette journée seront supprimées.":"All activities recorded on this day will be deleted.",async()=>{const b=dayBounds(key);await deleteActivityLogsForDay(b.start,b.end);await refresh();});
  useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
  const save=async()=>{
    if(!Number.isFinite(mins)||mins<=0){Alert.alert(ar?"أدخل مدة صحيحة":fr?"Saisissez une durée valide":"Enter a valid duration");return;}
