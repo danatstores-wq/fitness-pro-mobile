@@ -287,6 +287,16 @@ export async function getActivityLogs(): Promise<ActivityLog[]> {
   return db.getAllAsync<ActivityLog>("SELECT id, logged_at, activity, duration_minutes, calories_burned, notes FROM activity_logs ORDER BY logged_at DESC LIMIT 100");
 }
 
+export async function deleteActivityLog(id: number): Promise<void> {
+  const db = await database();
+  await db.runAsync("DELETE FROM activity_logs WHERE id = ?", id);
+}
+
+export async function deleteActivityLogsForDay(startIso: string, endIso: string): Promise<void> {
+  const db = await database();
+  await db.runAsync("DELETE FROM activity_logs WHERE logged_at >= ? AND logged_at < ?", startIso, endIso);
+}
+
 export async function getChallengeCheckins(): Promise<{ challenge_id: string; completed_day: string }[]> {
   const db = await database();
   return db.getAllAsync("SELECT challenge_id, completed_day FROM challenge_checkins ORDER BY completed_day DESC");
