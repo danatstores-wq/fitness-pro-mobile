@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
  title:{color:"#17324D",fontSize:20,fontWeight:"900"},muted:{color:"#53677D",fontSize:12,lineHeight:18},
  input:{backgroundColor:"#FFFFFF",borderColor:"#C9D9E8",borderWidth:1,borderRadius:10,padding:11,color:"#17324D"},
  row:{flexDirection:"row",alignItems:"center",justifyContent:"space-between",gap:8},
- button:{backgroundColor:"#1686E8",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#08264A"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
+ button:{backgroundColor:"#1686E8",padding:13,borderRadius:11,alignItems:"center",borderWidth:1,borderColor:"#1686E8"},buttonText:{color:"#FFFFFF",fontWeight:"900"},
  outline:{borderWidth:1,borderColor:"#1686E8",backgroundColor:"#1686E8",padding:11,borderRadius:10,alignItems:"center"},
  outlineText:{color:"#FFFFFF",fontWeight:"800"},food:{color:"#17324D",fontSize:13,fontWeight:"700",flex:1},
  line:{borderTopWidth:1,borderColor:"#D8E5F1",paddingTop:9,gap:7},weightInput:{width:88,textAlign:"center",backgroundColor:"#FFFFFF",borderColor:"#C9D9E8",borderWidth:1,borderRadius:9,padding:8,color:"#17324D"},chip:{padding:9,borderRadius:9,backgroundColor:"#1686E8"},removeButton:{paddingHorizontal:10,paddingVertical:8,borderRadius:9,backgroundColor:"#4A2430",borderWidth:1,borderColor:"#74414C"},removeText:{color:"#FF8585",fontSize:11,fontWeight:"800"}
