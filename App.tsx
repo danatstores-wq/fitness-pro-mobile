@@ -306,7 +306,7 @@ export default function App() {
       <View style={styles.appFrame}>
       <Image source={require("./assets/images/background.jpg")} style={styles.appBackgroundImage} resizeMode="cover" />
       {tab !== "dashboard" && <View style={styles.header}>
-        <View style={[styles.brand, isRTL && styles.rowReverse]}>
+        <View style={styles.brand}>
           <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
           <View style={{ flex: 1 }}>
             <Text style={[styles.brandEyebrow, direction]}>DANAT / WELLNESS</Text>
@@ -320,7 +320,7 @@ export default function App() {
         {tab === "dashboard" && <View style={styles.dashboardScreenBackground}><ScrollView contentContainerStyle={styles.dashboardContent}>
   <View style={styles.dashboardHero}>
     <View style={styles.dashboardHeroOverlay}/>
-    <View style={[styles.dashboardBrandRow,isRTL && styles.rowReverse]}>
+    <View style={styles.dashboardBrandRow}>
       <Image source={require("./assets/images/danat-logo.png")} style={styles.dashboardBrandLogo} resizeMode="contain" />
       <View style={{flex:1}}>
         <Text style={styles.dashboardBrandTitle}>FITNESS <Text style={styles.dashboardBrandAccent}>PRO</Text></Text>
