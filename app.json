@@ -24,6 +24,16 @@
     },
     "plugins": [
       [
+        "@appeeky/expo-healthkit",
+        {
+          "healthSharePermission": "Fitness Pro reads your daily step count to display your activity progress.",
+          "healthUpdatePermission": false,
+          "healthConnectPermissions": [
+            "READ_STEPS"
+          ]
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "Allow Fitness Pro to scan packaged food barcodes.",
