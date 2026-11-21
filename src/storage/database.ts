@@ -199,7 +199,8 @@ async function database() {
       const optionalColumns: Record<string, string> = {
         total_sugars_g: "REAL", starch_g: "REAL", cholesterol_mg: "REAL",
         trans_fat_g: "REAL", monounsaturated_fat_g: "REAL",
-        polyunsaturated_fat_g: "REAL", water_g: "REAL"
+        polyunsaturated_fat_g: "REAL", water_g: "REAL",
+        ingredients_text: "TEXT", allergens_text: "TEXT", traces_text: "TEXT", additives_text: "TEXT"
       };
       for (const [column, type] of Object.entries(optionalColumns)) {
         if (!optionalFoodColumnNames.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
@@ -333,6 +334,11 @@ export type FoodRecord = {
   cholesterol_mg: number | null;
   water_g: number | null;
   data_quality: string;
+  source?: string | null;
+  ingredients_text?: string | null;
+  allergens_text?: string | null;
+  traces_text?: string | null;
+  additives_text?: string | null;
 };
 
 export type MealFoodRecord = FoodRecord & {
@@ -434,6 +440,10 @@ export async function createFood(food: {
   monounsaturated_fat_g?: number | null;
   polyunsaturated_fat_g?: number | null;
   water_g?: number | null;
+  ingredients_text?: string | null;
+  allergens_text?: string | null;
+  traces_text?: string | null;
+  additives_text?: string | null;
   nutrients?: { name: string; unit: string; amount: number | null }[];
   source?: string; sourceId?: string; dataQuality?: string;
 }) {
@@ -445,11 +455,12 @@ export async function createFood(food: {
     throw new Error("Nutrition values must be non-negative numbers or unknown");
   }
   const result = await db.runAsync(
-    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, source_id, data_quality)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, source_id, data_quality, ingredients_text, allergens_text, traces_text, additives_text)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     name, ...values, food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
     food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
-    food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.source ?? 'user_entry', food.sourceId ?? null, food.dataQuality ?? 'user_entered'
+    food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.source ?? 'user_entry', food.sourceId ?? null, food.dataQuality ?? 'user_entered',
+    food.ingredients_text ?? null, food.allergens_text ?? null, food.traces_text ?? null, food.additives_text ?? null
   );
   const foodId = result.lastInsertRowId;
   for (const nutrient of food.nutrients ?? []) {
@@ -585,7 +596,8 @@ export async function getFoodBySourceId(source: string, sourceId: string): Promi
     `SELECT id, name, calories, protein_g, carbs_g, fat_g, fiber_g,
       COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g,
       trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g,
-      starch_g, cholesterol_mg, water_g, data_quality
+      starch_g, cholesterol_mg, water_g, data_quality, source,
+      ingredients_text, allergens_text, traces_text, additives_text
      FROM foods WHERE source = ? AND source_id = ? LIMIT 1`,
     source, sourceId
   )) ?? null;
