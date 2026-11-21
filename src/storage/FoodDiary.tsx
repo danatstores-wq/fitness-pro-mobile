@@ -214,15 +214,15 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
         </Pressable>)}
       </ScrollView>}
       <View style={s.meals}>
-        <Pressable onPress={()=>setNutrientDirection("high")} style={[s.mealTab,nutrientDirection==="high"&&s.mealActive]}><Text style={[s.mealText,nutrientDirection==="high"&&{color:"#F5F8FC"}]}>{t.highest}</Text></Pressable>
-        <Pressable onPress={()=>setNutrientDirection("low")} style={[s.mealTab,nutrientDirection==="low"&&s.mealActive]}><Text style={[s.mealText,nutrientDirection==="low"&&{color:"#F5F8FC"}]}>{t.lowest}</Text></Pressable>
+        <Pressable onPress={()=>setNutrientDirection("high")} style={[s.mealTab,nutrientDirection==="high"&&s.mealActive]}><Text style={[s.mealText,nutrientDirection==="high"&&{color:"#FFFFFF"}]}>{t.highest}</Text></Pressable>
+        <Pressable onPress={()=>setNutrientDirection("low")} style={[s.mealTab,nutrientDirection==="low"&&s.mealActive]}><Text style={[s.mealText,nutrientDirection==="low"&&{color:"#FFFFFF"}]}>{t.lowest}</Text></Pressable>
       </View>
       {rankedLoading ? <Text style={s.muted}>…</Text> : rankedFoods.length===0 ? <Text style={[s.muted,{textAlign}]}>{t.noNutrientResults}</Text> : rankedFoods.map((item,index)=><Pressable key={item.id} onPress={()=>{setSelected(item);setQuery("");setSelectedCategory(null);setQuantity("100");}} style={s.rankedResult}>
         <View style={s.rankBadge}><Text style={s.rankText}>{index+1}</Text></View>
         <View style={{flex:1}}><Text style={s.foodName}>{localizeFoodName(item.name,language)}</Text><Text style={s.muted}>{nutrientLabel(nutrientChoice)} · {item.nutrient_amount.toFixed(2)} {item.nutrient_unit} / 100 g</Text></View>
       </Pressable>)}
     </View>}
-    <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:"#F5F8FC"}]}>{t[m]}</Text></Pressable>)}</View>
+    <View style={s.meals}>{mealTypes.map(m=><Pressable key={m} onPress={()=>setMeal(m)} style={[s.mealTab,meal===m&&s.mealActive]}><Text style={[s.mealText,meal===m&&{color:"#FFFFFF"}]}>{t[m]}</Text></Pressable>)}</View>
     {selected ? <View style={s.card}>
       <Text style={s.cardTitle}>{localizeFoodName(selected.name, language)}</Text>
       <Text style={s.sectionTitle}>{t.nutrition100}</Text>
@@ -264,20 +264,20 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
 }
 const s=StyleSheet.create({
  content:{padding:20,paddingBottom:32,gap:12},categoryGrid:{flexDirection:"row",flexWrap:"wrap",gap:9},categoryCard:{width:"48%",minHeight:112,justifyContent:"flex-end",alignItems:"stretch",backgroundColor:"#12345B",borderWidth:1,borderColor:"#244A73",borderRadius:16,overflow:"hidden",padding:0},categorySelected:{borderColor:GOLD,borderWidth:2,shadowColor:GOLD,shadowOpacity:0.22,shadowRadius:8,elevation:3},categoryImage:{...StyleSheet.absoluteFill,width:"100%",height:"100%"},categoryImageShade:{...StyleSheet.absoluteFill,backgroundColor:"rgba(4,8,5,0.34)"},categoryNamePlate:{width:"100%",minHeight:42,justifyContent:"center",paddingHorizontal:10,paddingVertical:8,backgroundColor:"rgba(38,58,44,0.94)",borderTopWidth:1,borderTopColor:"rgba(216,245,0,0.35)"},categoryText:{color:"#10294A",fontSize:12,fontWeight:"900",textAlign:"center",textShadowColor:"#000000",textShadowOffset:{width:0,height:1},textShadowRadius:3},title:{color:"#F5F8FC",fontSize:28,fontWeight:"900",marginBottom:7,letterSpacing:-0.5},
- card:{backgroundColor:PANEL,borderRadius:18,borderWidth:1,borderColor:"#244A73",padding:16,marginBottom:2},
- label:{color:"#F5F8FC",fontSize:13,fontWeight:"700"},calorie:{color:GREEN,fontSize:34,fontWeight:"900",marginVertical:7},
- macros:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},macro:{color:GREEN,fontSize:12,fontWeight:"700"},
- input:{color:"#F5F8FC",backgroundColor:"#0D2A4D",borderWidth:1,borderColor:"#244A73",borderRadius:11,paddingHorizontal:13,paddingVertical:11,fontSize:14},
- meals:{flexDirection:"row",gap:7,flexWrap:"wrap"},mealTab:{paddingVertical:10,paddingHorizontal:12,borderRadius:10,backgroundColor:"#08264A",borderWidth:1,borderColor:"#08264A"},mealActive:{borderColor:"#45698F",backgroundColor:"#153B66"},mealText:{color:"#10294A",fontSize:12,fontWeight:"800"},
+ card:{backgroundColor:"#FFFFFF",borderRadius:18,borderWidth:1,borderColor:"#D8E2EF",padding:16,marginBottom:2},
+ label:{color:"#08264A",fontSize:13,fontWeight:"700"},calorie:{color:"#08264A",fontSize:34,fontWeight:"900",marginVertical:7},
+ macros:{flexDirection:"row",flexWrap:"wrap",justifyContent:"space-between",gap:8},macro:{color:"#08264A",fontSize:12,fontWeight:"700"},
+ input:{color:"#08264A",backgroundColor:"#FFFFFF",borderWidth:1,borderColor:"#C8D5E5",borderRadius:11,paddingHorizontal:13,paddingVertical:11,fontSize:14},
+ meals:{flexDirection:"row",gap:7,flexWrap:"wrap"},mealTab:{paddingVertical:10,paddingHorizontal:12,borderRadius:10,backgroundColor:"#08264A",borderWidth:1,borderColor:"#08264A"},mealActive:{borderColor:"#08264A",backgroundColor:"#08264A"},mealText:{color:"#FFFFFF",fontSize:12,fontWeight:"800"},
  nutrientSearchButton:{backgroundColor:"#08264A",borderRadius:12,padding:13,alignItems:"center",borderWidth:1,borderColor:"#1686E8"},
- nutrientSearchButtonText:{color:"#10294A",fontSize:13,fontWeight:"900"},
- nutrientDropdown:{marginTop:10,marginBottom:8},nutrientDropdownList:{maxHeight:230,borderWidth:1,borderColor:"#244A73",borderRadius:11,backgroundColor:"#10294A",marginBottom:12},nutrientDropdownOption:{paddingHorizontal:13,paddingVertical:11,borderBottomWidth:1,borderBottomColor:"#173B61"},nutrientDropdownOptionActive:{backgroundColor:"#153B66"},nutrientDropdownOptionText:{color:"#F5F8FC",fontSize:13,fontWeight:"600"},nutrientDropdownOptionTextActive:{color:"#55A9FF",fontWeight:"900"},
- rankedResult:{flexDirection:"row",alignItems:"center",gap:10,paddingVertical:10,borderBottomWidth:1,borderBottomColor:"#244A73"},
- rankBadge:{width:27,height:27,borderRadius:14,backgroundColor:"#153B66",alignItems:"center",justifyContent:"center"},
- rankText:{color:"#1686E8",fontSize:11,fontWeight:"900"},
- result:{flexDirection:"row",alignItems:"center",paddingVertical:12,borderBottomWidth:1,borderBottomColor:"#244A73"},foodName:{color:"#F5F8FC",fontSize:14,fontWeight:"700"},muted:{color:MUTED,fontSize:12,lineHeight:18},plus:{color:GREEN,fontSize:22,paddingHorizontal:8},
- outline:{borderWidth:1,borderColor:"#08264A",backgroundColor:"#08264A",borderRadius:11,padding:12,alignItems:"center",marginTop:14},outlineText:{color:"#10294A",fontWeight:"800"},
- cardTitle:{color:"#F5F8FC",fontSize:16,fontWeight:"800",marginBottom:9},sectionTitle:{color:"#08264A",fontSize:13,fontWeight:"900",marginTop:12,marginBottom:6},nutrientRow:{flexDirection:"row",justifyContent:"space-between",gap:12,paddingVertical:7,borderBottomWidth:1,borderBottomColor:"#244A73"},nutrientValue:{color:"#F5F8FC",fontSize:12,fontWeight:"700",textAlign:"right"},logged:{flexDirection:"row",alignItems:"center",paddingVertical:10,borderTopWidth:1,borderTopColor:"#244A73"},remove:{color:"#FF7777",fontSize:23,paddingHorizontal:10},
- field:{marginTop:9},button:{backgroundColor:"#08264A",borderRadius:13,padding:15,alignItems:"center",marginTop:13,borderWidth:1,borderColor:"#08264A",shadowColor:"#08264A",shadowOpacity:0.16,shadowRadius:7,elevation:3},buttonText:{color:"#10294A",fontWeight:"900",letterSpacing:0.3},cancel:{alignItems:"center",padding:12},
- overlay:{flex:1,backgroundColor:"#06162BE8",justifyContent:"center",alignItems:"center",padding:16},modalWrap:{flexGrow:1,width:"100%",maxWidth:480,alignSelf:"center",justifyContent:"center",paddingVertical:20},modal:{width:"100%",backgroundColor:PANEL,borderRadius:18,padding:18,borderWidth:1,borderColor:"#244A73"}
+ nutrientSearchButtonText:{color:"#FFFFFF",fontSize:13,fontWeight:"900"},
+ nutrientDropdown:{marginTop:10,marginBottom:8,backgroundColor:"#08264A",borderColor:"#08264A"},nutrientDropdownList:{maxHeight:230,borderWidth:1,borderColor:"#D8E2EF",borderRadius:11,backgroundColor:"#FFFFFF",marginBottom:12},nutrientDropdownOption:{paddingHorizontal:13,paddingVertical:11,borderBottomWidth:1,borderBottomColor:"#E4EAF2"},nutrientDropdownOptionActive:{backgroundColor:"#EAF1F9"},nutrientDropdownOptionText:{color:"#08264A",fontSize:13,fontWeight:"600"},nutrientDropdownOptionTextActive:{color:"#08264A",fontWeight:"900"},
+ rankedResult:{flexDirection:"row",alignItems:"center",gap:10,paddingVertical:10,borderBottomWidth:1,borderBottomColor:"#E4EAF2"},
+ rankBadge:{width:27,height:27,borderRadius:14,backgroundColor:"#EAF1F9",alignItems:"center",justifyContent:"center"},
+ rankText:{color:"#08264A",fontSize:11,fontWeight:"900"},
+ result:{flexDirection:"row",alignItems:"center",paddingVertical:12,borderBottomWidth:1,borderBottomColor:"#E4EAF2"},foodName:{color:"#08264A",fontSize:14,fontWeight:"700"},muted:{color:"#52657D",fontSize:12,lineHeight:18},plus:{color:"#08264A",fontSize:22,paddingHorizontal:8},
+ outline:{borderWidth:1,borderColor:"#08264A",backgroundColor:"#08264A",borderRadius:11,padding:12,alignItems:"center",marginTop:14},outlineText:{color:"#FFFFFF",fontWeight:"800"},
+ cardTitle:{color:"#08264A",fontSize:16,fontWeight:"800",marginBottom:9},sectionTitle:{color:"#08264A",fontSize:13,fontWeight:"900",marginTop:12,marginBottom:6},nutrientRow:{flexDirection:"row",justifyContent:"space-between",gap:12,paddingVertical:7,borderBottomWidth:1,borderBottomColor:"#E4EAF2"},nutrientValue:{color:"#08264A",fontSize:12,fontWeight:"700",textAlign:"right"},logged:{flexDirection:"row",alignItems:"center",paddingVertical:10,borderTopWidth:1,borderTopColor:"#E4EAF2"},remove:{color:"#FF7777",fontSize:23,paddingHorizontal:10},
+ field:{marginTop:9},button:{backgroundColor:"#08264A",borderRadius:13,padding:15,alignItems:"center",marginTop:13,borderWidth:1,borderColor:"#08264A",shadowColor:"#08264A",shadowOpacity:0.16,shadowRadius:7,elevation:3},buttonText:{color:"#FFFFFF",fontWeight:"900",letterSpacing:0.3},cancel:{alignItems:"center",padding:12},
+ overlay:{flex:1,backgroundColor:"#06162BE8",justifyContent:"center",alignItems:"center",padding:16},modalWrap:{flexGrow:1,width:"100%",maxWidth:480,alignSelf:"center",justifyContent:"center",paddingVertical:20},modal:{width:"100%",backgroundColor:"#FFFFFF",borderRadius:18,padding:18,borderWidth:1,borderColor:"#D8E2EF"}
 });
