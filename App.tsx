@@ -591,7 +591,33 @@ function ChallengeTracker({language}:{language:Language}) {
  const refresh=async()=>{setChecks(await getChallengeCheckins());setLoading(false);};useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
  const toggle=async(id:string)=>{await toggleChallengeCheckin(id,today);await refresh();};
  return <ScrollView contentContainerStyle={styles.content}><View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,{color:"#FFFFFF"}]}>{ar?"التحديات":fr?"Défis":"Challenges"}</Text><Text style={[styles.introNote,{color:"#FFFFFF"}]}>{ar?"ابنِ عادات صحية وسجّل إنجازك اليومي.":fr?"Créez de bonnes habitudes et suivez vos progrès.":"Build healthy habits and manually track your daily check-ins."}</Text></View>
- {loading?<Card><Text style={styles.muted}>…</Text></Card>:challenges.map(c=>{const count=checks.filter(x=>x.challenge_id===c.id).length,done=checks.some(x=>x.challenge_id===c.id&&x.completed_day===today);return <Card key={c.id}><View style={styles.sectionHeading}><Text style={styles.cardTitle}>{c.title}</Text><Text style={styles.sectionMeta}>{count}/{c.goal}</Text></View><Text style={styles.muted}>{c.desc}</Text><View style={styles.progressTrack}><View style={[styles.progressFill,{width:Math.min(100,count/c.goal*100)+"%"}]}/></View><GoldButton title={done?(ar?"إلغاء تسجيل اليوم":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":"Check in today")} onPress={()=>toggle(c.id)}/></Card>;})}
+ {loading?<Card><Text style={styles.muted}>…</Text></Card>:challenges.map(c=>{
+   const count=checks.filter(x=>x.challenge_id===c.id).length;
+   const done=checks.some(x=>x.challenge_id===c.id&&x.completed_day===today);
+   const days=Array.from({length:7},(_,i)=>{
+     const d=new Date(now);d.setDate(d.getDate()-(6-i));
+     return {key:[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),label:d.toLocaleDateString(ar?"ar":fr?"fr-FR":"en-US",{weekday:"short"})};
+   });
+   return <Card key={c.id}>
+     <View style={styles.sectionHeading}><Text style={styles.cardTitle}>{c.title}</Text><Text style={styles.sectionMeta}>{count}/{c.goal}</Text></View>
+     <Text style={styles.muted}>{c.desc}</Text>
+     <View style={styles.progressTrack}><View style={[styles.progressFill,{width:Math.min(100,count/c.goal*100)+"%"}]}/></View>
+     <Text style={[styles.fieldLabel,{marginTop:14,marginBottom:8}]}>{ar?"إحصائيات آخر 7 أيام":fr?"Statistiques des 7 derniers jours":"Last 7 Days Statistics"}</Text>
+     <View style={{flexDirection:"row",alignItems:"flex-end",justifyContent:"space-between",paddingHorizontal:4,paddingTop:6}}>
+       {days.map(day=>{
+         const checked=checks.some(x=>x.challenge_id===c.id&&x.completed_day===day.key);
+         return <View key={day.key} style={{flex:1,alignItems:"center",gap:5}}>
+           <Text style={{fontSize:10,fontWeight:"800",color:checked?"#1686E8":"#7C91A8"}}>{checked?"1":"0"}</Text>
+           <View style={{height:54,width:18,justifyContent:"flex-end",alignItems:"center",backgroundColor:"#EAF3FC",borderRadius:6,overflow:"hidden"}}>
+             <View style={{width:"100%",height:checked?46:5,backgroundColor:checked?"#1686E8":"#C8D8E8",borderRadius:5}}/>
+           </View>
+           <Text style={{fontSize:9,color:"#53677D",fontWeight:"700"}}>{day.label}</Text>
+         </View>;
+       })}
+     </View>
+     <GoldButton title={done?(ar?"إلغاء تسجيل اليوم":fr?"Annuler le pointage du jour":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":fr?"Valider aujourd’hui":"Check in today")} onPress={()=>toggle(c.id)}/>
+   </Card>;
+  })}
  <Text style={styles.muted}>{ar?"للمتابعة الشخصية فقط؛ لا تمنح هذه التحديات نقاط ألعاب أو مكافآت مالية.":fr?"Suivi personnel uniquement, sans points de jeu ni récompense financière.":"Personal tracking only: challenges do not award game points or financial rewards."}</Text></ScrollView>;
 }
 
