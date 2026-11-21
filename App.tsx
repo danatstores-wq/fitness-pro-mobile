@@ -306,7 +306,7 @@ export default function App() {
       <StatusBar barStyle="dark-content" />
       <View style={styles.appFrame}>
       <Image source={require("./assets/images/background.jpg")} style={styles.appBackgroundImage} resizeMode="cover" />
-      {tab !== "dashboard" && <View style={styles.header}>
+      {!["dashboard", "diary", "progress", "profile", "contact"].includes(tab) && <View style={styles.header}>
         <View style={styles.brand}>
           <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
           <View style={{ flex: 1 }}>
@@ -320,7 +320,7 @@ export default function App() {
       <View style={{ flex: 1 }}>
         {tab === "dashboard" && <View style={styles.dashboardScreenBackground}><ScrollView contentContainerStyle={styles.dashboardContent}>
   <View style={styles.dashboardHero}>
-    <View style={styles.dashboardHeroOverlay}/>
+
     <View style={styles.dashboardBrandRow}>
       <Image source={require("./assets/images/danat-logo.png")} style={styles.dashboardBrandLogo} resizeMode="contain" />
       <View style={{flex:1}}>
@@ -623,9 +623,9 @@ const styles = StyleSheet.create({
   dashboardGreetingHi: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
   dashboardGreetingName: { color: "#FFD400", fontSize: 21, fontWeight: "900", marginTop: 1 },
 
-  dashboardHero: { minHeight: 300, paddingHorizontal: 20, paddingTop: 17, paddingBottom: 20, justifyContent: "flex-start", overflow: "hidden", backgroundColor: "rgba(0,32,75,0.24)" },
+  dashboardHero: { minHeight: 300, paddingHorizontal: 20, paddingTop: 17, paddingBottom: 20, justifyContent: "flex-start", overflow: "hidden", backgroundColor: "transparent" },
   dashboardBackgroundImage: { resizeMode: "cover", opacity: 1 },
-  dashboardHeroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,20,55,0.12)" },
+  dashboardHeroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "transparent" },
   dashboardBrandRow: { flexDirection: "row", alignItems: "center", gap: 10, zIndex: 1 },
   dashboardBrandLogo: { width: 56, height: 56 },
   dashboardBrandTitle: { color: "#FFFFFF", fontSize: 23, fontWeight: "900", fontStyle: "italic", letterSpacing: -0.5 },
