@@ -575,7 +575,7 @@ function StatCard({ label, value, icon }: { label: string; value: string; icon: 
   return <View style={[styles.card, { flex: 1 }]}><Text style={styles.statIcon}>{icon}</Text><Text style={styles.statValue}>{value}</Text><Text style={styles.muted}>{label}</Text></View>;
 }
 function MetricLine({ label, value }: { label: string; value: string }) { return <View style={styles.spaceBetween}><Text style={styles.muted}>{label}</Text><Text style={styles.valueText}>{value}</Text></View>; }
-function Macro({label,value,consumed,color}:{label:string;value:number;consumed:number|null;color:string}){const pct=Math.min(100,Math.max(0,(consumed??0)/Math.max(1,value)*100));return <View style={{paddingVertical:8}}><View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{color:"#F5F8FC",fontWeight:"800"}}>{consumed===null?"0":Math.round(consumed)} / {value} g</Text></View><View style={styles.progressTrack}><View style={[styles.progressFill,{backgroundColor:color,width:pct+"%"}]}/></View></View>;}
+function Macro({label,value,consumed,color}:{label:string;value:number;consumed:number|null;color:string}){const pct=Math.min(100,Math.max(0,(consumed??0)/Math.max(1,value)*100));return <View style={{paddingVertical:8}}><View style={styles.macroRow}><Text style={styles.muted}>{label}</Text><Text style={{color:"#17324D",fontWeight:"800"}}>{consumed===null?"0":Math.round(consumed)} / {value} g</Text></View><View style={styles.progressTrack}><View style={[styles.progressFill,{backgroundColor:color,width:pct+"%"}]}/></View></View>;}
 function GoldButton({ title, onPress }: { title: string; onPress: () => void }) {
   return <Pressable onPress={onPress} style={styles.goldButton}><Text style={styles.goldButtonText}>{title}</Text></Pressable>;
 }
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   sectionTitle: { color: "#17324D", fontSize: 15, fontWeight: "900", letterSpacing: 0.5 },
   calorieDashboard: { flexDirection: "row", alignItems: "center", gap: 18, marginTop: 18 },
   calorieRing: { width: 142, height: 142, borderRadius: 71, borderWidth: 9, borderColor: "#1686E8", backgroundColor: "#FFFFFF", alignItems: "center", justifyContent: "center", shadowColor: "#FFC928", shadowOpacity: 0.13, shadowRadius: 14, elevation: 3 },
-  calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#0D2A4D", alignItems: "center", justifyContent: "center" },
+  calorieRingInner: { width: 122, height: 122, borderRadius: 61, backgroundColor: "#F2F8FF", alignItems: "center", justifyContent: "center" },
   ringCaption: { color: "#53677D", fontSize: 8, fontWeight: "800", letterSpacing: 1.2 },
   ringValue: { color: "#17324D", fontSize: 25, fontWeight: "900", marginTop: 4 },
   ringUnit: { color: GREEN, fontSize: 8, fontWeight: "900", letterSpacing: 2, marginTop: 2 },
@@ -698,7 +698,7 @@ const styles = StyleSheet.create({
   greetingAvatarImage: { width: "100%", height: "100%" },
   avatarFallback: { fontSize: 25 },
   profilePhotoSection: { flexDirection: "row", alignItems: "center", gap: 16, marginBottom: 18 },
-  profilePhotoPreview: { width: 88, height: 88, borderRadius: 44, overflow: "hidden", backgroundColor: "#153B66", borderWidth: 2, borderColor: "#FFC928", alignItems: "center", justifyContent: "center" },
+  profilePhotoPreview: { width: 88, height: 88, borderRadius: 44, overflow: "hidden", backgroundColor: "#EAF3FC", borderWidth: 2, borderColor: "#FFC928", alignItems: "center", justifyContent: "center" },
   profilePhotoImage: { width: "100%", height: "100%" },
   profilePhotoPlaceholder: { fontSize: 38 },
   photoButton: { alignSelf: "flex-start", backgroundColor: "#1D6FE8", borderRadius: 10, paddingHorizontal: 16, paddingVertical: 11, minHeight: 42, justifyContent: "center" },
@@ -710,7 +710,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: PANEL, borderRadius: 18, borderWidth: 1, borderColor: "#D8E5F1", padding: 19, marginBottom: 2, shadowColor: "#31516F", shadowOpacity: 0.07, shadowRadius: 9, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
   cardTitle: { color: "#17324D", fontSize: 13, fontWeight: "900", letterSpacing: 1.1, marginBottom: 7 },
   muted: { color: "#53677D", fontSize: 12, lineHeight: 19 },
-  calorieHero: { backgroundColor: "#12345B", borderRadius: 22, borderWidth: 1, borderColor: "#244A73", padding: 21, marginBottom: 2 },
+  calorieHero: { backgroundColor: "#FFFFFF", borderRadius: 22, borderWidth: 1, borderColor: "#D8E5F1", padding: 21, marginBottom: 2 },
   heroTopline: { flexDirection: "row", alignItems: "center", gap: 8 },
   heroLabel: { color: "#53677D", fontSize: 9, fontWeight: "800", letterSpacing: 2.2 },
   liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: GREEN },
@@ -754,7 +754,7 @@ const styles = StyleSheet.create({
   choice: { borderWidth: 1, borderColor: "#C9D9E8", backgroundColor: "#F3F8FD", paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10 },
   choiceActive: { borderColor: "#1686E8", backgroundColor: "#1686E8" },
   choiceText: { color: "#344B62", fontSize: 12, fontWeight: "800" },
-  openDiaryButton: { backgroundColor: "#1686E8", borderRadius: 14, paddingVertical: 16, alignItems: "center", justifyContent: "center", marginTop: 5, borderWidth: 1, borderColor: "#08264A", shadowColor: "#08264A", shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 4 },
+  openDiaryButton: { backgroundColor: "#1686E8", borderRadius: 14, paddingVertical: 16, alignItems: "center", justifyContent: "center", marginTop: 5, borderWidth: 1, borderColor: "#1686E8", shadowColor: "#1686E8", shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 4 },
   openDiaryButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
   goldButton: { backgroundColor: "#1686E8", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14, borderWidth: 1, borderColor: "#1686E8" },
   goldButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14 },
