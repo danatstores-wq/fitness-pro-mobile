@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { addWeightMeasurement, getWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
+import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, clearWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
 import type { ImportedFoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
@@ -90,6 +90,8 @@ export default function App() {
   const [webStorageReady, setWebStorageReady] = useState(Platform.OS !== "web");
   const [weightLog, setWeightLog] = useState<{ id: number; recorded_at: string; weight_kg: number }[]>([]);
   const [weightInput, setWeightInput] = useState("");
+  const [editingWeightId, setEditingWeightId] = useState<number | null>(null);
+  const [editingWeightValue, setEditingWeightValue] = useState("");
   const [dailyIntake, setDailyIntake] = useState<{ calories: number | null; protein: number | null; carbs: number | null; fats: number | null }>({ calories: null, protein: null, carbs: null, fats: null });
   const t = translations[language];
   const isRTL = rtl(language);
@@ -253,11 +255,7 @@ export default function App() {
         waist_cm: Number(profile.waist) || null, hip_cm: Number(profile.hip) || null, neck_cm: Number(profile.neck) || null,
         body_fat_percent: Number(profile.bodyFat) || null, muscle_mass_kg: Number(profile.muscleMass) || null
       });
-      if (Number(profile.weight) > 0) {
-        const existingMeasurements = await getWeightMeasurements();
-        if (existingMeasurements.length === 0) await addWeightMeasurement(Number(profile.weight));
-        setWeightLog(await getWeightMeasurements());
-      }
+      setWeightLog(await getWeightMeasurements());
       setSaved(true);
       Alert.alert(t.saved);
     } catch (error) {
@@ -278,6 +276,17 @@ export default function App() {
       }
     }
   };
+  const saveWeightEdit = async (id: number) => {
+    const value = Number(editingWeightValue);
+    if (!Number.isFinite(value) || value <= 0) { Alert.alert(language==="ar"?"أدخل وزناً صحيحاً":language==="fr"?"Saisissez un poids valide":"Enter a valid weight"); return; }
+    try { await updateWeightMeasurement(id,value); setWeightLog(await getWeightMeasurements()); setEditingWeightId(null); setEditingWeightValue(""); }
+    catch(error) { Alert.alert(t.saveFailed,String(error)); }
+  };
+  const resetWeightHistory = () => Alert.alert(
+    language==="ar"?"إعادة ضبط سجل الوزن":language==="fr"?"Réinitialiser l’historique du poids":"Reset weight history",
+    language==="ar"?"سيتم حذف جميع قياسات الوزن المسجلة. سيبقى الوزن المحفوظ في الملف الشخصي كما هو. هل تريد المتابعة؟":language==="fr"?"Toutes les mesures enregistrées seront supprimées. Le poids du profil sera conservé. Continuer ?":"This will delete all recorded weight entries. Your Profile weight will remain unchanged. Continue?",
+    [{text:language==="ar"?"إلغاء":language==="fr"?"Annuler":"Cancel",style:"cancel"},{text:language==="ar"?"إعادة ضبط":language==="fr"?"Réinitialiser":"Reset",style:"destructive",onPress:async()=>{try{await clearWeightMeasurements();setWeightLog([]);setEditingWeightId(null);setEditingWeightValue("");}catch(error){Alert.alert(t.saveFailed,String(error));}}}]
+  );
 
   if (showWelcome) {
     return (
@@ -363,7 +372,6 @@ export default function App() {
       {([
         ["food-diary.png",language==="ar"?"سجل الطعام":language==="fr"?"Journal alimentaire":"Food Diary","diary"],
         ["progress.png",t.progress,"progress"],
-        ["weight.png",t.currentWeight,"weight"],
         ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","activity"],
         ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
         ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
@@ -388,18 +396,27 @@ export default function App() {
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
             : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} targetProtein={metrics?.protein} targetCarbs={metrics?.carbs} targetFat={metrics?.fats} />)}
 
-        {tab === "progress" && <ScrollView contentContainerStyle={styles.content}>
-  <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={styles.introNote}>{language==="ar"?"تابع آخر وزن مسجّل ووزنك المستهدف ونشاطك الرياضي من مكان واحد.":language==="fr"?"Suivez votre dernier poids enregistré, votre objectif et votre activité physique au même endroit.":"See your latest recorded weight, target weight, and fitness activity in one place."}</Text></View>
-  <View style={styles.statRow}><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{(weightLog[0]?.weight_kg ?? profile.weight) || "—"}</Text><Text style={styles.muted}>{t.currentWeight} ({t.kg})</Text><Text style={styles.muted}>{weightLog.length ? (language==="ar"?"من أحدث قياس في سجل الوزن":language==="fr"?"D’après votre dernière mesure":"From your latest Weight Tracker entry") : (language==="ar"?"من الوزن المحفوظ في الملف الشخصي":language==="fr"?"D’après le poids enregistré dans le profil":"From your saved Profile weight")}</Text></View><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{profile.targetWeight || "—"}</Text><Text style={styles.muted}>{t.targetWeight} ({t.kg})</Text><Text style={styles.muted}>{language==="ar"?"الوزن الذي حددته كهدف":language==="fr"?"Le poids que vous avez défini comme objectif":"The goal weight you set in Profile"}</Text></View></View>
-  <Card><Text style={styles.cardTitle}>WEIGHT TRACKING</Text><Text style={styles.muted}>{weightLog.length} {language==="ar"?"قياساً مسجلاً":language==="fr"?"mesures enregistrées":"weight entries recorded"}</Text><GoldButton title={language==="ar"?"فتح سجل الوزن":language==="fr"?"Ouvrir le suivi":"Open Weight Tracker"} onPress={()=>setTab("weight")}/></Card>
-  <Card><Text style={styles.cardTitle}>ACTIVITY</Text><Text style={styles.muted}>{language==="ar"?"سجّل تمارينك ومدتها والسعرات المحروقة.":language==="fr"?"Enregistrez vos entraînements et leur durée.":"Record workouts, duration and estimated calories burned."}</Text><GoldButton title={language==="ar"?"فتح النشاط":"Open Activity"} onPress={()=>setTab("activity")}/></Card>
-  <Card><Text style={styles.cardTitle}>GOALS & CHALLENGES</Text><View style={{flexDirection:"row",gap:8}}><View style={{flex:1}}><GoldButton title={language==="ar"?"الأهداف":"Goals"} onPress={()=>setTab("goals")}/></View><View style={{flex:1}}><GoldButton title={language==="ar"?"التحديات":"Challenges"} onPress={()=>setTab("challenges")}/></View></View></Card>
-</ScrollView>}
-{tab === "weight" && <ScrollView contentContainerStyle={styles.content}>
-  <View style={styles.dashboardIntro}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{language==="ar"?"تتبع الوزن":language==="fr"?"Suivi du poids":"Weight Tracker"}</Text><Text style={styles.introNote}>{t.weightTrend}</Text></View>
-  <View style={styles.progressHero}><Text style={styles.heroLabel}>{t.currentWeight.toUpperCase()}</Text><Text style={styles.progressWeight}>{weightLog[0]?.weight_kg ? weightLog[0].weight_kg+" "+t.kg : (profile.weight ? profile.weight+" "+t.kg : "—")}</Text>{profile.targetWeight?<View style={styles.targetWeightPill}><Text style={styles.targetWeightText}>{t.targetWeight}: {profile.targetWeight} {t.kg}</Text></View>:null}</View>
-  <Card><Text style={styles.cardTitle}>{t.weightTrend}</Text>{weightLog.length?<><View style={styles.chartBars}>{[...weightLog].slice(0,12).reverse().map((entry,index,arr)=>{const vals=arr.map(x=>x.weight_kg),min=Math.min(...vals),max=Math.max(...vals),height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#1686E8"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>{weightLog.slice(0,5).map(entry=><View key={entry.id} style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString()}</Text><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text></View>)}</>:<Text style={styles.muted}>{t.emptyProgress}</Text>}</Card>
-  <Card><Text style={styles.cardTitle}>{t.logWeight}</Text><TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/><GoldButton title={t.logWeight} onPress={addWeight}/></Card>
+        {(tab === "progress" || tab === "weight") && <ScrollView contentContainerStyle={styles.content}>
+  <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={styles.introNote}>{language==="ar"?"تابع وزنك الحالي والوزن المستهدف وسجل قياساتك.":language==="fr"?"Suivez votre poids actuel, votre objectif et vos mesures.":"Track your current weight, target weight and recorded measurements."}</Text></View>
+  <View style={styles.statRow}><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{(weightLog[0]?.weight_kg ?? profile.weight) || "—"}</Text><Text style={styles.muted}>{t.currentWeight} ({t.kg})</Text></View><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{profile.targetWeight || "—"}</Text><Text style={styles.muted}>{t.targetWeight} ({t.kg})</Text></View></View>
+  <Card>
+    <Text style={styles.cardTitle}>{language==="ar"?"متتبع الوزن الحالي":language==="fr"?"Suivi du poids":"Current Weight Tracker"}</Text>
+    <Text style={styles.muted}>{weightLog.length} {language==="ar"?"قياساً مسجلاً":language==="fr"?"mesures enregistrées":"weight entries recorded"}</Text>
+    {weightLog.length>0 ? <>
+      <View style={styles.chartBars}>{[...weightLog].slice(0,12).reverse().map((entry,index,arr)=>{const vals=arr.map(x=>x.weight_kg),min=Math.min(...vals),max=Math.max(...vals),height=max===min?48:Math.max(16,24+((entry.weight_kg-min)/(max-min))*66);return <View key={entry.id} style={styles.chartColumn}><Text style={styles.chartValue}>{entry.weight_kg}</Text><View style={[styles.chartBar,{height,backgroundColor:"#1686E8"}]}/><Text style={styles.chartDate}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short"})}</Text></View>;})}</View>
+      {weightLog.map(entry=><View key={entry.id} style={{paddingVertical:10,borderBottomWidth:1,borderBottomColor:"#D8E5F1",gap:8}}>
+        <View style={styles.spaceBetween}><Text style={styles.muted}>{new Date(entry.recorded_at).toLocaleDateString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US",{day:"numeric",month:"short",year:"numeric"})}</Text>
+        {editingWeightId===entry.id ? <View style={{flexDirection:"row",alignItems:"center",gap:7}}><TextInput value={editingWeightValue} onChangeText={setEditingWeightValue} keyboardType="decimal-pad" style={[styles.input,{width:82,paddingVertical:7}]} /><Text style={styles.muted}>{t.kg}</Text><Pressable onPress={()=>saveWeightEdit(entry.id)} style={{backgroundColor:GREEN,paddingHorizontal:12,paddingVertical:9,borderRadius:9}}><Text style={{color:"#FFFFFF",fontWeight:"800"}}>{language==="ar"?"حفظ":language==="fr"?"Enregistrer":"Save"}</Text></Pressable><Pressable onPress={()=>setEditingWeightId(null)}><Text style={styles.muted}>{language==="ar"?"إلغاء":language==="fr"?"Annuler":"Cancel"}</Text></Pressable></View>
+        : <View style={{flexDirection:"row",alignItems:"center",gap:12}}><Text style={styles.valueText}>{entry.weight_kg} {t.kg}</Text><Pressable onPress={()=>{setEditingWeightId(entry.id);setEditingWeightValue(String(entry.weight_kg));}} style={{backgroundColor:GREEN,paddingHorizontal:12,paddingVertical:8,borderRadius:9}}><Text style={{color:"#FFFFFF",fontWeight:"800"}}>{language==="ar"?"تعديل":language==="fr"?"Modifier":"Edit"}</Text></Pressable></View>}
+        </View>
+      </View>)}
+    </> : <Text style={styles.muted}>{language==="ar"?"لا توجد قياسات بعد. أضف وزنك أدناه.":language==="fr"?"Aucune mesure pour le moment. Ajoutez votre poids ci-dessous.":"No measurements yet. Add your weight below."}</Text>}
+    <Text style={[styles.cardTitle,{marginTop:14}]}>{t.logWeight}</Text>
+    <TextInput value={weightInput} onChangeText={setWeightInput} keyboardType="decimal-pad" placeholder={t.weight} placeholderTextColor={MUTED} style={[styles.input,direction]}/>
+    <Pressable onPress={addWeight} style={{backgroundColor:GREEN,padding:14,borderRadius:11,alignItems:"center"}}><Text style={{color:"#FFFFFF",fontWeight:"900"}}>{t.logWeight}</Text></Pressable>
+    <Pressable onPress={resetWeightHistory} style={{backgroundColor:GREEN,padding:13,borderRadius:11,alignItems:"center",marginTop:5}}><Text style={{color:"#FFFFFF",fontWeight:"900"}}>{language==="ar"?"إعادة ضبط سجل الوزن":language==="fr"?"Réinitialiser l’historique":"Reset Weight History"}</Text></Pressable>
+    <Text style={styles.muted}>{language==="ar"?"إعادة الضبط تحذف سجل القياسات فقط ولا تغيّر الوزن في الملف الشخصي.":language==="fr"?"La réinitialisation efface uniquement l’historique, pas le poids du profil.":"Reset clears measurement history only; your Profile weight is kept."}</Text>
+  </Card>
 </ScrollView>}
 {tab === "activity" && <ActivityTracker language={language} weightKg={Number(profile.weight) || 0}/>}
 {tab === "challenges" && <ChallengeTracker language={language}/>}
