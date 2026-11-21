@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, clearWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
-import type { ImportedFoodRecord } from "./src/storage/database";
+import type { ImportedFoodRecord, FoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
@@ -9,6 +9,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
+import BarcodeScanner from "./src/storage/BarcodeScanner";
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
@@ -82,6 +83,8 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [scannerVisible, setScannerVisible] = useState(false);
+  const [scannedFood, setScannedFood] = useState<FoodRecord | null>(null);
   const [profile, setProfile] = useState<Profile>(initialProfile);
   const [profilePhotoUri, setProfilePhotoUri] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -370,13 +373,14 @@ export default function App() {
     </View>
     <View style={styles.dashboardTiles}>
       {([
+        ["scanner.png",language==="ar"?"مسح الطعام":language==="fr"?"Scanner":"Scanner","scanner"],
         ["food-diary.png",language==="ar"?"سجل الطعام":language==="fr"?"Journal alimentaire":"Food Diary","diary"],
         ["progress.png",t.progress,"progress"],
         ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","activity"],
         ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
         ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
-      ] as [string,string,Tab][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>setTab(target)} style={styles.dashboardTile}>
-        <Image source={asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="weight.png"?require("./assets/images/weight.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="contain"/>
+      ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>target==="scanner"?setScannerVisible(true):setTab(target)} style={styles.dashboardTile}>
+        <Image source={asset==="scanner.png"?require("./assets/images/scanner.png"):asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="contain"/>
         <Text style={styles.dashboardTileLabel}>{label}</Text>
       </Pressable>)}
     </View>
@@ -394,10 +398,10 @@ export default function App() {
           ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.preparingFoods}</Text><Text style={styles.muted}>{t.preparingFoodsHint}</Text></Card></ScrollView>
           : storageError
             ? <ScrollView contentContainerStyle={styles.content}><Card><Text style={styles.cardTitle}>{t.foodUnavailable}</Text><Text style={styles.muted}>{storageError}</Text></Card></ScrollView>
-            : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} targetProtein={metrics?.protein} targetCarbs={metrics?.carbs} targetFat={metrics?.fats} />)}
+            : <FoodDiary language={language} targetCalories={metrics?.calories ?? 2000} targetProtein={metrics?.protein} targetCarbs={metrics?.carbs} targetFat={metrics?.fats} scannedFood={scannedFood} onScannedFoodHandled={()=>setScannedFood(null)} />)}
 
         {(tab === "progress" || tab === "weight") && <ScrollView contentContainerStyle={styles.content}>
-  <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction]}>{t.progress}</Text><Text style={styles.introNote}>{language==="ar"?"تابع وزنك الحالي والوزن المستهدف وسجل قياساتك.":language==="fr"?"Suivez votre poids actuel, votre objectif et vos mesures.":"Track your current weight, target weight and recorded measurements."}</Text></View>
+  <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,direction,{color:"#FFFFFF"}]}>{t.progress}</Text><Text style={[styles.introNote,{color:"#FFFFFF"}]}>{language==="ar"?"تابع وزنك الحالي والوزن المستهدف وسجل قياساتك.":language==="fr"?"Suivez votre poids actuel, votre objectif et vos mesures.":"Track your current weight, target weight and recorded measurements."}</Text></View>
   <View style={styles.statRow}><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{(weightLog[0]?.weight_kg ?? profile.weight) || "—"}</Text><Text style={styles.muted}>{t.currentWeight} ({t.kg})</Text></View><View style={[styles.card,{flex:1}]}><Text style={styles.statValue}>{profile.targetWeight || "—"}</Text><Text style={styles.muted}>{t.targetWeight} ({t.kg})</Text></View></View>
   <Card>
     <Text style={styles.cardTitle}>{language==="ar"?"متتبع الوزن الحالي":language==="fr"?"Suivi du poids":"Current Weight Tracker"}</Text>
@@ -439,7 +443,7 @@ export default function App() {
 </ScrollView>}
 {tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ScrollView contentContainerStyle={styles.content}>
-            <Text style={[styles.pageTitle, direction]}>{t.profile}</Text>
+            <Text style={[styles.pageTitle, direction, { color: "#FFFFFF" }]}>{t.profile}</Text>
             <Card>
               <View style={styles.profilePhotoSection}>
                 <View style={styles.profilePhotoPreview}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profilePhotoImage} /> : <Text style={styles.profilePhotoPlaceholder}>👤</Text>}</View>
@@ -501,6 +505,12 @@ export default function App() {
           </ScrollView>
         </KeyboardAvoidingView>}
       </View>
+      <BarcodeScanner
+        visible={scannerVisible}
+        onClose={() => setScannerVisible(false)}
+        onFound={food => { setScannedFood(food); setScannerVisible(false); setTab("diary"); }}
+        language={language}
+      />
 
       <View style={[styles.tabBar, isRTL && styles.rowReverse]}>
         {([
