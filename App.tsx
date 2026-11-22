@@ -342,7 +342,7 @@ export default function App() {
         <Text style={styles.dashboardBrandTitle}>FITNESS <Text style={styles.dashboardBrandAccent}>PRO</Text></Text>
         <Text style={styles.dashboardBrandSubtitle}>BY DANAT</Text>
       </View>
-      <Pressable onPress={()=>setShowLanguageMenu(value=>!value)} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Change language"><Ionicons name="language-outline" size={24} color="#FFFFFF"/></Pressable>
+      <Pressable onPress={()=>setShowLanguageMenu(value=>!value)} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Change language"><Ionicons name="settings-outline" size={24} color="#FFFFFF"/></Pressable>
     </View>
     {showLanguageMenu && <View style={styles.dashboardLanguageMenu}>{(["en","ar","fr"] as Language[]).map(code=><Pressable key={code} accessibilityRole="button" onPress={()=>{setLanguage(code);setShowLanguageMenu(false);}} style={[styles.languageButton,language===code&&styles.languageButtonActive]}><Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>}
     <View style={styles.dashboardHeroMessage}>
