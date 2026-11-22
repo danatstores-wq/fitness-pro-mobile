@@ -360,7 +360,7 @@ export default function App() {
   </View>
   {!hydrated ? <View style={styles.dashboardLoading}><Text style={styles.dashboardLoadingText}>{t.loadingDashboard}</Text></View> : <>
     <View style={[styles.calorieHero,styles.dashboardCalories]}>
-      <View style={styles.dashboardFlame}><Ionicons name="flame" size={43} color="#FF9D00"/></View>
+      <View style={styles.dashboardFlame}><Ionicons name="flame-sharp" size={45} color="#FF6A00"/></View>
       <View style={styles.dashboardCalorieBlock}>
         <Text style={styles.dashboardCalorieValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
         <Text style={styles.dashboardCalorieLabel}>{t.calories}</Text>
@@ -382,7 +382,7 @@ export default function App() {
         ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
         ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
       ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>target==="scanner"?setScannerVisible(true):setTab(target)} style={styles.dashboardTile}>
-        <Image source={asset==="scanner.png"?require("./assets/images/scanner.png"):asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="contain"/>
+        <Image source={asset==="scanner.png"?require("./assets/images/scanner.png"):asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="cover"/>
         <Text style={styles.dashboardTileLabel}>{label}</Text>
       </Pressable>)}
     </View>
@@ -749,8 +749,8 @@ const styles = StyleSheet.create({
   dashboardHeroMessage: { marginTop: 49, maxWidth: "55%", zIndex: 1 },
   dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
   dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
-  dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.34)", borderWidth: 1, borderColor: "rgba(255,255,255,0.72)", shadowColor: "#08264A", shadowOpacity: 0.28, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: 7, gap: 9 },
-  dashboardFlame: { width: 43, alignItems: "center" },
+  dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.34)", borderWidth: 1, borderColor: "rgba(255,255,255,0.78)", shadowColor: "#08264A", shadowOpacity: 0.44, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 12, gap: 9 },
+  dashboardFlame: { width: 43, alignItems: "center", shadowColor: "#FF5A00", shadowOpacity: 0.48, shadowRadius: 9, shadowOffset: { width: 0, height: 3 }, elevation: 6 },
   dashboardCalorieBlock: { flex: 1, minWidth: 65 },
   dashboardCalorieValue: { color: "#17324D", fontSize: 27, fontWeight: "900" },
   dashboardCalorieLabel: { color: "#40566D", fontSize: 12, fontWeight: "600" },
