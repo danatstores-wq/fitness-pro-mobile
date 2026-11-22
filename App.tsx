@@ -296,8 +296,7 @@ export default function App() {
 
   if (showWelcome) {
     return (
-      <SafeAreaView style={styles.splashContainer}>        <View style={styles.splashFrame}>
-          <StatusBar barStyle="light-content" />
+      <SafeAreaView style={styles.splashContainer}>        <View style={styles.splashFrame}>          <StatusBar barStyle="light-content" />
           <Image
             source={require("./assets/images/welcome.jpg")}
             style={styles.splashImage}
@@ -537,7 +536,6 @@ export default function App() {
       </View>
     </SafeAreaView>  );
 }
-
 
 function ActivityTracker({language,weightKg,stepsEnabled,setStepsEnabled}:{language:Language;weightKg:number;stepsEnabled:boolean;setStepsEnabled:(enabled:boolean)=>void}) {
  const ar=language==="ar",fr=language==="fr";
@@ -792,10 +790,10 @@ const styles = StyleSheet.create({
   languageText: { color: "#08264A", fontSize: 9, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
   calendarWeekRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 7 },
-  calendarWeekday: { width: "13.5%", textAlign: "center", color: "#53677D", fontSize: 10, fontWeight: "800" },
+  calendarWeekday: { width: "13%", textAlign: "center", color: "#53677D", fontSize: 10, fontWeight: "800" },
   calendarGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 4 },
-  calendarBlank: { width: "13.5%", minHeight: 48 },
-  calendarDay: { width: "13.5%", minHeight: 48, borderRadius: 9, backgroundColor: "#F1F6FB", borderWidth: 1, borderColor: "#D8E5F1", alignItems: "center", justifyContent: "center", gap: 1 },
+  calendarBlank: { width: "13%", minHeight: 48 },
+  calendarDay: { width: "13%", minHeight: 48, borderRadius: 9, backgroundColor: "#F1F6FB", borderWidth: 1, borderColor: "#D8E5F1", alignItems: "center", justifyContent: "center", gap: 1 },
   calendarDayChecked: { backgroundColor: "#1686E8", borderColor: "#1686E8" },
   calendarDayToday: { borderColor: GOLD, borderWidth: 2 },
   calendarDayNumber: { color: "#17324D", fontSize: 12, fontWeight: "800" },
