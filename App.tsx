@@ -296,8 +296,7 @@ export default function App() {
 
   if (showWelcome) {
     return (
-      <SafeAreaView style={styles.splashContainer}>
-        <View style={styles.splashFrame}>
+      <SafeAreaView style={styles.splashContainer}>        <View style={styles.splashFrame}>
           <StatusBar barStyle="light-content" />
           <Image
             source={require("./assets/images/welcome.jpg")}
@@ -321,14 +320,14 @@ export default function App() {
       <StatusBar barStyle="dark-content" />
       <View style={styles.appFrame}>
       <Image source={require("./assets/images/background.jpg")} style={styles.appBackgroundImage} resizeMode="cover" />
-      {!["dashboard", "diary", "progress", "profile", "contact"].includes(tab) && <View style={styles.header}>
+      {!["dashboard", "diary", "progress", "profile", "contact", "activity", "goals", "challenges"].includes(tab) && <View style={styles.header}>
         <View style={styles.brand}>
           <Image source={require("./assets/images/danat-logo.png")} style={styles.logoImage} resizeMode="contain" accessibilityLabel="Danat logo" />
           <View style={{ flex: 1 }}>
             <Text style={[styles.brandEyebrow, direction]}>DANAT / WELLNESS</Text>
             <Text style={[styles.brandName, direction]}>FITNESS PRO</Text>
           </View>
-          {!["activity", "goals", "challenges"].includes(tab) && <View style={styles.languageSelector}>{(["en", "ar", "fr"] as Language[]).map(code => <Pressable key={code} accessibilityRole="button" accessibilityLabel={code === "en" ? "English" : code === "ar" ? "العربية" : "Français"} onPress={() => setLanguage(code)} style={[styles.languageButton, language === code && styles.languageButtonActive]}><Text style={[styles.languageText, language !== code && styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>}
+          {!["activity", "goals", "challenges"].includes(tab) && <View style={styles.languageSelector}><LanguageChoices language={language} onChange={setLanguage} /></View>}
         </View>
       </View>}
 
@@ -344,7 +343,7 @@ export default function App() {
       </View>
       <Pressable onPress={()=>setShowLanguageMenu(value=>!value)} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Change language"><Ionicons name="settings-outline" size={24} color="#FFFFFF"/></Pressable>
     </View>
-    {showLanguageMenu && <View style={styles.dashboardLanguageMenu}>{(["en","ar","fr"] as Language[]).map(code=><Pressable key={code} accessibilityRole="button" onPress={()=>{setLanguage(code);setShowLanguageMenu(false);}} style={[styles.languageButton,language===code&&styles.languageButtonActive]}><Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>}
+    {showLanguageMenu && <View style={styles.dashboardLanguageMenu}><LanguageChoices language={language} onChange={code=>{setLanguage(code);setShowLanguageMenu(false);}} /></View>}
     <View style={styles.dashboardHeroMessage}>
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
@@ -450,7 +449,7 @@ export default function App() {
             <Text style={[styles.pageTitle, direction, { color: "#FFFFFF" }]}>{t.profile}</Text>
             <Card>
               <Text style={styles.fieldLabel}>{language === "ar" ? "اللغة" : language === "fr" ? "Langue" : "Language"}</Text>
-              <View style={[styles.languageSelector,{marginBottom:18}]}>{(["en","ar","fr"] as Language[]).map(code=><Pressable key={code} accessibilityRole="button" accessibilityLabel={code==="en"?"English":code==="ar"?"العربية":"Français"} onPress={()=>setLanguage(code)} style={[styles.languageButton,language===code&&styles.languageButtonActive]}><Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>
+              <View style={[styles.languageSelector,{marginBottom:18}]}><LanguageChoices language={language} onChange={setLanguage} /></View>
               <View style={styles.profilePhotoSection}>
                 <View style={styles.profilePhotoPreview}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profilePhotoImage} /> : <Text style={styles.profilePhotoPlaceholder}>👤</Text>}</View>
                 <View style={{ flex: 1, gap: 8 }}>
@@ -536,8 +535,7 @@ export default function App() {
         </Pressable>
       </View>
       </View>
-    </SafeAreaView>
-  );
+    </SafeAreaView>  );
 }
 
 
@@ -650,40 +648,99 @@ function ActivityTracker({language,weightKg,stepsEnabled,setStepsEnabled}:{langu
  </ScrollView>;
 }
 function ChallengeTracker({language}:{language:Language}) {
- const ar=language==="ar",fr=language==="fr",now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+ const ar=language==="ar",fr=language==="fr",now=new Date();
+ const year=now.getFullYear(),month=now.getMonth(),monthPrefix=`${year}-${String(month+1).padStart(2,"0")}-`;
+ const today=[year,String(month+1).padStart(2,"0"),String(now.getDate()).padStart(2,"0")].join("-");
+ const monthDays=new Date(year,month+1,0).getDate();
+ const firstWeekday=new Date(year,month,1).getDay();
+ const locale=ar?"ar":fr?"fr-FR":"en-US";
+ const monthLabel=now.toLocaleDateString(locale,{month:"long",year:"numeric"});
+ const weekdayLabels=Array.from({length:7},(_,i)=>new Date(2023,0,1+i).toLocaleDateString(locale,{weekday:"short"}));
  const [checks,setChecks]=useState<{challenge_id:string;completed_day:string}[]>([]),[loading,setLoading]=useState(true);
- const challenges=[{id:"walk7",title:ar?"تحدي المشي 7 أيام":fr?"Défi marche 7 jours":"7-Day Walking Challenge",desc:ar?"سجّل المشي كل يوم لمدة أسبوع.":fr?"Cochez chaque jour de marche.":"Check in each day you complete a walk.",goal:7},{id:"fitness30",title:ar?"تحدي اللياقة 30 يوماً":fr?"Défi fitness 30 jours":"30-Day Fitness Challenge",desc:ar?"أكمل نشاطاً بدنياً كل يوم.":fr?"Faites une activité chaque jour.":"Complete a physical activity each day.",goal:30},{id:"water7",title:ar?"تحدي شرب الماء":fr?"Défi hydratation":"Water Habit Challenge",desc:ar?"سجّل الأيام التي تحقق فيها هدف الماء.":fr?"Cochez les jours où vous atteignez votre objectif d’eau.":"Check in when you meet your daily water goal.",goal:7},{id:"streak5",title:ar?"سلسلة التمارين":fr?"Régularité sportive":"Workout Consistency",desc:ar?"حافظ على الاستمرارية وسجّل أيام التمرين.":fr?"Cochez vos jours d’entraînement.":"Build consistency by checking in on workout days.",goal:5}];
- const refresh=async()=>{setChecks(await getChallengeCheckins());setLoading(false);};useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
- const toggle=async(id:string)=>{await toggleChallengeCheckin(id,today);await refresh();};
- return <ScrollView contentContainerStyle={styles.content}><View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}><View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View><Text style={[styles.pageTitle,{color:"#FFFFFF"}]}>{ar?"التحديات":fr?"Défis":"Challenges"}</Text><Text style={[styles.introNote,{color:"#FFFFFF"}]}>{ar?"ابنِ عادات صحية وسجّل إنجازك اليومي.":fr?"Créez de bonnes habitudes et suivez vos progrès.":"Build healthy habits and manually track your daily check-ins."}</Text></View>
- {loading?<Card><Text style={styles.muted}>…</Text></Card>:challenges.map(c=>{
-   const count=checks.filter(x=>x.challenge_id===c.id).length;
-   const done=checks.some(x=>x.challenge_id===c.id&&x.completed_day===today);
+ const challenges=[
+  {id:"walk7",title:ar?"تحدي المشي 7 أيام":fr?"Défi marche 7 jours":"7-Day Walking Challenge",desc:ar?"سجّل المشي كل يوم لمدة أسبوع.":fr?"Cochez chaque jour de marche.":"Check in each day you complete a walk.",goal:7},
+  {id:"fitness30",title:ar?"تحدي اللياقة 30 يوماً":fr?"Défi fitness 30 jours":"30-Day Fitness Challenge",desc:ar?"أكمل نشاطاً بدنياً كل يوم.":fr?"Faites une activité chaque jour.":"Check the box for each day you complete your activity.",goal:monthDays},
+  {id:"water7",title:ar?"تحدي شرب الماء":fr?"Défi hydratation":"Water Habit Challenge",desc:ar?"سجّل الأيام التي تحقق فيها هدف الماء.":fr?"Cochez les jours où vous atteignez votre objectif d’eau.":"Check in when you meet your daily water goal.",goal:7},
+  {id:"streak5",title:ar?"سلسلة التمارين":fr?"Régularité sportive":"Workout Consistency",desc:ar?"حافظ على الاستمرارية وسجّل أيام التمرين.":fr?"Cochez vos jours d’entraînement.":"Build consistency by checking in on workout days.",goal:5}
+ ];
+ const refresh=async()=>{setChecks(await getChallengeCheckins());setLoading(false);};
+ useEffect(()=>{refresh().catch(()=>setLoading(false));},[]);
+ const toggle=async(id:string,date:string)=>{await toggleChallengeCheckin(id,date);await refresh();};
+ const makeDateKey=(day:number)=>`${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+ return <ScrollView contentContainerStyle={styles.content}>
+  <View style={[styles.dashboardIntro,{backgroundColor:"transparent"}]}>
+   <View style={styles.todayPill}><View style={styles.liveDot}/><Text style={styles.todayPillText}>DANAT / WELLNESS</Text></View>
+   <Text style={[styles.pageTitle,{color:"#FFFFFF"}]}>{ar?"التحديات":fr?"Défis":"Challenges"}</Text>
+   <Text style={[styles.introNote,{color:"#FFFFFF"}]}>{ar?"ابنِ عادات صحية وسجّل إنجازك اليومي.":fr?"Créez de bonnes habitudes et suivez vos progrès.":"Build healthy habits and manually track your daily check-ins."}</Text>
+  </View>
+  {loading?<Card><Text style={styles.muted}>…</Text></Card>:challenges.map(c=>{
+   const currentMonthChecks=checks.filter(x=>x.challenge_id===c.id&&x.completed_day.startsWith(monthPrefix));
+   const count=c.id==="fitness30"?currentMonthChecks.length:checks.filter(x=>x.challenge_id===c.id).length;
+   const doneToday=checks.some(x=>x.challenge_id===c.id&&x.completed_day===today);
    const days=Array.from({length:7},(_,i)=>{
-     const d=new Date(now);d.setDate(d.getDate()-(6-i));
-     return {key:[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),label:d.toLocaleDateString(ar?"ar":fr?"fr-FR":"en-US",{weekday:"short"})};
+    const d=new Date(now);d.setDate(d.getDate()-(6-i));
+    return {key:[d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"),label:d.toLocaleDateString(locale,{weekday:"short"})};
    });
    return <Card key={c.id}>
+    {c.id==="fitness30"?<>
+     <View style={styles.sectionHeading}>
+      <Text style={styles.cardTitle}>{c.title}</Text>
+      <Text style={styles.sectionMeta}>{count}/{monthDays}</Text>
+     </View>
+     <Text style={styles.muted}>{monthLabel} · {c.desc}</Text>
+     <View style={[styles.progressTrack,{marginTop:12,marginBottom:15}]}>
+      <View style={[styles.progressFill,{width:Math.min(100,count/monthDays*100)+"%"}]}/>
+     </View>
+     <View style={styles.calendarWeekRow}>
+      {weekdayLabels.map((label,i)=><Text key={i} style={styles.calendarWeekday}>{label}</Text>)}
+     </View>
+     <View style={styles.calendarGrid}>
+      {Array.from({length:firstWeekday},(_,i)=><View key={"blank-"+i} style={styles.calendarBlank}/>)}
+      {Array.from({length:monthDays},(_,i)=>{
+       const day=i+1,key=makeDateKey(day),checked=checks.some(x=>x.challenge_id===c.id&&x.completed_day===key),isToday=key===today;
+       return <Pressable key={key} accessibilityRole="checkbox" accessibilityState={{checked}} accessibilityLabel={`${monthLabel} ${day}`}
+        onPress={()=>void toggle(c.id,key)} style={[styles.calendarDay,checked&&styles.calendarDayChecked,isToday&&styles.calendarDayToday]}>
+        <Text style={[styles.calendarDayNumber,checked&&styles.calendarDayNumberChecked]}>{day}</Text>
+        <Ionicons name={checked?"checkbox":"square-outline"} size={17} color={checked?"#FFFFFF":"#7890A8"}/>
+       </Pressable>;
+      })}
+     </View>
+     <Text style={[styles.muted,{marginTop:12}]}>{ar?`أكملت ${count} من ${monthDays} يوماً هذا الشهر`:fr?`${count} jour(s) sur ${monthDays} ce mois-ci`:`${count} of ${monthDays} days completed this month`}</Text>
+    </>:<>
      <View style={styles.sectionHeading}><Text style={styles.cardTitle}>{c.title}</Text><Text style={styles.sectionMeta}>{count}/{c.goal}</Text></View>
      <Text style={styles.muted}>{c.desc}</Text>
      <View style={styles.progressTrack}><View style={[styles.progressFill,{width:Math.min(100,count/c.goal*100)+"%"}]}/></View>
      <Text style={[styles.fieldLabel,{marginTop:14,marginBottom:8}]}>{ar?"إحصائيات آخر 7 أيام":fr?"Statistiques des 7 derniers jours":"Last 7 Days Statistics"}</Text>
      <View style={{flexDirection:"row",alignItems:"flex-end",justifyContent:"space-between",paddingHorizontal:4,paddingTop:6}}>
-       {days.map(day=>{
-         const checked=checks.some(x=>x.challenge_id===c.id&&x.completed_day===day.key);
-         return <View key={day.key} style={{flex:1,alignItems:"center",gap:5}}>
-           <Text style={{fontSize:10,fontWeight:"800",color:checked?"#1686E8":"#7C91A8"}}>{checked?"1":"0"}</Text>
-           <View style={{height:54,width:18,justifyContent:"flex-end",alignItems:"center",backgroundColor:"#EAF3FC",borderRadius:6,overflow:"hidden"}}>
-             <View style={{width:"100%",height:checked?46:5,backgroundColor:checked?"#1686E8":"#C8D8E8",borderRadius:5}}/>
-           </View>
-           <Text style={{fontSize:9,color:"#53677D",fontWeight:"700"}}>{day.label}</Text>
-         </View>;
-       })}
+      {days.map(day=>{
+       const checked=checks.some(x=>x.challenge_id===c.id&&x.completed_day===day.key);
+       return <View key={day.key} style={{flex:1,alignItems:"center",gap:5}}>
+        <Text style={{fontSize:10,fontWeight:"800",color:checked?"#1686E8":"#7C91A8"}}>{checked?"1":"0"}</Text>
+        <View style={{height:54,width:18,justifyContent:"flex-end",alignItems:"center",backgroundColor:"#EAF3FC",borderRadius:6,overflow:"hidden"}}>
+         <View style={{width:"100%",height:checked?46:5,backgroundColor:checked?"#1686E8":"#C8D8E8",borderRadius:5}}/>
+        </View>
+        <Text style={{fontSize:9,color:"#53677D",fontWeight:"700"}}>{day.label}</Text>
+       </View>;
+      })}
      </View>
-     <GoldButton title={done?(ar?"إلغاء تسجيل اليوم":fr?"Annuler le pointage du jour":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":fr?"Valider aujourd’hui":"Check in today")} onPress={()=>toggle(c.id)}/>
+     <GoldButton title={doneToday?(ar?"إلغاء تسجيل اليوم":fr?"Annuler le pointage du jour":"Undo today’s check-in"):(ar?"سجّل إنجاز اليوم":fr?"Valider aujourd’hui":"Check in today")} onPress={()=>void toggle(c.id,today)}/>
+    </>}
    </Card>;
   })}
  </ScrollView>;
+}
+
+function LanguageChoices({language,onChange}:{language:Language;onChange:(code:Language)=>void}) {
+ const options:[Language,string,string][]=[
+  ["en","🇬🇧","English"],["ar","ع","العربية"],["fr","🇫🇷","Français"]
+ ];
+ return <View style={styles.languageSelector}>{options.map(([code,icon,label])=>
+  <Pressable key={code} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{selected:language===code}}
+   onPress={()=>onChange(code)} style={[styles.languageButton,language===code&&styles.languageButtonActive]}>
+   <Text style={[styles.languageIconText,code==="ar"&&styles.arabicLanguageIcon]}>{icon}</Text>
+   <Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text>
+  </Pressable>
+ )}</View>;
 }
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -727,11 +784,22 @@ const styles = StyleSheet.create({
   logoImage: { width: 46, height: 46 },
   brandEyebrow: { color: GREEN, fontWeight: "700", fontSize: 9, letterSpacing: 3.1 },
   brandName: { color: "#10294A", fontWeight: "800", fontSize: 15, letterSpacing: 2.1, marginTop: 4 },
-  languageSelector: { flexDirection: "row", alignItems: "center", gap: 5 },
-  languageButton: { borderWidth: 1, borderColor: "#315B86", borderRadius: 9, paddingHorizontal: 9, paddingVertical: 8, minWidth: 35, alignItems: "center" },
-  languageButtonActive: { backgroundColor: GOLD, borderColor: GOLD },
-  languageText: { color: "#08264A", fontSize: 11, fontWeight: "900" },
+  languageSelector: { flexDirection: "row", alignItems: "center", gap: 7 },
+  languageButton: { width: 45, height: 47, borderWidth: 1, borderColor: "#B8CDE0", backgroundColor: "#F5F9FD", borderRadius: 12, alignItems: "center", justifyContent: "center", gap: 1 },
+  languageButtonActive: { backgroundColor: "#FFF2BD", borderColor: GOLD, borderWidth: 2 },
+  languageIconText: { color: "#17324D", fontSize: 18, lineHeight: 22, fontWeight: "900" },
+  arabicLanguageIcon: { fontSize: 20, lineHeight: 22 },
+  languageText: { color: "#08264A", fontSize: 9, fontWeight: "900" },
   languageTextInactive: { color: "#244A73" },
+  calendarWeekRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 7 },
+  calendarWeekday: { width: "13.5%", textAlign: "center", color: "#53677D", fontSize: 10, fontWeight: "800" },
+  calendarGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-start", gap: 4 },
+  calendarBlank: { width: "13.5%", minHeight: 48 },
+  calendarDay: { width: "13.5%", minHeight: 48, borderRadius: 9, backgroundColor: "#F1F6FB", borderWidth: 1, borderColor: "#D8E5F1", alignItems: "center", justifyContent: "center", gap: 1 },
+  calendarDayChecked: { backgroundColor: "#1686E8", borderColor: "#1686E8" },
+  calendarDayToday: { borderColor: GOLD, borderWidth: 2 },
+  calendarDayNumber: { color: "#17324D", fontSize: 12, fontWeight: "800" },
+  calendarDayNumberChecked: { color: "#FFFFFF" },
   dashboardContent: { paddingBottom: 18, backgroundColor: "transparent", gap: 0 },
   dashboardScreenBackground: { flex: 1, position: "relative", overflow: "hidden", backgroundColor: "transparent" },
   appBackgroundImage: { ...StyleSheet.absoluteFill, width: "100%", height: "100%", opacity: 1 },
