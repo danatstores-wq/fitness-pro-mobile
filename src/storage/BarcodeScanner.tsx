@@ -44,10 +44,25 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (cached) { onFound(cached); onClose(); return; }
 
       // API v3 is the current Open Food Facts product-read API.
-      const response = await fetch(
-        "https://world.openfoodfacts.org/api/v3/product/" + encodeURIComponent(barcode) + ".json",
-        { headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" } }
-      );
+      const controller = new AbortController();
+      const lookupTimeout = setTimeout(() => controller.abort(), 15000);
+      let response: Response;
+      try {
+        response = await fetch(
+          "https://world.openfoodfacts.org/api/v3/product/" + encodeURIComponent(barcode) + ".json",
+          {
+            headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" },
+            signal: controller.signal
+          }
+        );
+      } catch (requestError) {
+        if (requestError instanceof Error && requestError.name === "AbortError") {
+          throw new Error(ar ? "استغرق البحث وقتاً طويلاً. تحقق من اتصال الإنترنت ثم حاول مجدداً." : fr ? "La recherche prend trop de temps. Vérifiez votre connexion Internet et réessayez." : "The product database is taking too long to respond. Check your internet connection and try again.");
+        }
+        throw requestError;
+      } finally {
+        clearTimeout(lookupTimeout);
+      }
       if (response.status === 404) throw new Error(ar ? "لم يتم العثور على هذا المنتج في قاعدة البيانات." : fr ? "Ce produit est introuvable dans la base de données." : "This barcode was not found in the product database.");
       if (!response.ok) throw new Error(ar ? "تعذّر الاتصال بقاعدة بيانات المنتجات. حاول مجدداً." : fr ? "Impossible de contacter la base de produits. Réessayez." : "Could not contact the product database. Please try again.");
       const payload = await response.json();
