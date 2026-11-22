@@ -944,7 +944,7 @@ const styles = StyleSheet.create({
   openDiaryButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14, letterSpacing: 0.4 },
   goldButton: { backgroundColor: "#1686E8", borderRadius: 12, paddingVertical: 14, alignItems: "center", marginTop: 14, borderWidth: 1, borderColor: "#1686E8" },
   goldButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 14 },
-  contactWelcome: { backgroundColor: "#FFFFFF", borderRadius: 26, borderWidth: 1, borderColor: "#D8E5F1", padding: 28, alignItems: "center", shadowColor: "#08264A", shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 5 }, elevation: 3 },
+  contactWelcome: { backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 26, borderWidth: 1, borderColor: "rgba(255,255,255,0.42)", padding: 28, alignItems: "center", shadowColor: "#000000", shadowOpacity: 0.28, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
   contactIconCircle: { width: 82, height: 82, borderRadius: 41, backgroundColor: "#EAF3FC", borderWidth: 1, borderColor: "#D8E5F1", alignItems: "center", justifyContent: "center", marginBottom: 22 },
   contactEyebrow: { color: GREEN, fontSize: 10, fontWeight: "900", letterSpacing: 3, marginBottom: 9 },
   contactTitle: { color: "#17324D", fontSize: 28, fontWeight: "900", textAlign: "center", marginBottom: 12 },
