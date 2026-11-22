@@ -749,7 +749,7 @@ const styles = StyleSheet.create({
   dashboardHeroMessage: { marginTop: 49, maxWidth: "55%", zIndex: 1 },
   dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
   dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
-  dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderColor: "#CFE2F5", gap: 9 },
+  dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.34)", borderWidth: 1, borderColor: "rgba(255,255,255,0.72)", shadowColor: "#08264A", shadowOpacity: 0.28, shadowRadius: 14, shadowOffset: { width: 0, height: 5 }, elevation: 7, gap: 9 },
   dashboardFlame: { width: 43, alignItems: "center" },
   dashboardCalorieBlock: { flex: 1, minWidth: 65 },
   dashboardCalorieValue: { color: "#17324D", fontSize: 27, fontWeight: "900" },
