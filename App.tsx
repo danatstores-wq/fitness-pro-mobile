@@ -360,7 +360,7 @@ export default function App() {
   </View>
   {!hydrated ? <View style={styles.dashboardLoading}><Text style={styles.dashboardLoadingText}>{t.loadingDashboard}</Text></View> : <>
     <View style={[styles.calorieHero,styles.dashboardCalories]}>
-      <View style={styles.dashboardFlame}><Ionicons name="flash" size={29} color="#FFD34D"/></View>
+      <View style={styles.dashboardFlame}><Ionicons name="flame" size={42} color="#FF641F"/></View>
       <View style={styles.dashboardCalorieBlock}>
         <Text style={styles.dashboardCalorieValue}>{dailyIntake.calories===null?"0":Math.round(dailyIntake.calories).toLocaleString(language==="fr"?"fr-FR":language==="ar"?"ar":"en-US")}</Text>
         <Text style={styles.dashboardCalorieLabel}>{t.calories}</Text>
@@ -750,7 +750,7 @@ const styles = StyleSheet.create({
   dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
   dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
   dashboardCalories: { marginHorizontal: 17, marginTop: 14, marginBottom: 17, borderRadius: 20, padding: 14, minHeight: 112, flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255,255,255,0.76)", borderWidth: 1, borderColor: "rgba(255,255,255,0.94)", shadowColor: "#08264A", shadowOpacity: 0.44, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 12, gap: 9 },
-  dashboardFlame: { width: 54, height: 54, borderRadius: 27, alignItems: "center", justifyContent: "center", backgroundColor: "#123B63", borderWidth: 2, borderColor: "#FFD34D", shadowColor: "#08264A", shadowOpacity: 0.32, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 6 },
+  dashboardFlame: { width: 58, height: 58, borderRadius: 29, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF0DF", borderWidth: 2, borderColor: "#FFB15C", shadowColor: "#FF641F", shadowOpacity: 0.42, shadowRadius: 11, shadowOffset: { width: 0, height: 4 }, elevation: 7 },
   dashboardCalorieBlock: { flex: 1, minWidth: 65 },
   dashboardCalorieValue: { color: "#071D35", fontSize: 28, fontWeight: "900", textShadowColor: "rgba(255,255,255,0.85)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 3 },
   dashboardCalorieLabel: { color: "#17324D", fontSize: 12, fontWeight: "800", textShadowColor: "rgba(255,255,255,0.9)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2 },
@@ -763,9 +763,9 @@ const styles = StyleSheet.create({
   dashboardGoalRingText: { color: "#071D35", fontSize: 11, fontWeight: "900" },
   dashboardGoalRingCaption: { color: "#263F58", fontSize: 7, fontWeight: "800", textAlign: "center" },
   dashboardTiles: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 17, gap: 10, justifyContent: "space-between", marginBottom: 17 },
-  dashboardTile: { width: "30%", minHeight: 112, borderRadius: 17, alignItems: "center", justifyContent: "flex-start", paddingTop: 0, paddingBottom: 8, paddingHorizontal: 0, overflow: "hidden", backgroundColor: "rgba(8,115,213,0.88)", borderWidth: 1, borderColor: "rgba(255,255,255,0.22)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
-  dashboardTileIcon: { width: "100%", height: 76, marginBottom: 6 },
-  dashboardTileLabel: { color: "#FFFFFF", fontSize: 13, lineHeight: 16, fontWeight: "900", textAlign: "center" },
+  dashboardTile: { width: "30%", minHeight: 122, borderRadius: 17, alignItems: "stretch", justifyContent: "flex-end", padding: 0, overflow: "hidden", position: "relative", backgroundColor: "#123B63", borderWidth: 1, borderColor: "rgba(255,255,255,0.35)", shadowColor: "#000000", shadowOpacity: 0.22, shadowRadius: 7, shadowOffset: {width:0,height:3}, elevation: 4 },
+  dashboardTileIcon: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%" },
+  dashboardTileLabel: { width: "100%", color: "#FFFFFF", fontSize: 13, lineHeight: 16, fontWeight: "900", textAlign: "center", backgroundColor: "rgba(3,20,42,0.78)", paddingHorizontal: 3, paddingVertical: 7 },
   dashboardNutrition: { marginHorizontal: 14, borderRadius: 18, paddingHorizontal: 17, paddingTop: 15, paddingBottom: 13, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#D7E7F8" },
   dashboardNutritionHeading: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
   dashboardNutritionTitle: { color: "#09254C", fontSize: 17, fontWeight: "900" },
