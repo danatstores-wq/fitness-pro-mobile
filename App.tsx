@@ -84,6 +84,7 @@ export default function App() {
     return () => clearTimeout(timer);
   }, []);
   const [tab, setTab] = useState<Tab>("dashboard");
+  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [scannerVisible, setScannerVisible] = useState(false);
   const [stepsEnabled, setStepsEnabled] = useState(false);
   const [scannedFood, setScannedFood] = useState<FoodRecord | null>(null);
@@ -341,8 +342,9 @@ export default function App() {
         <Text style={styles.dashboardBrandTitle}>FITNESS <Text style={styles.dashboardBrandAccent}>PRO</Text></Text>
         <Text style={styles.dashboardBrandSubtitle}>BY DANAT</Text>
       </View>
-      <Pressable onPress={()=>setTab("profile")} style={styles.dashboardSettings}><Ionicons name="settings-sharp" size={23} color="#FFFFFF"/></Pressable>
+      <Pressable onPress={()=>setShowLanguageMenu(value=>!value)} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Change language"><Ionicons name="language-outline" size={24} color="#FFFFFF"/></Pressable>
     </View>
+    {showLanguageMenu && <View style={styles.dashboardLanguageMenu}>{(["en","ar","fr"] as Language[]).map(code=><Pressable key={code} accessibilityRole="button" onPress={()=>{setLanguage(code);setShowLanguageMenu(false);}} style={[styles.languageButton,language===code&&styles.languageButtonActive]}><Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>}
     <View style={styles.dashboardHeroMessage}>
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
@@ -447,6 +449,8 @@ export default function App() {
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction, { color: "#FFFFFF" }]}>{t.profile}</Text>
             <Card>
+              <Text style={styles.fieldLabel}>{language === "ar" ? "اللغة" : language === "fr" ? "Langue" : "Language"}</Text>
+              <View style={[styles.languageSelector,{marginBottom:18}]}>{(["en","ar","fr"] as Language[]).map(code=><Pressable key={code} accessibilityRole="button" accessibilityLabel={code==="en"?"English":code==="ar"?"العربية":"Français"} onPress={()=>setLanguage(code)} style={[styles.languageButton,language===code&&styles.languageButtonActive]}><Text style={[styles.languageText,language!==code&&styles.languageTextInactive]}>{code.toUpperCase()}</Text></Pressable>)}</View>
               <View style={styles.profilePhotoSection}>
                 <View style={styles.profilePhotoPreview}>{profilePhotoUri ? <Image source={{ uri: profilePhotoUri }} style={styles.profilePhotoImage} /> : <Text style={styles.profilePhotoPlaceholder}>👤</Text>}</View>
                 <View style={{ flex: 1, gap: 8 }}>
@@ -746,6 +750,7 @@ const styles = StyleSheet.create({
   dashboardBrandAccent: { color: "#FFD400" },
   dashboardBrandSubtitle: { color: "#FFFFFF", fontSize: 11, letterSpacing: 2.4, marginTop: 1 },
   dashboardSettings: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
+  dashboardLanguageMenu: { alignSelf: "flex-end", flexDirection: "row", alignItems: "center", gap: 7, marginTop: 8, padding: 8, borderRadius: 13, backgroundColor: "rgba(255,255,255,0.94)", borderWidth: 1, borderColor: "rgba(255,255,255,0.8)", zIndex: 5 },
   dashboardHeroMessage: { marginTop: 49, maxWidth: "55%", zIndex: 1 },
   dashboardSlogan: { color: "#FFFFFF", fontSize: 29, lineHeight: 34, fontWeight: "900", fontStyle: "italic" },
   dashboardSloganAccent: { color: "#FFD400", fontSize: 30, lineHeight: 36, fontWeight: "900", fontStyle: "italic" },
