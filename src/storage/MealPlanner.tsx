@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Language } from "../i18n";
 import { localizeFoodName, localizeNutrientName } from "../i18n-food";
-import { addFoodPlanToDiary, FoodRecord, FoodNutrientDetail, getFoodNutrients, getMealPlannerFoods, nutritionForQuantity } from "./database";
+import { addFoodPlanToDiary, FoodRecord, FoodNutrientDetail, getFoodNutrients, getMealPlannerFoods, getSavedMealPlannerPlan, saveMealPlannerPlan, nutritionForQuantity } from "./database";
 
 type Meal = "breakfast" | "lunch" | "dinner" | "snacks";
 type PlanItem = { meal: Meal; food: FoodRecord; grams: number };
@@ -28,6 +28,19 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
  const [foods,setFoods]=useState<FoodRecord[]>([]);
  const [preference,setPreference]=useState<"all"|"vegetarian"|"high">("all");
  const [plan,setPlan]=useState<PlanDay[]>([]);
+ useEffect(()=>{
+  let live=true;
+  getSavedMealPlannerPlan().then(saved=>{
+   if(!live||!saved)return;
+   try{
+    const restored=JSON.parse(saved) as {date:string;items:PlanItem[]}[];
+    if(Array.isArray(restored)&&restored.length===7&&restored.every(day=>typeof day.date==="string"&&Array.isArray(day.items))){
+     setPlan(restored.map(day=>({date:new Date(day.date),items:day.items})));
+    }
+   }catch(error){console.warn("Could not restore saved meal plan",error);}
+  }).catch(error=>console.warn("Could not load saved meal plan",error));
+  return()=>{live=false;};
+ },[]);
  const [busy,setBusy]=useState(false);
  const [added,setAdded]=useState(false);
  const [planMicros,setPlanMicros]=useState<NutrientTotal[]>([]);
@@ -116,6 +129,8 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
    const date=new Date();date.setDate(date.getDate()+day);built.push({date,items});
   }
   setAdded(false);setPlan(built);
+  saveMealPlannerPlan(JSON.stringify(built.map(day=>({date:day.date.toISOString(),items:day.items}))))
+   .catch(error=>console.warn("Could not save weekly meal plan",error));
  };
  const today=plan[0];
  const sum=(key:"calories"|"protein_g"|"carbs_g"|"fat_g"|"fiber_g")=>today?.items.reduce((total,item)=>total+(nutritionForQuantity(item.food,item.grams)[key]??0),0)??0;
