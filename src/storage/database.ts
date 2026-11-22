@@ -138,6 +138,11 @@ async function database() {
           carbs_g REAL,
           fat_g REAL
         );
+        CREATE TABLE IF NOT EXISTS saved_meal_planner_plan (
+          id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
+          plan_json TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS reminder_settings (
           id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
           breakfast_enabled INTEGER NOT NULL DEFAULT 1, breakfast_time TEXT NOT NULL DEFAULT '08:00',
@@ -615,6 +620,23 @@ export async function getMealPlannerFoods(): Promise<FoodRecord[]> {
        AND protein_g IS NOT NULL AND carbs_g IS NOT NULL AND fat_g IS NOT NULL
      ORDER BY RANDOM() LIMIT 500`
   );
+}
+
+export async function saveMealPlannerPlan(planJson: string): Promise<void> {
+  const db = await database();
+  await db.runAsync(
+    "INSERT INTO saved_meal_planner_plan (id, plan_json, updated_at) VALUES (1, ?, ?) ON CONFLICT(id) DO UPDATE SET plan_json = excluded.plan_json, updated_at = excluded.updated_at",
+    planJson,
+    new Date().toISOString()
+  );
+}
+
+export async function getSavedMealPlannerPlan(): Promise<string | null> {
+  const db = await database();
+  const row = await db.getFirstAsync<{ plan_json: string }>(
+    "SELECT plan_json FROM saved_meal_planner_plan WHERE id = 1"
+  );
+  return row?.plan_json ?? null;
 }
 
 export async function getDailyMealFoods(date = new Date()): Promise<MealFoodRecord[]> {
