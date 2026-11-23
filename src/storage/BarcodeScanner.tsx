@@ -142,11 +142,59 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       const structuredIngredients = Array.isArray(p.ingredients)
         ? p.ingredients.map((item: any) => String(item.text || item.id || "").replace(/^[a-z]{2}:/i, "").trim()).filter(Boolean).join(", ")
         : "";
-      const ingredientText = String(
+      const originalIngredientText = String(
+        p.ingredients_text_with_allergens || p.ingredients_text || structuredIngredients || ""
+      ).trim();
+      const suppliedLocalizedIngredients = String(
+        (language === "ar" ? p.ingredients_text_ar : language === "fr" ? p.ingredients_text_fr : p.ingredients_text_en) ||
+        p["ingredients_text_with_allergens_" + language] || ""
+      ).trim();
+
+      // OFF stores the packaging-language declaration. Translate recognized
+      // structured ingredient IDs through its multilingual ingredient taxonomy.
+      const ingredientNodes: any[] = [];
+      const collectIngredientNodes = (nodes: any[]) => {
+        for (const node of nodes) {
+          if (!node || typeof node !== "object") continue;
+          if (typeof node.id === "string" && node.id.includes(":") && typeof node.text === "string" && node.text.trim()) ingredientNodes.push(node);
+          if (Array.isArray(node.ingredients)) collectIngredientNodes(node.ingredients);
+        }
+      };
+      if (Array.isArray(p.ingredients)) collectIngredientNodes(p.ingredients);
+      let taxonomyTranslatedText = "";
+      if (language !== "en" && !suppliedLocalizedIngredients && originalIngredientText && ingredientNodes.length) {
+        const canonicalIds = [...new Set(ingredientNodes.map(node => String(node.id)))];
+        try {
+          const taxonomyUrl = "https://world.openfoodfacts.org/api/v3/taxonomy_display_tags?tagtype=ingredients&lc=" +
+            encodeURIComponent(language) + "&canonical_tags_list=" + encodeURIComponent(canonicalIds.join(","));
+          const taxonomyResponse = await readProduct(taxonomyUrl);
+          const displayTags = taxonomyResponse.payload?.display_tags;
+          if (Array.isArray(displayTags)) {
+            const translatedById = new Map<string, string>();
+            canonicalIds.forEach((id, index) => {
+              const translated = String(displayTags[index] || "").trim();
+              if (translated && !/^[a-z]{2}:/i.test(translated) && translated.toLowerCase() !== id.toLowerCase()) translatedById.set(id, translated);
+            });
+            let candidate = originalIngredientText;
+            for (const node of ingredientNodes) {
+              const translated = translatedById.get(String(node.id));
+              const sourceName = String(node.text || "").trim();
+              if (!translated || !sourceName || translated === sourceName) continue;
+              const escaped = sourceName.replace(/[.*+?^${}()|[\]\\]/g, "\\      const ingredientText = String(
         (language === "ar" ? p.ingredients_text_ar : language === "fr" ? p.ingredients_text_fr : p.ingredients_text_en) ||
         p["ingredients_text_with_allergens_" + language] || p.ingredients_text_with_allergens ||
         p.ingredients_text || structuredIngredients || ""
-      ).trim();
+      ).trim();");
+              candidate = candidate.replace(new RegExp(escaped, "gi"), translated);
+            }
+            if (candidate !== originalIngredientText) taxonomyTranslatedText = candidate;
+          }
+        } catch {
+          // Keep the original label text if translation is unavailable.
+        }
+      }
+      const ingredientText = suppliedLocalizedIngredients || taxonomyTranslatedText || originalIngredientText;
+      const ingredientOriginalText = originalIngredientText && originalIngredientText !== ingredientText ? originalIngredientText : "";
       const allergensText = String(p.allergens || "").trim() || tagsText(p.allergens_tags);
       const tracesText = String(p.traces || "").trim() || tagsText(p.traces_tags);
       const additivesText = (typeof p.additives === "string" ? p.additives.trim() : "") ||
@@ -192,7 +240,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
         cholesterol_mg: cholesterol === null ? null : cholesterol * 1000,
         water_g: water, source: "open_food_facts", sourceId: barcode,
-        ingredients_text: ingredientText || null, allergens_text: allergensText || null,
+        ingredients_text: ingredientText || null, ingredients_original_text: ingredientOriginalText || null, allergens_text: allergensText || null,
         traces_text: tracesText || null, additives_text: additivesText || null,
         dataQuality: "third_party", nutrients
       });
