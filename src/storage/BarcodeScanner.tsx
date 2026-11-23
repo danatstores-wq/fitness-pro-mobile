@@ -235,7 +235,12 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     }
     try {
       const BarcodeDetectorCtor = (globalThis as any).BarcodeDetector;
-      if (BarcodeDetectorCtor && navigator.mediaDevices?.getUserMedia) {
+      // iOS Safari's BarcodeDetector support is inconsistent across releases.
+      // Always use the ZXing video-element decoder on iPhone/iPad rather than
+      // accepting a live preview from a native detector that never returns codes.
+      const isIOSBrowser = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      if (BarcodeDetectorCtor && !isIOSBrowser && navigator.mediaDevices?.getUserMedia) {
         try {
           const supported = typeof BarcodeDetectorCtor.getSupportedFormats === "function"
             ? await BarcodeDetectorCtor.getSupportedFormats()
