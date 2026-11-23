@@ -88,9 +88,6 @@ const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? 
 
 export default function FoodDiary({ language, targetCalories = 2000, targetProtein, targetCarbs, targetFat, scannedFood = null, onScannedFoodHandled }: { language: Language; targetCalories?: number; targetProtein?: number; targetCarbs?: number; targetFat?: number; scannedFood?: FoodRecord | null; onScannedFoodHandled?: () => void }) {
   const t = words[language], rtl = language === "ar";
-  const ingredientReviewLabel = language === "ar" ? "مكونات تستحق الانتباه" : language === "fr" ? "Ingrédients à examiner" : "Ingredients to review";
-  const ingredientTextLower = (selected?.ingredients_text || "").toLowerCase();
-  const ingredientReview = ingredientReviewTerms.filter(rule => rule.terms.some(term => ingredientTextLower.includes(term))).map(rule => rule.label);
   const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [plannerMode, setPlannerMode] = useState(false);
@@ -101,6 +98,9 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
   const [meal, setMeal] = useState<MealType>("breakfast");
   const [modal, setModal] = useState(false);
   const [selected, setSelected] = useState<FoodRecord | null>(null);
+  const ingredientReviewLabel = language === "ar" ? "مكونات تستحق الانتباه" : language === "fr" ? "Ingrédients à examiner" : "Ingredients to review";
+  const ingredientTextLower = (selected?.ingredients_text || "").toLowerCase();
+  const ingredientReview = ingredientReviewTerms.filter(rule => rule.terms.some(term => ingredientTextLower.includes(term))).map(rule => rule.label);
   const [quantity, setQuantity] = useState("100");
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
