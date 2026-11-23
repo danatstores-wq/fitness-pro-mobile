@@ -47,10 +47,9 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       lookupExpired = true;
       setLoading(false);
       scanned.current = false;
-      Alert.alert(
-        title,
-        ar ? "استغرق البحث وقتاً طويلاً. حاول مجدداً." : fr ? "La recherche prend trop de temps. Réessayez." : "The product lookup timed out. Check your connection and try again."
-      );
+      const timeoutMessage = ar ? "استغرق البحث وقتاً طويلاً. حاول مجدداً." : fr ? "La recherche prend trop de temps. Réessayez." : "The product lookup timed out. Check your connection and try again.";
+      if (Platform.OS === "web") setWebError(timeoutMessage);
+      else Alert.alert(title, timeoutMessage);
     }, 14000);
     try {
       const cached = await getFoodBySourceId("open_food_facts", barcode);
@@ -161,7 +160,9 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     } catch (error) {
       if (!lookupExpired) {
         const message = error instanceof Error ? error.message : String(error);
-        Alert.alert(title, message);
+        // Web Alert.alert is not reliably displayed; keep lookup errors visible.
+        if (Platform.OS === "web") setWebError(message);
+        else Alert.alert(title, message);
         scanned.current = false;
       }
     } finally {
