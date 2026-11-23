@@ -87,12 +87,12 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       };
       const encodedBarcode = encodeURIComponent(barcode);
       const base = "https://world.openfoodfacts.org/api/";
-      let result = await readProduct(base + "v3.6/product/" + encodedBarcode + ".json");
+      let result = await readProduct(base + "v3.6/product/" + encodedBarcode + ".json?product_type=all");
       let p = result.payload?.product;
       let confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
 
       if (!p && !confirmedMissing) {
-        result = await readProduct(base + "v2/product/" + encodedBarcode + ".json");
+        result = await readProduct(base + "v2/product/" + encodedBarcode + ".json?product_type=all");
         p = result.payload?.product;
         confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
       }
