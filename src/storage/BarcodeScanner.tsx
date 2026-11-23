@@ -78,13 +78,16 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       } finally {
         clearTimeout(lookupTimeout);
       }
-      if (response.status === 404) throw new Error(ar ? "لم يتم العثور على هذا المنتج في قاعدة البيانات." : fr ? "Ce produit est introuvable dans la base de données." : "This barcode was not found in the product database.");
-      if (!response.ok) throw new Error(ar ? "تعذّر الاتصال بقاعدة بيانات المنتجات. حاول مجدداً." : fr ? "Impossible de contacter la base de produits. Réessayez." : "Could not contact the product database. Please try again.");
+      // An HTTP error (including 404) is not proof that the barcode is absent:
+      // it can indicate an unavailable API route or server-side response.
+      if (!response.ok) {
+        throw new Error(ar ? "تعذّر الحصول على رد صالح من قاعدة بيانات المنتجات. لم يتم التأكد من أن المنتج غير موجود." : fr ? "La base de produits n’a pas fourni de réponse valide. L’absence du produit n’est pas confirmée." : "The product database did not return a valid response. This does not confirm that the product is missing.");
+      }
       const payload = await response.json();
       if (lookupExpired) return;
       const p = payload?.product;
       const statusOk = payload?.status === 1 || payload?.status === "success" || payload?.status === "success_with_errors";
-      if (!p || !statusOk) throw new Error(ar ? "لم يتم العثور على هذا المنتج. يمكنك تجربة منتج آخر." : fr ? "Produit introuvable. Essayez un autre produit." : "Product not found. Please try another product.");
+      if (!p || !statusOk) throw new Error(ar ? "لم يتم العثور على المنتج بهذا الرمز في Open Food Facts. قد لا يكون المنتج مدرجاً في هذه القاعدة." : fr ? "Aucun produit correspondant à ce code n’est répertorié dans Open Food Facts. Il peut être absent de cette base." : "No product matching this barcode is listed in Open Food Facts. The product may be missing from this database.");
 
       const n: NutrimentMap = p.nutriments ?? {};
       const val = (...keys: string[]): number | null => {
