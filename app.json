@@ -15,7 +15,8 @@
       }
     },
     "android": {
-      "package": "com.danat.fitnesspro"
+      "package": "com.danat.fitnesspro",
+      "icon": "./assets/images/Luxury Fitness Pro Emblem.png"
     },
     "web": {
       "output": "single"
