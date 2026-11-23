@@ -56,7 +56,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (lookupExpired) return;
       // Older scans may have cached a product before ingredient fields were
       // parsed. Reuse only records that already contain product-check data.
-      if (cached && cached.ingredients_text) {
+      if (cached && cached.ingredients_text && cached.ingredients_language === language) {
         onFound(cached); onClose(); return;
       }
 
@@ -122,7 +122,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (!p && confirmedMissing) {
         throw new Error(ar ? "لم يتم العثور على هذا الرمز في قواعد بيانات المنتجات المدعومة. يمكنك إدخال المنتج يدوياً." : fr ? "Ce code n’a pas été trouvé dans les bases de produits prises en charge. Vous pouvez saisir le produit manuellement." : "This barcode was not found in the supported product databases. You can enter the product manually.");
       }
-      if (!p && cached) { onFound(cached); onClose(); return; }
+      if (!p && cached && cached.ingredients_language === language) { onFound(cached); onClose(); return; }
       if (!p) {
         const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
         throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها" + detail + ". لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse" + detail + ". La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database" + detail + ". The product's presence has not been verified.");
@@ -235,7 +235,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
         cholesterol_mg: cholesterol === null ? null : cholesterol * 1000,
         water_g: water, source: "open_food_facts", sourceId: barcode,
-        ingredients_text: ingredientText || null, ingredients_original_text: ingredientOriginalText || null, allergens_text: allergensText || null,
+        ingredients_text: ingredientText || null, ingredients_original_text: ingredientOriginalText || null, ingredients_language: language, allergens_text: allergensText || null,
         traces_text: tracesText || null, additives_text: additivesText || null,
         dataQuality: "third_party", nutrients
       });
@@ -245,7 +245,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
         cholesterol_mg: cholesterol === null ? null : cholesterol * 1000,
         water_g: water, data_quality: "third_party", source: "open_food_facts",
-        ingredients_text: ingredientText || null, allergens_text: allergensText || null,
+        ingredients_text: ingredientText || null, ingredients_original_text: ingredientOriginalText || null, ingredients_language: language, allergens_text: allergensText || null,
         traces_text: tracesText || null, additives_text: additivesText || null
       };
       onFound(food);
