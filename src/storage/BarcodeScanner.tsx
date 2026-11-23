@@ -67,7 +67,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       };
       const readProduct = async (url: string) => {
         const controller = new AbortController();
-        const lookupTimeout = setTimeout(() => controller.abort(), 6500);
+        const lookupTimeout = setTimeout(() => controller.abort(), 2300);
         try {
           const response = await fetch(url, { ...requestOptions, signal: controller.signal });
           let payload: any = null;
@@ -117,7 +117,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (!p && confirmedMissing) {
         throw new Error(ar ? "لم يتم العثور على هذا الرمز في قواعد بيانات المنتجات المدعومة. يمكنك إدخال المنتج يدوياً." : fr ? "Ce code n’a pas été trouvé dans les bases de produits prises en charge. Vous pouvez saisir le produit manuellement." : "This barcode was not found in the supported product databases. You can enter the product manually.");
       }
-      if (!p) {\n        const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
+      if (!p) {
+        const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
         throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها" + detail + ". لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse" + detail + ". La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database" + detail + ". The product's presence has not been verified.");
       }
       if (lookupExpired) return;
