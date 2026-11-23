@@ -449,6 +449,7 @@ export async function createFood(food: {
   water_g?: number | null;
   ingredients_text?: string | null;
   ingredients_original_text?: string | null;
+  ingredients_language?: string | null;
   allergens_text?: string | null;
   traces_text?: string | null;
   additives_text?: string | null;
