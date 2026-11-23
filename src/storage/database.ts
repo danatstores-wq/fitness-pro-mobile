@@ -205,7 +205,7 @@ async function database() {
         total_sugars_g: "REAL", starch_g: "REAL", cholesterol_mg: "REAL",
         trans_fat_g: "REAL", monounsaturated_fat_g: "REAL",
         polyunsaturated_fat_g: "REAL", water_g: "REAL",
-        ingredients_text: "TEXT", ingredients_original_text: "TEXT", allergens_text: "TEXT", traces_text: "TEXT", additives_text: "TEXT"
+        ingredients_text: "TEXT", ingredients_original_text: "TEXT", ingredients_language: "TEXT", allergens_text: "TEXT", traces_text: "TEXT", additives_text: "TEXT"
       };
       for (const [column, type] of Object.entries(optionalColumns)) {
         if (!optionalFoodColumnNames.has(column)) await db.execAsync(`ALTER TABLE foods ADD COLUMN ${column} ${type}`);
@@ -342,6 +342,7 @@ export type FoodRecord = {
   source?: string | null;
   ingredients_text?: string | null;
   ingredients_original_text?: string | null;
+  ingredients_language?: string | null;
   allergens_text?: string | null;
   traces_text?: string | null;
   additives_text?: string | null;
@@ -462,12 +463,12 @@ export async function createFood(food: {
     throw new Error("Nutrition values must be non-negative numbers or unknown");
   }
   const result = await db.runAsync(
-    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, source_id, data_quality, ingredients_text, ingredients_original_text, allergens_text, traces_text, additives_text)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO foods (name, calories, protein_g, carbs_g, fat_g, fiber_g, total_sugars_g, starch_g, cholesterol_mg, saturated_fat_g, trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g, water_g, source, source_id, data_quality, ingredients_text, ingredients_original_text, ingredients_language, allergens_text, traces_text, additives_text)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     name, ...values, food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
     food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
     food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.source ?? 'user_entry', food.sourceId ?? null, food.dataQuality ?? 'user_entered',
-    food.ingredients_text ?? null, food.ingredients_original_text ?? null, food.allergens_text ?? null, food.traces_text ?? null, food.additives_text ?? null
+    food.ingredients_text ?? null, food.ingredients_original_text ?? null, food.ingredients_language ?? null, food.allergens_text ?? null, food.traces_text ?? null, food.additives_text ?? null
   );
   const foodId = result.lastInsertRowId;
   for (const nutrient of food.nutrients ?? []) {
@@ -493,7 +494,7 @@ export async function refreshScannedFood(food: Parameters<typeof createFood>[0])
     `UPDATE foods SET name=?, calories=?, protein_g=?, carbs_g=?, fat_g=?, fiber_g=?,
       total_sugars_g=?, starch_g=?, cholesterol_mg=?, saturated_fat_g=?, trans_fat_g=?,
       monounsaturated_fat_g=?, polyunsaturated_fat_g=?, water_g=?, data_quality=?,
-      ingredients_text=?, ingredients_original_text=?, allergens_text=?, traces_text=?, additives_text=?
+      ingredients_text=?, ingredients_original_text=?, ingredients_language=?, allergens_text=?, traces_text=?, additives_text=?
       WHERE id=?`,
     food.name.trim(), food.calories, food.protein_g, food.carbs_g, food.fat_g, food.fiber_g ?? null,
     food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
