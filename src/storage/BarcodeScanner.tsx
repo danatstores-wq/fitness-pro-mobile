@@ -256,22 +256,28 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         }
       }
 
-      // Fallback for browsers without a usable native BarcodeDetector API.
+      // Safari/iOS often does not expose BarcodeDetector. Request the camera
+      // stream directly instead of relying on device enumeration, which can be
+      // incomplete before permission is granted on mobile Safari.
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("This browser does not provide camera access. Use the latest Safari or Samsung Internet over HTTPS.");
+      }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      webStream.current = stream;
+      video.srcObject = stream;
+      video.muted = true;
+      video.playsInline = true;
+      await video.play();
+
       const reader = new BrowserMultiFormatReader();
-      const controlsPromise = reader.decodeFromVideoDevice(undefined, video, (result) => {
+      const controls = await reader.decodeFromStream(stream, video, (result) => {
         if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
       });
+      webControls.current = controls;
       setWebStarted(true);
-      controlsPromise.then((controls) => {
-        webControls.current = controls;
-        void video.play().catch(() => {});
-      }).catch((error) => {
-        setWebStarted(false);
-        const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-        setWebError(detail.includes("permission") || detail.includes("notallowed")
-          ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات المتصفح." : fr ? "Autorisez la caméra dans les réglages du navigateur." : "Allow camera access in your browser settings.")
-          : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
-      });
     } catch (error) {
       stopWebCamera();
       setWebStarted(false);
