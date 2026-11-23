@@ -56,39 +56,42 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (lookupExpired) return;
       if (cached) { onFound(cached); onClose(); return; }
 
-      // API v3 is the current Open Food Facts product-read API.
-      const controller = new AbortController();
-      const lookupTimeout = setTimeout(() => controller.abort(), 15000);
-      let response: Response;
-      try {
-        response = await fetch(
-          "https://world.openfoodfacts.org/api/v3/product/" + encodeURIComponent(barcode) + ".json",
-          {
-            ...(Platform.OS === "web" ? {} : {
-              headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" }
-            }),
-            signal: controller.signal
-          }
-        );
-      } catch (requestError) {
-        if (requestError instanceof Error && requestError.name === "AbortError") {
-          throw new Error(ar ? "استغرق البحث وقتاً طويلاً. تحقق من اتصال الإنترنت ثم حاول مجدداً." : fr ? "La recherche prend trop de temps. Vérifiez votre connexion Internet et réessayez." : "The product database is taking too long to respond. Check your internet connection and try again.");
+      // Try both official Open Food Facts read APIs. Some browser/CDN paths
+      // return an unexpected v3 response; v2 is a compatibility fallback.
+      const requestOptions: RequestInit = {
+        ...(Platform.OS === "web" ? {} : {
+          headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" }
+        })
+      };
+      const readProduct = async (url: string) => {
+        const controller = new AbortController();
+        const lookupTimeout = setTimeout(() => controller.abort(), 10000);
+        try {
+          const response = await fetch(url, { ...requestOptions, signal: controller.signal });
+          if (!response.ok) return { httpOk: false, httpStatus: response.status, payload: null as any };
+          return { httpOk: true, httpStatus: response.status, payload: await response.json() };
+        } finally {
+          clearTimeout(lookupTimeout);
         }
-        throw requestError;
-      } finally {
-        clearTimeout(lookupTimeout);
-      }
-      // An HTTP error (including 404) is not proof that the barcode is absent:
-      // it can indicate an unavailable API route or server-side response.
-      if (!response.ok) {
-        throw new Error(ar ? "تعذّر الحصول على رد صالح من قاعدة بيانات المنتجات. لم يتم التأكد من أن المنتج غير موجود." : fr ? "La base de produits n’a pas fourni de réponse valide. L’absence du produit n’est pas confirmée." : "The product database did not return a valid response. This does not confirm that the product is missing.");
-      }
-      const payload = await response.json();
-      if (lookupExpired) return;
-      const p = payload?.product;
-      const statusOk = payload?.status === 1 || payload?.status === "success" || payload?.status === "success_with_errors";
-      if (!p || !statusOk) throw new Error(ar ? "لم يتم العثور على المنتج بهذا الرمز في Open Food Facts. قد لا يكون المنتج مدرجاً في هذه القاعدة." : fr ? "Aucun produit correspondant à ce code n’est répertorié dans Open Food Facts. Il peut être absent de cette base." : "No product matching this barcode is listed in Open Food Facts. The product may be missing from this database.");
+      };
+      const encodedBarcode = encodeURIComponent(barcode);
+      let result = await readProduct("https://world.openfoodfacts.org/api/v3/product/" + encodedBarcode + ".json");
+      let p = result.payload?.product;
+      let confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
 
+      if (!p && !confirmedMissing) {
+        result = await readProduct("https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json");
+        p = result.payload?.product;
+        confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
+      }
+
+      if (!p && confirmedMissing) {
+        throw new Error(ar ? "لم يتم العثور على هذا الرمز في Open Food Facts. هذا لا يعني أن المنتج غير موجود في قواعد بيانات أخرى." : fr ? "Ce code n’est pas répertorié dans Open Food Facts. Cela ne signifie pas que le produit est absent d’autres bases." : "This barcode is not listed in Open Food Facts. That does not mean the product does not exist in other databases.");
+      }
+      if (!p) {
+        throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها. لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse. La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database or read its response. The product's presence has not been verified.");
+      }
+      if (lookupExpired) return;
       const n: NutrimentMap = p.nutriments ?? {};
       const val = (...keys: string[]): number | null => {
         for (const key of keys) {
