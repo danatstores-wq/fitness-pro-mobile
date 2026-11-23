@@ -86,22 +86,38 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         }
       };
       const encodedBarcode = encodeURIComponent(barcode);
-      const base = "https://world.openfoodfacts.org/api/";
-      let result = await readProduct(base + "v3.6/product/" + encodedBarcode + ".json?product_type=all");
-      let p = result.payload?.product;
-      let confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
-
-      if (!p && !confirmedMissing) {
-        result = await readProduct(base + "v2/product/" + encodedBarcode + ".json?product_type=all");
+      // Query each official product database directly. The universal
+      // product_type=all endpoint may redirect across domains, and browser
+      // CORS handling of cross-domain redirects can fail even when the item
+      // exists. Direct hosts avoid relying on that redirect.
+      const productHosts = [
+        "https://world.openfoodfacts.org",
+        "https://world.openbeautyfacts.org",
+        "https://world.openpetfoodfacts.org",
+        "https://world.openproductsfacts.org"
+      ];
+      const productUrls = [
+        ...productHosts.map(host => host + "/api/v3.6/product/" + encodedBarcode + ".json"),
+        "https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json"
+      ];
+      let p: any = null;
+      let result: any = { httpOk: false, httpStatus: 0, payload: null, error: "No product database responded" };
+      let everyDatabaseConfirmedMissing = true;
+      for (const url of productUrls) {
+        result = await readProduct(url);
         p = result.payload?.product;
-        confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
+        if (p) break;
+        const explicitMissing = result.httpStatus === 404 ||
+          (result.httpOk && result.payload?.status === 0 && !p);
+        if (!explicitMissing) everyDatabaseConfirmedMissing = false;
+        if (lookupExpired) return;
       }
 
+      const confirmedMissing = !p && everyDatabaseConfirmedMissing;
       if (!p && confirmedMissing) {
-        throw new Error(ar ? "لم يتم العثور على هذا الرمز في Open Food Facts. هذا لا يعني أن المنتج غير موجود في قواعد بيانات أخرى." : fr ? "Ce code n’est pas répertorié dans Open Food Facts. Cela ne signifie pas que le produit est absent d’autres bases." : "This barcode is not listed in Open Food Facts. That does not mean the product does not exist in other databases.");
+        throw new Error(ar ? "لم يتم العثور على هذا الرمز في قواعد بيانات المنتجات المدعومة. يمكنك إدخال المنتج يدوياً." : fr ? "Ce code n’a pas été trouvé dans les bases de produits prises en charge. Vous pouvez saisir le produit manuellement." : "This barcode was not found in the supported product databases. You can enter the product manually.");
       }
-      if (!p) {
-        const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
+      if (!p) {\n        const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
         throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها" + detail + ". لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse" + detail + ". La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database" + detail + ". The product's presence has not been verified.");
       }
       if (lookupExpired) return;
