@@ -180,7 +180,12 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
               const translated = translatedById.get(String(node.id));
               const sourceName = String(node.text || "").trim();
               if (!translated || !sourceName || translated === sourceName) continue;
-              candidate = candidate.split(sourceName).join(translated);
+              const additiveCodes = sourceName.match(/E[0-9]{3,4}(?:[ ]*[(][ivx]+[)])?/gi) || [];
+              const translatedWithCodes = additiveCodes.reduce(
+                (value: string, code: string) => value.toUpperCase().includes(code.toUpperCase()) ? value : value + " " + code,
+                translated
+              );
+              candidate = candidate.split(sourceName).join(translatedWithCodes);
             }
             if (candidate !== originalIngredientText) taxonomyTranslatedText = candidate;
           }
