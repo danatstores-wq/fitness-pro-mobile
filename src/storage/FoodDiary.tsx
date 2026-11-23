@@ -99,7 +99,7 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
   const [modal, setModal] = useState(false);
   const [selected, setSelected] = useState<FoodRecord | null>(null);
   const ingredientReviewLabel = language === "ar" ? "مكونات تستحق الانتباه" : language === "fr" ? "Ingrédients à examiner" : "Ingredients to review";
-  const ingredientTextLower = (selected?.ingredients_text || "").toLowerCase();
+  const ingredientTextLower = [selected?.ingredients_text, selected?.ingredients_original_text].filter(Boolean).join(" ").toLowerCase();
   const ingredientReview = ingredientReviewTerms.filter(rule => rule.terms.some(term => ingredientTextLower.includes(term))).map(rule => rule.label);
   const [quantity, setQuantity] = useState("100");
   const [name, setName] = useState("");
@@ -249,7 +249,7 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
       {selected.source === "open_food_facts" && <View style={s.productChecks}>
         <Text style={s.sectionTitle}>{t.ingredientsTitle}</Text>
         {!!ingredientReview.length && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {ingredientReviewLabel}</Text><Text style={s.warningText}>{ingredientReview.join(" · ")}</Text></View>}
-        {selected.ingredients_text ? <View style={s.productInfoRow}><Text style={s.productInfoLabel}>{t.ingredients}</Text><Text style={s.productInfoText}>{selected.ingredients_text}</Text></View> : <Text style={s.productInfoText}>{t.noProductDetails}</Text>}
+        {selected.ingredients_text ? <View style={s.productInfoRow}><Text style={s.productInfoLabel}>{t.ingredients}</Text><Text style={s.productInfoText}>{selected.ingredients_text}</Text>{!!selected.ingredients_original_text && <><Text style={s.productInfoLabel}>{language === "ar" ? "النص الأصلي على العبوة" : language === "fr" ? "Texte original de l’emballage" : "Original package text"}</Text><Text style={s.productInfoText}>{selected.ingredients_original_text}</Text></>}</View> : <Text style={s.productInfoText}>{t.noProductDetails}</Text>}
         {!!selected.allergens_text && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {t.allergens}</Text><Text style={s.warningText}>{selected.allergens_text}</Text></View>}
         {!!selected.traces_text && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {t.traces}</Text><Text style={s.warningText}>{selected.traces_text}</Text></View>}
         {!!selected.additives_text && <View style={s.reviewRow}><Text style={s.reviewLabel}>{t.additives}</Text><Text style={s.productInfoText}>{selected.additives_text}</Text></View>}
