@@ -56,31 +56,43 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (lookupExpired) return;
       if (cached) { onFound(cached); onClose(); return; }
 
-      // Try both official Open Food Facts read APIs. Some browser/CDN paths
-      // return an unexpected v3 response; v2 is a compatibility fallback.
+      // Use the currently recommended OFF v3.6 endpoint first, then the
+      // stable v2 compatibility endpoint. Browser requests deliberately use
+      // only CORS-safelisted headers; native requests identify this app.
       const requestOptions: RequestInit = {
+        cache: "no-store",
         ...(Platform.OS === "web" ? {} : {
           headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" }
         })
       };
       const readProduct = async (url: string) => {
         const controller = new AbortController();
-        const lookupTimeout = setTimeout(() => controller.abort(), 10000);
+        const lookupTimeout = setTimeout(() => controller.abort(), 6500);
         try {
           const response = await fetch(url, { ...requestOptions, signal: controller.signal });
-          if (!response.ok) return { httpOk: false, httpStatus: response.status, payload: null as any };
-          return { httpOk: true, httpStatus: response.status, payload: await response.json() };
+          let payload: any = null;
+          if (response.ok) {
+            try { payload = await response.json(); }
+            catch { return { httpOk: false, httpStatus: response.status, payload: null, error: "Invalid JSON response" }; }
+          }
+          return { httpOk: response.ok, httpStatus: response.status, payload, error: response.ok ? "" : "HTTP " + response.status };
+        } catch (error) {
+          return {
+            httpOk: false, httpStatus: 0, payload: null,
+            error: error instanceof Error ? error.name === "AbortError" ? "Request timed out" : error.message : String(error)
+          };
         } finally {
           clearTimeout(lookupTimeout);
         }
       };
       const encodedBarcode = encodeURIComponent(barcode);
-      let result = await readProduct("https://world.openfoodfacts.org/api/v3/product/" + encodedBarcode + ".json");
+      const base = "https://world.openfoodfacts.org/api/";
+      let result = await readProduct(base + "v3.6/product/" + encodedBarcode + ".json");
       let p = result.payload?.product;
       let confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
 
       if (!p && !confirmedMissing) {
-        result = await readProduct("https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json");
+        result = await readProduct(base + "v2/product/" + encodedBarcode + ".json");
         p = result.payload?.product;
         confirmedMissing = result.httpOk && result.payload?.status === 0 && !p;
       }
@@ -89,7 +101,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         throw new Error(ar ? "لم يتم العثور على هذا الرمز في Open Food Facts. هذا لا يعني أن المنتج غير موجود في قواعد بيانات أخرى." : fr ? "Ce code n’est pas répertorié dans Open Food Facts. Cela ne signifie pas que le produit est absent d’autres bases." : "This barcode is not listed in Open Food Facts. That does not mean the product does not exist in other databases.");
       }
       if (!p) {
-        throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها. لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse. La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database or read its response. The product's presence has not been verified.");
+        const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
+        throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها" + detail + ". لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse" + detail + ". La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database" + detail + ". The product's presence has not been verified.");
       }
       if (lookupExpired) return;
       const n: NutrimentMap = p.nutriments ?? {};
