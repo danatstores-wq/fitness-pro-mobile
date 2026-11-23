@@ -23,6 +23,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
   const scanned = useRef(false);
   const videoRef = useRef<any>(null);
   const webControls = useRef<{ stop: () => void } | undefined>(undefined);
+  const webStream = useRef<MediaStream | null>(null);
+  const scanFrame = useRef<number | null>(null);
   const [webStarted, setWebStarted] = useState(false);
   const [nativeStarted, setNativeStarted] = useState(false);
   const scannerLookup = useRef<(result: BarcodeScanningResult) => Promise<void>>(async () => {});
@@ -170,19 +172,72 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
 
   scannerLookup.current = lookup;
 
-  // Start Safari camera only from a direct tap; iOS may block automatic camera startup.
-  const startWebCamera = () => {
+  // Start the browser camera only after a direct tap. Prefer the browser's
+  // native BarcodeDetector on mobile Chromium; use ZXing where it is unavailable.
+  const stopWebCamera = () => {
+    if (scanFrame.current !== null) {
+      cancelAnimationFrame(scanFrame.current);
+      scanFrame.current = null;
+    }
+    webControls.current?.stop();
+    webControls.current = undefined;
+    webStream.current?.getTracks().forEach(track => track.stop());
+    webStream.current = null;
+    const video = videoRef.current as HTMLVideoElement | null;
+    if (video) video.srcObject = null;
+  };
+
+  const startWebCamera = async () => {
     setWebError("");
-    const video = videoRef.current;
+    const video = videoRef.current as HTMLVideoElement | null;
     if (!video) {
       setWebError(ar ? "تعذر تجهيز الكاميرا. أغلق الماسح وافتحه مجدداً." : fr ? "La caméra n’est pas prête. Fermez puis rouvrez le scanner." : "Camera is not ready. Close and reopen the scanner.");
       return;
     }
     try {
+      const BarcodeDetectorCtor = (globalThis as any).BarcodeDetector;
+      if (BarcodeDetectorCtor && navigator.mediaDevices?.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        webStream.current = stream;
+        video.srcObject = stream;
+        video.muted = true;
+        video.playsInline = true;
+        await video.play();
+        const detector = new BarcodeDetectorCtor({
+          formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "code_93", "itf", "codabar", "qr_code", "pdf417", "aztec", "data_matrix"]
+        });
+        setWebStarted(true);
+        let detecting = false;
+        const detectFrame = async () => {
+          if (!webStream.current || scanned.current) return;
+          if (!detecting && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+            detecting = true;
+            try {
+              const results = await detector.detect(video);
+              const value = results?.[0]?.rawValue;
+              if (value) {
+                if (scanFrame.current !== null) cancelAnimationFrame(scanFrame.current);
+                scanFrame.current = null;
+                void scannerLookup.current({ data: value } as BarcodeScanningResult);
+                return;
+              }
+            } catch {
+              // Continue trying subsequent frames; transient camera frames may fail.
+            } finally {
+              detecting = false;
+            }
+          }
+          scanFrame.current = requestAnimationFrame(() => { void detectFrame(); });
+        };
+        scanFrame.current = requestAnimationFrame(() => { void detectFrame(); });
+        return;
+      }
+
+      // Fallback for browsers without the native BarcodeDetector API.
       const reader = new BrowserMultiFormatReader();
-      // Use ZXing's established video-device scanning loop. The constraints-based
-      // variant was starting the camera preview but not reliably delivering
-      // decoded frames on the mobile browser.
       const controlsPromise = reader.decodeFromVideoDevice(undefined, video, (result) => {
         if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
       });
@@ -194,28 +249,28 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         setWebStarted(false);
         const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
         setWebError(detail.includes("permission") || detail.includes("notallowed")
-          ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات Safari." : fr ? "Autorisez la caméra dans les réglages de Safari." : "Allow camera access in Safari settings.")
+          ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات المتصفح." : fr ? "Autorisez la caméra dans les réglages du navigateur." : "Allow camera access in your browser settings.")
           : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
       });
     } catch (error) {
+      stopWebCamera();
       setWebStarted(false);
       const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
       setWebError(detail.includes("permission") || detail.includes("notallowed")
-        ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات Safari." : fr ? "Autorisez la caméra dans les réglages de Safari." : "Allow camera access in Safari settings.")
+        ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات المتصفح." : fr ? "Autorisez la caméra dans les réglages du navigateur." : "Allow camera access in your browser settings.")
         : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
     }
   };
 
   useEffect(() => {
     if (!visible) {
-      webControls.current?.stop();
-      webControls.current = undefined;
+      stopWebCamera();
       setWebStarted(false);
       setNativeStarted(false);
     }
   }, [visible]);
 
-  useEffect(() => () => { webControls.current?.stop(); }, []);
+  useEffect(() => () => { stopWebCamera(); }, []);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
