@@ -39,8 +39,20 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     if (!barcode) return;
     scanned.current = true;
     setLoading(true);
+    // Bound the complete lookup, including SQLite initialization/query and JSON parsing.
+    let lookupExpired = false;
+    const overallTimeout = setTimeout(() => {
+      lookupExpired = true;
+      setLoading(false);
+      scanned.current = false;
+      Alert.alert(
+        title,
+        ar ? "استغرق البحث وقتاً طويلاً. حاول مجدداً." : fr ? "La recherche prend trop de temps. Réessayez." : "The product lookup timed out. Check your connection and try again."
+      );
+    }, 14000);
     try {
       const cached = await getFoodBySourceId("open_food_facts", barcode);
+      if (lookupExpired) return;
       if (cached) { onFound(cached); onClose(); return; }
 
       // API v3 is the current Open Food Facts product-read API.
@@ -66,6 +78,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (response.status === 404) throw new Error(ar ? "لم يتم العثور على هذا المنتج في قاعدة البيانات." : fr ? "Ce produit est introuvable dans la base de données." : "This barcode was not found in the product database.");
       if (!response.ok) throw new Error(ar ? "تعذّر الاتصال بقاعدة بيانات المنتجات. حاول مجدداً." : fr ? "Impossible de contacter la base de produits. Réessayez." : "Could not contact the product database. Please try again.");
       const payload = await response.json();
+      if (lookupExpired) return;
       const p = payload?.product;
       const statusOk = payload?.status === 1 || payload?.status === "success" || payload?.status === "success_with_errors";
       if (!p || !statusOk) throw new Error(ar ? "لم يتم العثور على هذا المنتج. يمكنك تجربة منتج آخر." : fr ? "Produit introuvable. Essayez un autre produit." : "Product not found. Please try another product.");
@@ -144,10 +157,13 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       onFound(food);
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      Alert.alert(title, message);
-      scanned.current = false;
+      if (!lookupExpired) {
+        const message = error instanceof Error ? error.message : String(error);
+        Alert.alert(title, message);
+        scanned.current = false;
+      }
     } finally {
+      clearTimeout(overallTimeout);
       setLoading(false);
     }
   };
