@@ -275,16 +275,27 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error("This browser does not provide camera access. Use the latest Safari or Samsung Internet over HTTPS.");
       }
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-      });
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+      } catch (cameraError) {
+        // Older iOS Safari can reject advanced camera constraints. Retry with
+        // the simplest supported request, then let Safari choose its camera.
+        stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      }
       webStream.current = stream;
-      video.srcObject = stream;
+
+      // Let ZXing attach the stream and start inline playback itself. Assigning
+      // srcObject and calling play() before decodeFromStream caused Safari to
+      // attach/play the same stream twice, which can leave its decoder stalled.
+      video.setAttribute("autoplay", "true");
+      video.setAttribute("muted", "true");
+      video.setAttribute("playsinline", "true");
       video.muted = true;
       video.playsInline = true;
-      await video.play();
-
       const reader = new BrowserMultiFormatReader();
       const controls = await reader.decodeFromStream(stream, video, (result) => {
         if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
@@ -295,9 +306,10 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       stopWebCamera();
       setWebStarted(false);
       const detail = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+      const reason = error instanceof Error ? error.message : String(error);
       setWebError(detail.includes("permission") || detail.includes("notallowed")
-        ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات المتصفح." : fr ? "Autorisez la caméra dans les réglages du navigateur." : "Allow camera access in your browser settings.")
-        : (ar ? "تعذر تشغيل الكاميرا. تأكد من استخدام HTTPS والسماح بالكاميرا." : fr ? "Impossible de démarrer la caméra. Vérifiez HTTPS et l’autorisation." : "Could not start camera. Check HTTPS and camera permission."));
+        ? (ar ? "يرجى السماح باستخدام الكاميرا في إعدادات المتصفح. " : fr ? "Autorisez la caméra dans les réglages du navigateur. " : "Allow camera access in your browser settings. ") + reason
+        : (ar ? "تعذر تشغيل الكاميرا. " : fr ? "Impossible de démarrer la caméra. " : "Could not start camera. ") + reason);
     }
   };
 
