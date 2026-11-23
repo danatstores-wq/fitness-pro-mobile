@@ -39,12 +39,6 @@ jobs:
       - name: Install JavaScript dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Render app icon from SVG source
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y librsvg2-bin
-          rsvg-convert -w 1024 -h 1024 assets/images/fitness-pro-icon.svg -o assets/images/fitness-pro-icon.png
-
       - name: Generate Android project from the existing Expo config
         run: npx expo prebuild --platform android --no-install
 
