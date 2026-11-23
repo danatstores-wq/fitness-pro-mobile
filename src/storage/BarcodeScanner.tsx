@@ -97,7 +97,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         "https://world.openproductsfacts.org"
       ];
       const productUrls = [
-        ...productHosts.map(host => host + "/api/v3.6/product/" + encodedBarcode + ".json"),
+        ...productHosts.map(host => host + "/api/v3/product/" + encodedBarcode + ".json"),
         "https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json"
       ];
       let p: any = null;
@@ -305,16 +305,41 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       }
       webStream.current = stream;
 
-      // Let ZXing attach the stream and start inline playback itself. Assigning
-      // srcObject and calling play() before decodeFromStream caused Safari to
-      // attach/play the same stream twice, which can leave its decoder stalled.
+      // Safari is more reliable when the camera stream is attached to the
+      // already-mounted video element once, explicitly played inline, and ZXing
+      // decodes that element. Do not pass the same stream to decodeFromStream:
+      // that method attaches srcObject again and can stall iOS Safari.
       video.setAttribute("autoplay", "true");
       video.setAttribute("muted", "true");
       video.setAttribute("playsinline", "true");
+      video.setAttribute("webkit-playsinline", "true");
+      video.autoplay = true;
       video.muted = true;
       video.playsInline = true;
+      video.srcObject = stream;
+      await video.play();
+
+      if (video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+        await new Promise<void>((resolve, reject) => {
+          const timer = window.setTimeout(() => {
+            cleanup();
+            reject(new Error("Camera opened but Safari did not deliver video frames. Keep Safari in the foreground and allow camera access."));
+          }, 8000);
+          const cleanup = () => {
+            window.clearTimeout(timer);
+            video.removeEventListener("loadeddata", onReady);
+            video.removeEventListener("error", onError);
+          };
+          const onReady = () => { cleanup(); resolve(); };
+          const onError = () => { cleanup(); reject(new Error("Safari could not load the camera video.")); };
+          video.addEventListener("loadeddata", onReady, { once: true });
+          video.addEventListener("error", onError, { once: true });
+          if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) { cleanup(); resolve(); }
+        });
+      }
+
       const reader = new BrowserMultiFormatReader();
-      const controls = await reader.decodeFromStream(stream, video, (result) => {
+      const controls = await reader.decodeFromVideoElement(video, (result) => {
         if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
       });
       webControls.current = controls;
