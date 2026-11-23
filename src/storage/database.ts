@@ -500,7 +500,7 @@ export async function refreshScannedFood(food: Parameters<typeof createFood>[0])
     food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
     food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
     food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.dataQuality ?? "third_party",
-    food.ingredients_text ?? null, food.allergens_text ?? null, food.traces_text ?? null,
+    food.ingredients_text ?? null, food.ingredients_original_text ?? null, food.ingredients_language ?? null, food.allergens_text ?? null, food.traces_text ?? null,
     food.additives_text ?? null, existing.id
   );
   await db.runAsync("DELETE FROM food_nutrients WHERE food_id = ?", existing.id);
@@ -637,7 +637,7 @@ export async function getFoodBySourceId(source: string, sourceId: string): Promi
       COALESCE(total_sugars_g, sugar_g) AS sugar_g, saturated_fat_g,
       trans_fat_g, monounsaturated_fat_g, polyunsaturated_fat_g,
       starch_g, cholesterol_mg, water_g, data_quality, source,
-      ingredients_text, allergens_text, traces_text, additives_text
+      ingredients_text, ingredients_original_text, ingredients_language, allergens_text, traces_text, additives_text
      FROM foods WHERE source = ? AND source_id = ? LIMIT 1`,
     source, sourceId
   )) ?? null;
