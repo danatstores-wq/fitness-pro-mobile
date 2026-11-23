@@ -100,7 +100,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         "https://world.openpetfoodfacts.org",
         "https://world.openproductsfacts.org"
       ];
-      const fields = "product_name,product_name_en,generic_name,brands,nutriments,ingredients,ingredients_text,ingredients_text_en,ingredients_text_ar,ingredients_text_fr,ingredients_text_with_allergens,ingredients_text_with_allergens_en,ingredients_text_with_allergens_fr,allergens,allergens_tags,traces,traces_tags,additives,additives_n,additives_tags,additives_original_tags";
+      const fields = "product_name,product_name_en,generic_name,brands,nutriments,ingredients,ingredients_text,ingredients_text_en,ingredients_text_ar,ingredients_text_fr,ingredients_text_with_allergens,ingredients_text_with_allergens_en,ingredients_text_with_allergens_ar,ingredients_text_with_allergens_fr,allergens,allergens_tags,traces,traces_tags,additives,additives_n,additives_tags,additives_original_tags";
       const productUrls = [
         ...productHosts.map(host => host + "/api/v3/product/" + encodedBarcode + ".json?fields=" + encodeURIComponent(fields)),
         "https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json?fields=" + encodeURIComponent(fields)
