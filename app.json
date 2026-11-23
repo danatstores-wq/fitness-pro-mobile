@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+    "icon": "./assets/images/fitness-pro-icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.danat.fitnesspro",
@@ -14,7 +15,11 @@
       }
     },
     "android": {
-      "package": "com.danat.fitnesspro"
+      "package": "com.danat.fitnesspro",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/fitness-pro-icon.png",
+        "backgroundColor": "#050505"
+      }
     },
     "web": {
       "output": "single"
