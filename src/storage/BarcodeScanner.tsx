@@ -56,8 +56,8 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (lookupExpired) return;
       if (cached) { onFound(cached); onClose(); return; }
 
-      // Use the currently recommended OFF v3.6 endpoint first, then the
-      // stable v2 compatibility endpoint. Browser requests deliberately use
+      // Use the current OFF v3 route (latest schema is v3.6), then the
+      // v2 compatibility endpoint. Browser requests deliberately use
       // only CORS-safelisted headers; native requests identify this app.
       const requestOptions: RequestInit = {
         cache: "no-store",
