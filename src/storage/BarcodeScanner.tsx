@@ -180,15 +180,12 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     }
     try {
       const reader = new BrowserMultiFormatReader();
-      // Explicitly request the rear camera on phones. The generic device helper
-      // can select an unsuitable/default camera in iOS Safari.
-      const controlsPromise = reader.decodeFromConstraints(
-        { audio: false, video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } },
-        video,
-        (result) => {
-          if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
-        }
-      );
+      // Use ZXing's established video-device scanning loop. The constraints-based
+      // variant was starting the camera preview but not reliably delivering
+      // decoded frames on the mobile browser.
+      const controlsPromise = reader.decodeFromVideoDevice(undefined, video, (result) => {
+        if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
+      });
       setWebStarted(true);
       controlsPromise.then((controls) => {
         webControls.current = controls;
