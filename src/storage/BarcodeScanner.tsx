@@ -56,7 +56,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (lookupExpired) return;
       // Older scans may have cached a product before ingredient fields were
       // parsed. Reuse only records that already contain product-check data.
-      if (cached && (cached.ingredients_text || cached.allergens_text || cached.traces_text || cached.additives_text)) {
+      if (cached && cached.ingredients_text) {
         onFound(cached); onClose(); return;
       }
 
