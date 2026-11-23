@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Alert, Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import { BrowserMultiFormatReader } from "@zxing/browser";
-import { createFood, FoodRecord, getFoodBySourceId } from "./database";
+import { refreshScannedFood, FoodRecord, getFoodBySourceId } from "./database";
 
 type Props = { visible: boolean; onClose: () => void; onFound: (food: FoodRecord) => void; language: "en" | "ar" | "fr" };
 const styles = StyleSheet.create({
@@ -54,7 +54,11 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     try {
       const cached = await getFoodBySourceId("open_food_facts", barcode);
       if (lookupExpired) return;
-      if (cached) { onFound(cached); onClose(); return; }
+      // Older scans may have cached a product before ingredient fields were
+      // parsed. Reuse only records that already contain product-check data.
+      if (cached && (cached.ingredients_text || cached.allergens_text || cached.traces_text || cached.additives_text)) {
+        onFound(cached); onClose(); return;
+      }
 
       // Use the current OFF v3 route (latest schema is v3.6), then the
       // v2 compatibility endpoint. Browser requests deliberately use
@@ -96,9 +100,10 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         "https://world.openpetfoodfacts.org",
         "https://world.openproductsfacts.org"
       ];
+      const fields = "product_name,product_name_en,generic_name,brands,nutriments,ingredients,ingredients_text,ingredients_text_en,ingredients_text_ar,ingredients_text_fr,ingredients_text_with_allergens,ingredients_text_with_allergens_en,ingredients_text_with_allergens_fr,allergens,allergens_tags,traces,traces_tags,additives,additives_n,additives_tags,additives_original_tags";
       const productUrls = [
-        ...productHosts.map(host => host + "/api/v3/product/" + encodedBarcode + ".json"),
-        "https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json"
+        ...productHosts.map(host => host + "/api/v3/product/" + encodedBarcode + ".json?fields=" + encodeURIComponent(fields)),
+        "https://world.openfoodfacts.org/api/v2/product/" + encodedBarcode + ".json?fields=" + encodeURIComponent(fields)
       ];
       let p: any = null;
       let result: any = { httpOk: false, httpStatus: 0, payload: null, error: "No product database responded" };
@@ -117,6 +122,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       if (!p && confirmedMissing) {
         throw new Error(ar ? "لم يتم العثور على هذا الرمز في قواعد بيانات المنتجات المدعومة. يمكنك إدخال المنتج يدوياً." : fr ? "Ce code n’a pas été trouvé dans les bases de produits prises en charge. Vous pouvez saisir le produit manuellement." : "This barcode was not found in the supported product databases. You can enter the product manually.");
       }
+      if (!p && cached) { onFound(cached); onClose(); return; }
       if (!p) {
         const detail = result.error ? " (" + result.error + ")" : result.httpStatus ? " (HTTP " + result.httpStatus + ")" : "";
         throw new Error(ar ? "تعذر الاتصال بقاعدة بيانات المنتجات أو قراءة ردها" + detail + ". لم يتم التحقق من وجود المنتج أو غيابه." : fr ? "Impossible de joindre la base de produits ou de lire sa réponse" + detail + ". La présence du produit n’a pas pu être vérifiée." : "Could not reach the product database" + detail + ". The product's presence has not been verified.");
@@ -133,13 +139,19 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
       const productName = String(p.product_name || p.product_name_en || p.generic_name || "Packaged food").trim();
       const cleanTag = (tag: unknown) => String(tag).replace(/^[a-z]{2}:/i, "").replace(/-/g, " ").trim().replace(/\be(\d+)\b/gi, (_match, digits) => "E" + digits).replace(/\b[a-z]/g, letter => letter.toUpperCase());
       const tagsText = (value: unknown) => Array.isArray(value) ? value.map(cleanTag).filter(Boolean).join(", ") : "";
+      const structuredIngredients = Array.isArray(p.ingredients)
+        ? p.ingredients.map((item: any) => String(item.text || item.id || "").replace(/^[a-z]{2}:/i, "").trim()).filter(Boolean).join(", ")
+        : "";
       const ingredientText = String(
         (language === "ar" ? p.ingredients_text_ar : language === "fr" ? p.ingredients_text_fr : p.ingredients_text_en) ||
-        p.ingredients_text || p.ingredients_text_with_allergens || ""
+        p["ingredients_text_with_allergens_" + language] || p.ingredients_text_with_allergens ||
+        p.ingredients_text || structuredIngredients || ""
       ).trim();
       const allergensText = String(p.allergens || "").trim() || tagsText(p.allergens_tags);
       const tracesText = String(p.traces || "").trim() || tagsText(p.traces_tags);
-      const additivesText = String(p.additives || "").trim() || tagsText(p.additives_original_tags?.length ? p.additives_original_tags : p.additives_tags);
+      const additivesText = (typeof p.additives === "string" ? p.additives.trim() : "") ||
+        tagsText(p.additives_original_tags?.length ? p.additives_original_tags : p.additives_tags) ||
+        (typeof p.additives_n === "number" && p.additives_n > 0 ? String(p.additives_n) + " additives (names not supplied)" : "");
       const brand = String(p.brands || "").split(",")[0].trim();
       const displayName = brand ? productName + " · " + brand : productName;
       const sugars = val("sugars_100g");
@@ -174,7 +186,7 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         .filter(item => item.amount !== null);
 
       // Do not invent missing label values: absent nutrients remain NULL in SQLite.
-      const id = await createFood({
+      const id = await refreshScannedFood({
         name: displayName, calories, protein_g: protein, carbs_g: carbs, fat_g: fat, fiber_g: fiber,
         total_sugars_g: sugars, saturated_fat_g: saturated, trans_fat_g: trans,
         monounsaturated_fat_g: mono, polyunsaturated_fat_g: poly, starch_g: starch,
