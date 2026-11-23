@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   android-testing-apk:
-    name: Build Android testing APK
+    name: Build standalone Android testing APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -35,20 +35,21 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           yes | "$SDKMANAGER" --licenses >/dev/null
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
       - name: Install JavaScript dependencies
         run: npm install --no-audit --no-fund
 
       - name: Generate Android project from the existing Expo config
         run: npx expo prebuild --platform android --no-install
 
-      - name: Build debug APK for testing
+      - name: Build standalone release APK for testing
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleRelease --no-daemon
 
-      - name: Upload testing APK
+      - name: Upload standalone testing APK
         uses: actions/upload-artifact@v4
         with:
-          name: fitness-pro-testing-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: fitness-pro-standalone-testing-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
           retention-days: 14
