@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a6"/><stop offset=".35" stop-color="#d99b19"/><stop offset=".7" stop-color="#fff0a6"/><stop offset="1" stop-color="#9b5d00"/></linearGradient><linearGradient id="s" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#9c9c9c"/></linearGradient></defs>
+<rect width="1024" height="1024" rx="190" fill="#050505"/><rect x="24" y="24" width="976" height="976" rx="170" fill="none" stroke="url(#g)" stroke-width="22"/>
+<circle cx="512" cy="330" r="250" fill="none" stroke="#b67a0c" stroke-width="12" opacity=".8"/>
+<g fill="#d9a32b" stroke="#f8d56b" stroke-width="5"><path d="M260 385h44v-90h-44zm-45-24h34v-42h-34zm120 0h-34v-42h34zM720 385h44v-90h-44zm-45-24h34v-42h-34zm120 0h-34v-42h34z"/></g>
+<g fill="#d6a02b"><path d="M390 210c-35 0-62 29-62 67v80c0 44 26 70 62 70h28V210z"/><path d="M634 210c35 0 62 29 62 67v80c0 44-26 70-62 70h-28V210z"/></g>
+<path d="M390 420c-75 25-116 76-134 150l-20 85h188l35-130 35 130h188l-20-85c-18-74-59-125-134-150l-54 55z" fill="#b98218" stroke="#f5d36a" stroke-width="8"/>
+<text x="512" y="745" text-anchor="middle" font-family="Arial,sans-serif" font-size="112" font-weight="900" font-style="italic" fill="url(#s)" stroke="#333" stroke-width="2">FITNESS</text>
+<text x="512" y="850" text-anchor="middle" font-family="Arial,sans-serif" font-size="128" font-weight="900" font-style="italic" fill="url(#g)">PRO</text>
+<text x="512" y="925" text-anchor="middle" font-family="Arial,sans-serif" font-size="54" font-weight="bold" letter-spacing="18" fill="#f1c34b">BY DANAT</text>
+</svg>
