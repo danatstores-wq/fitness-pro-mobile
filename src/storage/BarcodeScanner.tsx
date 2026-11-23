@@ -64,7 +64,9 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
         response = await fetch(
           "https://world.openfoodfacts.org/api/v3/product/" + encodeURIComponent(barcode) + ".json",
           {
-            headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" },
+            ...(Platform.OS === "web" ? {} : {
+              headers: { "User-Agent": "FitnessProByDanat/1.0 (nutrition barcode lookup)" }
+            }),
             signal: controller.signal
           }
         );
