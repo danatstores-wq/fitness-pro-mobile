@@ -480,6 +480,38 @@ export async function createFood(food: {
   return foodId;
 }
 
+export async function refreshScannedFood(food: Parameters<typeof createFood>[0]): Promise<number> {
+  const db = await database();
+  const existing = await db.getFirstAsync<{ id: number }>(
+    "SELECT id FROM foods WHERE source = ? AND source_id = ? LIMIT 1",
+    food.source ?? "open_food_facts", food.sourceId ?? ""
+  );
+  if (!existing) return createFood(food);
+  await db.runAsync(
+    `UPDATE foods SET name=?, calories=?, protein_g=?, carbs_g=?, fat_g=?, fiber_g=?,
+      total_sugars_g=?, starch_g=?, cholesterol_mg=?, saturated_fat_g=?, trans_fat_g=?,
+      monounsaturated_fat_g=?, polyunsaturated_fat_g=?, water_g=?, data_quality=?,
+      ingredients_text=?, allergens_text=?, traces_text=?, additives_text=?
+      WHERE id=?`,
+    food.name.trim(), food.calories, food.protein_g, food.carbs_g, food.fat_g, food.fiber_g ?? null,
+    food.total_sugars_g ?? null, food.starch_g ?? null, food.cholesterol_mg ?? null,
+    food.saturated_fat_g ?? null, food.trans_fat_g ?? null, food.monounsaturated_fat_g ?? null,
+    food.polyunsaturated_fat_g ?? null, food.water_g ?? null, food.dataQuality ?? "third_party",
+    food.ingredients_text ?? null, food.allergens_text ?? null, food.traces_text ?? null,
+    food.additives_text ?? null, existing.id
+  );
+  await db.runAsync("DELETE FROM food_nutrients WHERE food_id = ?", existing.id);
+  for (const nutrient of food.nutrients ?? []) {
+    if (nutrient.amount === null) continue;
+    await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", nutrient.name, nutrient.unit);
+    await db.runAsync(
+      "INSERT OR REPLACE INTO food_nutrients (food_id, nutrient_id, amount) SELECT ?, id, ? FROM nutrients WHERE name = ?",
+      existing.id, nutrient.amount, nutrient.name
+    );
+  }
+  return existing.id;
+}
+
 export async function addFoodToMeal(
   foodId: number,
   mealType: "breakfast" | "lunch" | "dinner" | "snacks",
