@@ -53,6 +53,13 @@ const vitaminMineralCatalog = [
 const findNutrient = (rows: FoodNutrientDetail[], aliases: readonly string[]) =>
   aliases.map(alias => rows.find(row => row.name.toLowerCase() === alias.toLowerCase())).find(Boolean) ?? null;
 
+const ingredientReviewTerms = [
+  { label: "Added sugars / syrups", terms: ["sugar", "glucose syrup", "glucose-fructose", "high-fructose corn syrup", "corn syrup", "fructose", "dextrose", "maltodextrin", "sucrose", "sucre", "sirop de glucose", "شراب الجلوكوز", "شراب الذرة", "سكر"] },
+  { label: "Palm oil", terms: ["palm oil", "palm fat", "huile de palme", "زيت النخيل"] },
+  { label: "Hydrogenated oils", terms: ["partially hydrogenated", "hydrogenated oil", "graisse hydrogénée", "زيوت مهدرجة", "زيت مهدرج"] },
+  { label: "Artificial sweeteners", terms: ["aspartame", "sucralose", "acesulfame", "saccharin", "cyclamate", "سكرالوز", "أسبارتام"] },
+  { label: "Preservatives to review", terms: ["sodium nitrite", "sodium nitrate", "bha", "bht", "tbhq", "nitrite de sodium", "nitrate de sodium", "نتريت الصوديوم", "نترات الصوديوم"] }
+];
 const nutrientSearchOptions = ["Calories","Protein","Carbohydrates","Fat","Fiber","Sugars","Saturated fat","Trans fat","Monounsaturated fat","Polyunsaturated fat","Starch","Cholesterol","Water", ...vitaminMineralCatalog.map(item => item.aliases[0])];
 const mealTypes: MealType[] = ["breakfast","lunch","dinner","snacks"];
 const foodCategories = [
@@ -81,6 +88,9 @@ const sumKnown = (values: (number | null)[]) => values.every(v => v === null) ? 
 
 export default function FoodDiary({ language, targetCalories = 2000, targetProtein, targetCarbs, targetFat, scannedFood = null, onScannedFoodHandled }: { language: Language; targetCalories?: number; targetProtein?: number; targetCarbs?: number; targetFat?: number; scannedFood?: FoodRecord | null; onScannedFoodHandled?: () => void }) {
   const t = words[language], rtl = language === "ar";
+  const ingredientReviewLabel = language === "ar" ? "مكونات تستحق الانتباه" : language === "fr" ? "Ingrédients à examiner" : "Ingredients to review";
+  const ingredientTextLower = (selected?.ingredients_text || "").toLowerCase();
+  const ingredientReview = ingredientReviewTerms.filter(rule => rule.terms.some(term => ingredientTextLower.includes(term))).map(rule => rule.label);
   const nutrientLabel = (name: string) => nutrientNames[language][name] ?? localizeNutrientName(name, language);
   const [foods, setFoods] = useState<MealFoodRecord[]>([]);
   const [plannerMode, setPlannerMode] = useState(false);
@@ -238,6 +248,7 @@ export default function FoodDiary({ language, targetCalories = 2000, targetProte
       ].map(([label, amount, unit]) => <View key={String(label)} style={s.nutrientRow}><Text style={s.muted}>{nutrientLabel(String(label))}</Text><Text style={s.nutrientValue}>{amount === null ? "—" : amount} {unit}</Text></View>)}
       {selected.source === "open_food_facts" && <View style={s.productChecks}>
         <Text style={s.sectionTitle}>{t.ingredientsTitle}</Text>
+        {!!ingredientReview.length && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {ingredientReviewLabel}</Text><Text style={s.warningText}>{ingredientReview.join(" · ")}</Text></View>}
         {selected.ingredients_text ? <View style={s.productInfoRow}><Text style={s.productInfoLabel}>{t.ingredients}</Text><Text style={s.productInfoText}>{selected.ingredients_text}</Text></View> : <Text style={s.productInfoText}>{t.noProductDetails}</Text>}
         {!!selected.allergens_text && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {t.allergens}</Text><Text style={s.warningText}>{selected.allergens_text}</Text></View>}
         {!!selected.traces_text && <View style={s.warningRow}><Text style={s.warningLabel}>⚠ {t.traces}</Text><Text style={s.warningText}>{selected.traces_text}</Text></View>}
