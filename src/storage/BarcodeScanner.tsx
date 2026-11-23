@@ -197,46 +197,57 @@ export default function BarcodeScanner({ visible, onClose, onFound, language }: 
     try {
       const BarcodeDetectorCtor = (globalThis as any).BarcodeDetector;
       if (BarcodeDetectorCtor && navigator.mediaDevices?.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-        });
-        webStream.current = stream;
-        video.srcObject = stream;
-        video.muted = true;
-        video.playsInline = true;
-        await video.play();
-        const detector = new BarcodeDetectorCtor({
-          formats: ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "code_93", "itf", "codabar", "qr_code", "pdf417", "aztec", "data_matrix"]
-        });
-        setWebStarted(true);
-        let detecting = false;
-        const detectFrame = async () => {
-          if (!webStream.current || scanned.current) return;
-          if (!detecting && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-            detecting = true;
-            try {
-              const results = await detector.detect(video);
-              const value = results?.[0]?.rawValue;
-              if (value) {
-                if (scanFrame.current !== null) cancelAnimationFrame(scanFrame.current);
-                scanFrame.current = null;
-                void scannerLookup.current({ data: value } as BarcodeScanningResult);
-                return;
+        try {
+          const supported = typeof BarcodeDetectorCtor.getSupportedFormats === "function"
+            ? await BarcodeDetectorCtor.getSupportedFormats()
+            : [];
+          const requested = ["ean_13", "ean_8", "upc_a", "upc_e", "code_128", "code_39", "code_93", "itf", "codabar", "qr_code", "pdf417", "aztec", "data_matrix"];
+          const formats = supported.length ? requested.filter(format => supported.includes(format)) : requested;
+          if (!formats.length) throw new Error("No supported barcode formats");
+          const detector = new BarcodeDetectorCtor({ formats });
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+          });
+          webStream.current = stream;
+          video.srcObject = stream;
+          video.muted = true;
+          video.playsInline = true;
+          await video.play();
+          setWebStarted(true);
+          let detecting = false;
+          const detectFrame = async () => {
+            if (!webStream.current || scanned.current) return;
+            if (!detecting && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+              detecting = true;
+              try {
+                const results = await detector.detect(video);
+                const value = results?.[0]?.rawValue;
+                if (value) {
+                  if (scanFrame.current !== null) cancelAnimationFrame(scanFrame.current);
+                  scanFrame.current = null;
+                  void scannerLookup.current({ data: value } as BarcodeScanningResult);
+                  return;
+                }
+              } catch {
+                // Ignore transient frame errors and continue scanning.
+              } finally {
+                detecting = false;
               }
-            } catch {
-              // Continue trying subsequent frames; transient camera frames may fail.
-            } finally {
-              detecting = false;
             }
-          }
+            scanFrame.current = requestAnimationFrame(() => { void detectFrame(); });
+          };
           scanFrame.current = requestAnimationFrame(() => { void detectFrame(); });
-        };
-        scanFrame.current = requestAnimationFrame(() => { void detectFrame(); });
-        return;
+          return;
+        } catch {
+          // Some mobile browsers expose BarcodeDetector but reject its formats
+          // or cannot decode video frames. Fall back to ZXing instead of failing.
+          stopWebCamera();
+          setWebStarted(false);
+        }
       }
 
-      // Fallback for browsers without the native BarcodeDetector API.
+      // Fallback for browsers without a usable native BarcodeDetector API.
       const reader = new BrowserMultiFormatReader();
       const controlsPromise = reader.decodeFromVideoDevice(undefined, video, (result) => {
         if (result) void scannerLookup.current({ data: result.getText() } as BarcodeScanningResult);
