@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index,follow">
+<title>Privacy Policy – Fitness Pro by Danat</title>
+<style>
+:root{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f3f6fa;color:#18324d;font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.wrap{max-width:900px;margin:32px auto;padding:0 18px}.sheet{background:#fff;border:1px solid #dbe5ef;border-radius:18px;padding:clamp(22px,5vw,48px);box-shadow:0 10px 30px #102a4c0d}h1,h2{color:#102a4c;line-height:1.25}h1{font-size:clamp(28px,5vw,38px);margin:0 0 8px}h2{font-size:21px;margin:30px 0 8px}.eyebrow{color:#a77900;font-weight:800;letter-spacing:.12em;font-size:12px}.date{color:#61758b;font-size:14px}a{color:#1267b2;overflow-wrap:anywhere}.notice{background:#f5f8fc;border-left:4px solid #e4b51b;padding:14px 16px;border-radius:8px}.footer{margin-top:28px;padding-top:18px;border-top:1px solid #e3eaf1;color:#61758b;font-size:13px}
+</style>
+</head>
+<body><main class="wrap"><article class="sheet">
+<div class="eyebrow">DANAT / WELLNESS</div>
+<h1>Privacy Policy</h1>
+<p><strong>FITNESS PRO BY DANAT</strong></p>
+<p class="date">Last updated: 24 November 2026</p>
+<p>This Privacy Policy explains how Fitness Pro by Danat handles information when you use the mobile application. It describes the current app implementation. Features and third-party services may change, in which case this policy will be updated.</p>
+<div class="notice"><strong>Important:</strong> Your profile, food diary, body measurements, goals, meal plans, reminders, activity logs and profile photo are stored locally on your device in the current app. They are not uploaded to the Fitness Pro Firebase project by the current app implementation.</div>
+
+<h2>1. Who operates the app</h2>
+<p>Fitness Pro by Danat is operated by <strong>DANAT</strong>. For privacy questions or requests, contact <a href="mailto:IT@danat-gulf.com">IT@danat-gulf.com</a>.</p>
+
+<h2>2. Information handled by the app</h2>
+<ul>
+<li><strong>Account information:</strong> when you register, Firebase Authentication processes your email address, account identifier and authentication information. Your password is handled by Firebase Authentication; the app does not store your password in its local fitness database.</li>
+<li><strong>Terms acceptance record:</strong> the app stores your Firebase user identifier, accepted terms version, effective date, acceptance method and acceptance timestamp in Firebase Firestore.</li>
+<li><strong>Local fitness information:</strong> profile details, age, sex, height, weight, body measurements, goals, food diary entries, custom meals, meal plans, reminders, activity logs, challenge check-ins, language settings and profile photo are stored in the app's local SQLite database on your device.</li>
+<li><strong>Step count:</strong> if you choose to connect a supported health platform and grant permission, the app reads today's step count from Apple HealthKit or Android Health Connect. The current implementation requests read access to step count only; it does not write health data to those services or upload step counts to the Fitness Pro Firebase project.</li>
+<li><strong>Camera and barcode:</strong> the camera is used to scan a product barcode. The barcode number is sent to supported Open Food Facts family product databases to look up product and nutrition information. The scanner does not upload a photo or video to DANAT as part of the barcode lookup.</li>
+<li><strong>Advertising and consent:</strong> the app uses Google AdMob for banner and interstitial advertising and Google's consent-management tools. Depending on your region, consent choices and device settings, Google may process device identifiers, advertising identifiers, IP address, app and device information, diagnostics, consent status and ad interaction information under Google's policies.</li>
+<li><strong>Reminders:</strong> meal and water reminders are scheduled as local device notifications. The app does not use remote push notifications in its current configuration.</li>
+</ul>
+
+<h2>3. How information is used and shared</h2>
+<p>Information is used to provide the app's features, authenticate accounts, record terms acceptance, retrieve barcode product information, display advertisements where permitted, schedule reminders and troubleshoot technical problems.</p>
+<ul>
+<li><strong>Google Firebase:</strong> processes account authentication and stores the terms-acceptance record described above.</li>
+<li><strong>Google AdMob:</strong> provides banner and interstitial ads and processes information as described in Google's privacy documentation and your consent/device settings.</li>
+<li><strong>Open Food Facts family services:</strong> receive the scanned barcode to return product information. These services operate independently and their own privacy terms apply.</li>
+<li><strong>Apple HealthKit / Android Health Connect:</strong> provide step-count data only after you grant permission. The app reads the daily step count and does not write data back.</li>
+</ul>
+<p>The current app implementation does not send your locally stored food diary, profile, measurements, goals, meal plans, reminders or activity logs to DANAT's Firebase project. DANAT does not receive those local records through the app's current Firebase configuration.</p>
+
+<h2>4. Storage and security</h2>
+<p>Local fitness records are kept in the app's private storage on your device. Protect your device with an operating-system passcode or other device security controls. Account authentication and the terms-acceptance record are handled by Firebase over encrypted network connections. Third-party providers are responsible for the security and processing of information they receive under their own terms and policies. No method of storage or transmission can be guaranteed to be completely secure.</p>
+
+<h2>5. Retention and deletion</h2>
+<p>Local fitness information remains on your device until you clear the app's storage or uninstall the app, subject to your device and operating-system backup settings. Deleting your Firebase account does not remotely erase local records stored only on your device.</p>
+<p>You may request deletion of your Fitness Pro account and server-side account records by following the instructions at <a href="./account-deletion.html">Account Deletion</a> or emailing <a href="mailto:IT@danat-gulf.com?subject=Fitness%20Pro%20account%20deletion">IT@danat-gulf.com</a>. We may ask you to verify that you control the account. Some limited information may be retained where required by law or for legitimate security purposes; any such retention will be explained when applicable.</p>
+
+<h2>6. Your choices and permissions</h2>
+<p>You can choose whether to register, grant camera access, connect HealthKit or Health Connect, enable local notifications, and provide advertising consent where required. You can change device permissions in your device settings. You can use the app without opening this Privacy Policy; the policy is available for you to read at any time.</p>
+
+<h2>7. Children's privacy</h2>
+<p>The app is intended for adults. It is not designed to knowingly collect personal information from children. If you believe a child has created an account, contact us at <a href="mailto:IT@danat-gulf.com">IT@danat-gulf.com</a>.</p>
+
+<h2>8. Third-party services and links</h2>
+<p>Google, Apple, Health Connect and Open Food Facts family services are independent providers. Their handling of information is governed by their own privacy policies and terms. We encourage you to review those policies when using the relevant integrations.</p>
+
+<h2>9. Changes to this policy</h2>
+<p>We may update this Privacy Policy when the app, its services or applicable requirements change. The latest version and its effective date will be published at this page.</p>
+
+<h2>10. Contact</h2>
+<p>For privacy questions or data requests, contact:<br><strong>DANAT – FITNESS PRO BY DANAT</strong><br>Email: <a href="mailto:IT@danat-gulf.com">IT@danat-gulf.com</a></p>
+<div class="footer">This policy describes the current app implementation and is not a substitute for legal advice. It should be reviewed against the final production configuration and the developer identity shown in the app store listing.</div>
+</article></main></body></html>
