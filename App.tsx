@@ -3,10 +3,11 @@ import * as ImagePicker from "expo-image-picker";
 import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, clearWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
 import type { ImportedFoodRecord, FoodRecord } from "./src/storage/database";
 import {
-  SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
+  StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
   Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import BarcodeScanner from "./src/storage/BarcodeScanner";
@@ -79,7 +80,7 @@ function calculate(profile: Profile) {
   return { bmr: Math.round(bmr), tdee: Math.round(tdee), calories, protein, carbs, fats, bmi, min, max, ideal, bodyFat, leanMass, waistHeight, waistHip, waterMl, metabolicAge, muscleMass: Number(profile.muscleMass) > 0 ? Number(profile.muscleMass) : null };
 }
 
-export default function App() {
+function FitnessProApp() {
   const [language, setLanguage] = useState<Language>("en");
   const [showWelcome, setShowWelcome] = useState(true);
   const [authUser, setAuthUser] = useState<{ uid: string; email: string | null; emailVerified: boolean } | null>(null);
@@ -1076,9 +1077,17 @@ const styles = StyleSheet.create({
   contactDescription: { color: "#102A43", fontSize: 15, lineHeight: 25, fontWeight: "700", textAlign: "center", marginBottom: 24, textShadowColor: "rgba(255,255,255,0.98)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
   contactEmailBox: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: "#F2F8FF", borderRadius: 14, borderWidth: 1, borderColor: "#D8E5F1", paddingHorizontal: 12, paddingVertical: 16 },
   contactEmail: { color: "#064B80", fontSize: 17, fontWeight: "900", textShadowColor: "rgba(255,255,255,0.98)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
-  tabBar: { flexDirection: "row", backgroundColor: "#102A4C", borderTopWidth: 1, borderTopColor: "#24466D", paddingTop: 12, paddingBottom: Platform.OS === "ios" ? 23 : 13 },
+  tabBar: { flexDirection: "row", backgroundColor: "#102A4C", borderTopWidth: 1, borderTopColor: "#24466D", paddingTop: 12, paddingBottom: 8 },
   tabItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 5 },
   tabIcon: { color: "#6F89A8", fontSize: 21, fontWeight: "500" },
   tabLabel: { color: "#D5E2F1", fontSize: 9, fontWeight: "700", letterSpacing: 0.2 },
   activeTab: { color: GREEN }
 });
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <FitnessProApp />
+    </SafeAreaProvider>
+  );
+}
