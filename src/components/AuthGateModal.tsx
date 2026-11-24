@@ -33,7 +33,7 @@ const copy = {
     config: "Account sign-in is not configured in this build. Add the Firebase API key to the GitHub Actions secret and rebuild.",
     mismatch: "Passwords do not match.", short: "Password must be at least 6 characters.",
     invalid: "Enter a valid email address and password.", resetDone: "Password reset email sent if this address is registered.",
-    policyIntro: "I have read and agree to the", policyLink: "Terms of Use and Health Disclaimer", policyRequired: "You must open and accept the Terms of Use and Health Disclaimer to create an account.",
+    policyIntro: "I agree to the", policyLink: "Terms of Use and Health Disclaimer", policyRequired: "You must agree to the Terms of Use and Health Disclaimer to create an account.",
     working: "Please wait…"
   },
   fr: {
@@ -46,7 +46,7 @@ const copy = {
     config: "La connexion n’est pas configurée dans cette version. Ajoutez la clé API Firebase aux secrets GitHub Actions et reconstruisez l’application.",
     mismatch: "Les mots de passe ne correspondent pas.", short: "Le mot de passe doit contenir au moins 6 caractères.",
     invalid: "Saisissez une adresse e-mail et un mot de passe valides.", resetDone: "E-mail de réinitialisation envoyé si cette adresse est enregistrée.",
-    policyIntro: "J’ai lu et j’accepte les", policyLink: "Conditions d’utilisation et avertissement santé", policyRequired: "Vous devez consulter et accepter les conditions d’utilisation et l’avertissement santé pour créer un compte.",
+    policyIntro: "J’accepte les", policyLink: "Conditions d’utilisation et avertissement santé", policyRequired: "Vous devez accepter les conditions d’utilisation et l’avertissement santé pour créer un compte.",
     working: "Veuillez patienter…"
   },
   ar: {
@@ -59,7 +59,7 @@ const copy = {
     config: "تسجيل الدخول غير مهيأ في هذا الإصدار. أضف مفتاح Firebase إلى أسرار GitHub Actions ثم أعد البناء.",
     mismatch: "كلمتا المرور غير متطابقتين.", short: "يجب ألا تقل كلمة المرور عن 6 أحرف.",
     invalid: "أدخل بريداً إلكترونياً وكلمة مرور صالحين.", resetDone: "تم إرسال رسالة إعادة التعيين إذا كان البريد مسجلاً.",
-    policyIntro: "لقد قرأت وأوافق على", policyLink: "شروط الاستخدام وإخلاء مسؤولية الصحة", policyRequired: "يجب فتح شروط الاستخدام وإخلاء مسؤولية الصحة والموافقة عليهما لإنشاء حساب.",
+    policyIntro: "أوافق على", policyLink: "شروط الاستخدام وإخلاء مسؤولية الصحة", policyRequired: "يجب الموافقة على شروط الاستخدام وإخلاء مسؤولية الصحة لإنشاء حساب.",
     working: "يرجى الانتظار…"
   }
 };
