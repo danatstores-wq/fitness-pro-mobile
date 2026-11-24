@@ -583,6 +583,7 @@ export default function App() {
         busy={authBusy}
         configured={firebaseAuthConfigured}
         verificationRequired={Boolean(authUser && !authUser.emailVerified)}
+        verificationEmail={authUser?.email ?? null}
         onClose={() => setAuthPromptVisible(false)}
         onRegister={async (email, password, remember, policyAccepted) => {
           setAuthBusy(true);
