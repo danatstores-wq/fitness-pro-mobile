@@ -43,7 +43,7 @@ jobs:
             exit 1
           fi
       - name: Install JavaScript dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Generate Android project from the existing Expo config
         run: npx expo prebuild --platform android --no-install
