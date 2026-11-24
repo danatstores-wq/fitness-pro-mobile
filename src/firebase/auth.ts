@@ -3,11 +3,16 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import * as FirebaseAuth from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
+  doc,
+  getFirestore,
   getAuth,
   inMemoryPersistence,
   initializeAuth,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  serverTimestamp,
+  setDoc,
   setPersistence,
   signInWithEmailAndPassword,
   signOut,
@@ -27,6 +32,8 @@ const firebaseConfig = {
 };
 
 export const firebaseAuthConfigured = Boolean(firebaseConfig.apiKey);
+export const CURRENT_POLICY_VERSION = "1.0";
+const CURRENT_POLICY_EFFECTIVE_DATE = "2026-11-22";
 let authInstance: ReturnType<typeof initializeAuth> | null = null;
 
 function getFirebaseAuth() {
@@ -51,10 +58,32 @@ export function observeAuthState(callback: (user: User | null) => void) {
   return onAuthStateChanged(getFirebaseAuth(), callback);
 }
 
-export async function registerWithEmail(email: string, password: string, remember: boolean) {
+export async function registerWithEmail(email: string, password: string, remember: boolean, policyAccepted: boolean) {
+  if (!policyAccepted) {
+    throw new Error("You must accept the current Terms of Use and Health Disclaimer before creating an account.");
+  }
   const auth = getFirebaseAuth();
   await setPersistence(auth, remember ? getReactNativePersistence(AsyncStorage) : inMemoryPersistence);
-  return createUserWithEmailAndPassword(auth, email.trim(), password);
+  const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+  try {
+    const db = getFirestore(getApp());
+    await setDoc(doc(db, "policyAcceptances", credential.user.uid, "versions", CURRENT_POLICY_VERSION), {
+      uid: credential.user.uid,
+      policyVersion: CURRENT_POLICY_VERSION,
+      policyEffectiveDate: CURRENT_POLICY_EFFECTIVE_DATE,
+      accepted: true,
+      acceptanceMethod: "registration_checkbox",
+      acceptedAt: serverTimestamp(),
+    });
+    return credential;
+  } catch (error) {
+    try {
+      await deleteUser(credential.user);
+    } catch {
+      await signOut(auth).catch(() => undefined);
+    }
+    throw new Error("We could not securely save your policy acceptance. Your registration was not completed. Please try again.");
+  }
 }
 
 export async function signInWithEmail(email: string, password: string, remember: boolean) {
