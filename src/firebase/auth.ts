@@ -3,6 +3,7 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import {
   createUserWithEmailAndPassword,
   getReactNativePersistence,
+  getAuth,
   inMemoryPersistence,
   initializeAuth,
   onAuthStateChanged,
@@ -39,7 +40,6 @@ function getFirebaseAuth() {
   } catch (error) {
     // Fast refresh can initialize Firebase more than once in development.
     if ((error as { code?: string }).code !== "auth/already-initialized") throw error;
-    const { getAuth } = require("firebase/auth");
     authInstance = getAuth(app);
   }
   return authInstance;
