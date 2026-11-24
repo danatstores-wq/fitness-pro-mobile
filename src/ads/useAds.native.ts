@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { AppState } from "react-native";
+import { AppState, Platform } from "react-native";
 import mobileAds, { AdsConsent, AdEventType, InterstitialAd, TestIds } from "react-native-google-mobile-ads";
 
-const interstitialId = __DEV__ ? TestIds.INTERSTITIAL : "ca-app-pub-1622329571366129/1541562708";
+const interstitialId = __DEV__ ? TestIds.INTERSTITIAL : Platform.OS === "ios"\n  ? "ca-app-pub-1622329571366129/9865814828"\n  : "ca-app-pub-1622329571366129/1541562708";
 
 export default function useAds() {
   const [ready, setReady] = useState(false);
