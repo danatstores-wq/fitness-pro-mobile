@@ -19,7 +19,11 @@ let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 export async function clearPersonalData() {
   const db = await database();
-  await db.execAsync("PRAGMA secure_delete = ON;");
+  try {
+    await db.execAsync("PRAGMA secure_delete = ON;");
+  } catch (error) {
+    console.warn("SQLite secure-delete mode is unavailable on this platform", error);
+  }
   await db.withTransactionAsync(async () => {
     // Remove user-created records before their parent rows. Keep the bundled
     // food catalogue, translations and seed-import markers intact.
@@ -38,9 +42,18 @@ export async function clearPersonalData() {
     await db.runAsync("DELETE FROM user_profile");
     await db.runAsync("DELETE FROM foods WHERE source IN ('user_entry', 'open_food_facts')");
   });
-  // Checkpoint and compact the database so deleted personal rows are not
-  // left in free pages or the WAL file longer than necessary.
-  await db.execAsync("PRAGMA wal_checkpoint(TRUNCATE); VACUUM;");
+  // Best-effort checkpoint/compaction; logical deletion above must still
+  // succeed on platforms whose SQLite backend does not support these pragmas.
+  try {
+    await db.execAsync("PRAGMA wal_checkpoint(TRUNCATE);");
+  } catch (error) {
+    console.warn("Could not truncate the SQLite write-ahead log after deletion", error);
+  }
+  try {
+    await db.execAsync("VACUUM;");
+  } catch (error) {
+    console.warn("Could not compact the SQLite database after deletion", error);
+  }
 }
 
 async function database() {
