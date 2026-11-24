@@ -106,7 +106,7 @@ function FitnessProApp() {
   const [authBusy, setAuthBusy] = useState(false);
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
-  const { ready: adsReady, showInterstitial } = useAds();
+  const { ready: adsReady, showInterstitial, privacyOptionsRequired, showPrivacyOptions } = useAds();
   const networkState = useNetInfo();
   const isInternetReachable = networkState.isInternetReachable;
   const hasInternet = isInternetReachable === true;
@@ -584,6 +584,10 @@ function FitnessProApp() {
                 <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion"}</Text>
                 <Text style={styles.muted}>{language === "ar" ? "يمكنك طلب حذف الحساب حتى بعد حذف التطبيق." : language === "fr" ? "Vous pouvez demander la suppression même après avoir désinstallé l’application." : "You can request account deletion even after uninstalling the app."}</Text>
               </Pressable>
+              {privacyOptionsRequired ? <Pressable accessibilityRole="button" onPress={() => void showPrivacyOptions().catch(error => Alert.alert(language === "ar" ? "تعذر فتح إعدادات الخصوصية" : language === "fr" ? "Impossible d’ouvrir les options de confidentialité" : "Could not open privacy options", String(error)))} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1" }}>
+                <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "خيارات خصوصية الإعلانات" : language === "fr" ? "Options de confidentialité des annonces" : "Advertising privacy options"}</Text>
+                <Text style={styles.muted}>{language === "ar" ? "راجع أو غيّر اختياراتك المتعلقة بالإعلانات." : language === "fr" ? "Consultez ou modifiez vos choix concernant les annonces." : "Review or change your advertising privacy choices."}</Text>
+              </Pressable> : null}
             </Card>
             <Card>
               <Text style={styles.fieldLabel}>{language === "ar" ? "اللغة" : language === "fr" ? "Langue" : "Language"}</Text>
