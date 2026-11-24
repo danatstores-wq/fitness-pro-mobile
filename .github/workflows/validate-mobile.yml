@@ -2,7 +2,7 @@ name: Validate FITNESS PRO mobile
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/firebase-auth-gate]
   pull_request:
     branches: [main]
 
