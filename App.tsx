@@ -16,7 +16,7 @@ import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 import AuthGateModal from "./src/components/AuthGateModal";
-import { firebaseAuthConfigured, observeAuthState, registerWithEmail, sendPasswordReset, signInWithEmail, signOutUser } from "./src/firebase/auth";
+import { firebaseAuthConfigured, observeAuthState, registerWithEmail, sendPasswordReset, signInWithEmail, signOutUser, resendVerificationEmail, checkEmailVerification } from "./src/firebase/auth";
 import AdBanner from "./src/ads/AdBanner";
 import useAds from "./src/ads/useAds";
 
@@ -91,7 +91,7 @@ export default function App() {
   useEffect(() => {
     try {
       const unsubscribe = observeAuthState(user => {
-        setAuthUser(user ? { uid: user.uid, email: user.email } : null);
+        setAuthUser(user?.emailVerified ? { uid: user.uid, email: user.email } : null);
         setAuthReady(true);
       });
       return unsubscribe;
@@ -578,13 +578,25 @@ export default function App() {
         onClose={() => setAuthPromptVisible(false)}
         onRegister={async (email, password, remember, policyAccepted) => {
           setAuthBusy(true);
-          try { await registerWithEmail(email, password, remember, policyAccepted); setAuthPromptVisible(false); }
+          try { await registerWithEmail(email, password, remember, policyAccepted); }
           finally { setAuthBusy(false); }
         }}
         onLogin={async (email, password, remember) => {
           setAuthBusy(true);
           try { await signInWithEmail(email, password, remember); setAuthPromptVisible(false); }
           finally { setAuthBusy(false); }
+        }}
+        onResendVerification={async email => {
+          setAuthBusy(true);
+          try { await resendVerificationEmail(email); }
+          finally { setAuthBusy(false); }
+        }}
+        onCheckVerification={async () => {
+          const verifiedUser = await checkEmailVerification();
+          if (!verifiedUser) return false;
+          setAuthUser(verifiedUser);
+          setAuthPromptVisible(false);
+          return true;
         }}
         onReset={async email => {
           setAuthBusy(true);
