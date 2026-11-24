@@ -17,6 +17,28 @@ export type StoredProfile = {
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
+export async function clearPersonalData() {
+  const db = await database();
+  await db.withTransactionAsync(async () => {
+    // Remove user-created records before their parent rows. Keep the bundled
+    // food catalogue, translations and seed-import markers intact.
+    await db.runAsync("DELETE FROM meal_items");
+    await db.runAsync("DELETE FROM custom_meal_items");
+    await db.runAsync("DELETE FROM meals");
+    await db.runAsync("DELETE FROM custom_meals");
+    await db.runAsync("DELETE FROM measurements");
+    await db.runAsync("DELETE FROM body_measurements");
+    await db.runAsync("DELETE FROM daily_goals");
+    await db.runAsync("DELETE FROM saved_meal_planner_plan");
+    await db.runAsync("DELETE FROM reminder_settings");
+    await db.runAsync("DELETE FROM activity_logs");
+    await db.runAsync("DELETE FROM challenge_checkins");
+    await db.runAsync("DELETE FROM local_profile_photo");
+    await db.runAsync("DELETE FROM user_profile");
+    await db.runAsync("DELETE FROM foods WHERE source IN ('user_entry', 'open_food_facts')");
+  });
+}
+
 async function database() {
   if (!databasePromise) {
     databasePromise = (async () => {
