@@ -22,7 +22,7 @@ const firebaseConfig = {
   projectId: "fitness-pro-by-danat",
   storageBucket: "fitness-pro-by-danat.firebasestorage.app",
   messagingSenderId: "1008395325573",
-  appId: "1:100839532557:web:c82f734a94a35a8cee59ec",
+  appId: "1:1008395325573:web:c82f734a94a35a8cee59ec",
   measurementId: "G-HK214WF79C",
 };
 
