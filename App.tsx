@@ -4,7 +4,7 @@ import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, c
 import type { ImportedFoodRecord, FoodRecord } from "./src/storage/database";
 import {
   SafeAreaView, StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
-  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert
+  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Modal
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Language, translations, rtl } from "./src/i18n";
@@ -86,6 +86,8 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
+  const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
+  const [signOutBusy, setSignOutBusy] = useState(false);
   const { ready: adsReady, showInterstitial } = useAds();
 
   useEffect(() => {
@@ -332,17 +334,27 @@ export default function App() {
     if (nextTab === "diary") openFeatureWithAd(() => setTab(nextTab));
     else setTab(nextTab);
   });
-  const confirmSignOut = () => Alert.alert(
-    language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out",
-    language === "ar" ? "هل تريد تسجيل الخروج من حسابك؟" : language === "fr" ? "Voulez-vous vous déconnecter ?" : "Are you sure you want to sign out?",
-    [
-      { text: language === "ar" ? "إلغاء" : language === "fr" ? "Annuler" : "Cancel", style: "cancel" },
-      { text: language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out", style: "destructive", onPress: async () => {
-        try { await signOutUser(); setTab("dashboard"); }
-        catch (error) { console.warn("Could not sign out", error); Alert.alert("Sign out failed", "Please try again."); }
-      }}
-    ]
-  );
+  const confirmSignOut = () => setSignOutConfirmVisible(true);
+  const performSignOut = async () => {
+    if (signOutBusy) return;
+    setSignOutBusy(true);
+    try {
+      await signOutUser();
+      setSignOutConfirmVisible(false);
+      setAuthPromptVisible(false);
+      setTab("dashboard");
+    } catch (error) {
+      console.warn("Could not sign out", error);
+      if (Platform.OS === "web") {
+        setSignOutConfirmVisible(false);
+        window.alert(language === "ar" ? "تعذر تسجيل الخروج. حاول مرة أخرى." : language === "fr" ? "Échec de la déconnexion. Réessayez." : "Sign out failed. Please try again.");
+      } else {
+        Alert.alert("Sign out failed", "Please try again.");
+      }
+    } finally {
+      setSignOutBusy(false);
+    }
+  };
 
   if (showWelcome) {
     return (
@@ -577,6 +589,20 @@ export default function App() {
         language={language}
       />
 
+      <Modal visible={signOutConfirmVisible} transparent animationType="fade" onRequestClose={() => setSignOutConfirmVisible(false)}>
+        <View style={{ flex: 1, backgroundColor: "rgba(2,12,27,0.78)", justifyContent: "center", padding: 24 }}>
+          <View style={{ width: "100%", maxWidth: 380, alignSelf: "center", backgroundColor: "#FFFFFF", borderRadius: 20, borderWidth: 1, borderColor: "#FFC928", padding: 22, gap: 16 }}>
+            <Text style={{ color: "#102A46", fontSize: 21, fontWeight: "900", textAlign: isRTL ? "right" : "left" }}>{language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out"}</Text>
+            <Text style={{ color: "#52677E", fontSize: 15, lineHeight: 22, textAlign: isRTL ? "right" : "left" }}>{language === "ar" ? "هل تريد تسجيل الخروج من حسابك؟" : language === "fr" ? "Voulez-vous vous déconnecter de votre compte ?" : "Are you sure you want to sign out of your account?"}</Text>
+            <Pressable disabled={signOutBusy} onPress={() => void performSignOut()} style={{ minHeight: 48, borderRadius: 12, backgroundColor: "#FFC928", alignItems: "center", justifyContent: "center", opacity: signOutBusy ? 0.6 : 1 }}>
+              <Text style={{ color: "#09213D", fontWeight: "900" }}>{signOutBusy ? (language === "ar" ? "جارٍ تسجيل الخروج..." : language === "fr" ? "Déconnexion..." : "Signing out...") : (language === "ar" ? "تأكيد تسجيل الخروج" : language === "fr" ? "Confirmer" : "Confirm sign out")}</Text>
+            </Pressable>
+            <Pressable disabled={signOutBusy} onPress={() => setSignOutConfirmVisible(false)} style={{ minHeight: 44, alignItems: "center", justifyContent: "center" }}>
+              <Text style={{ color: "#52677E", fontWeight: "800" }}>{language === "ar" ? "إلغاء" : language === "fr" ? "Annuler" : "Cancel"}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
       <AuthGateModal
         visible={authPromptVisible}
         language={language}
