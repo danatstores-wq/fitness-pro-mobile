@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Commit reproducible npm lockfile
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           if [ ! -f package-lock.json ]; then
             echo "::error::npm did not generate package-lock.json"
