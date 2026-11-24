@@ -30,6 +30,7 @@
         {
           "healthSharePermission": "Fitness Pro reads your daily step count to display your activity progress.",
           "healthUpdatePermission": false,
+          "healthConnectPrivacyPolicyUrl": "https://danatstores-wq.github.io/fitness-pro-mobile/privacy-policy.html",
           "healthConnectPermissions": [
             "READ_STEPS"
           ]
