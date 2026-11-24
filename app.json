@@ -26,6 +26,7 @@
     },
     "plugins": [
       "expo-system-ui",
+      "./plugins/with-workmanager-version",
       [
         "@appeeky/expo-healthkit",
         {
