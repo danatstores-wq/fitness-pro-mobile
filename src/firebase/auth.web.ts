@@ -14,7 +14,7 @@ import {
   signOut,
   type User,
 } from "firebase/auth";
-import { doc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
+import { doc, getDoc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY ?? "",
@@ -81,7 +81,36 @@ export async function registerWithEmail(email: string, password: string, remembe
 export async function signInWithEmail(email: string, password: string, remember: boolean) {
   const auth = getFirebaseAuth();
   await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
-  return signInWithEmailAndPassword(auth, email.trim(), password);
+  const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+  try {
+    const pending = await getDoc(doc(getFirestore(getApp()), "accountDeletionRequests", credential.user.uid));
+    if (pending.exists()) {
+      await signOut(auth);
+      throw new Error("This account has a pending deletion request. Contact IT@danat-gulf.com for confirmation.");
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("pending deletion request")) throw error;
+    await signOut(auth).catch(() => undefined);
+    throw new Error("We could not verify your account status. Please try signing in again.");
+  }
+  return credential;
+}
+
+export async function requestAccountDeletion() {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) throw new Error("auth/no-current-user");
+  const db = getFirestore(getApp());
+  const requestRef = doc(db, "accountDeletionRequests", user.uid);
+  const existing = await getDoc(requestRef);
+  if (existing.exists()) return { alreadyPending: true };
+  await setDoc(requestRef, {
+    uid: user.uid,
+    email: user.email ?? "",
+    requestedAt: serverTimestamp(),
+    status: "pending",
+  });
+  return { alreadyPending: false };
 }
 
 export async function resendVerificationEmail() {
