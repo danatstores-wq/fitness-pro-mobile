@@ -108,7 +108,7 @@ We do not promise that every feature stores data in the same place. Some informa
 
 You may request access, correction or deletion of personal information where applicable law gives you that right. Requests may be subject to identity verification, legal retention requirements, security requirements and technical limitations. Contact IT@danat-gulf.com.
 
-A separate, more detailed privacy notice should be published before launch and should identify the actual data controllers, processors, retention periods, transfer arrangements, user rights and contact details applicable to the final production configuration. This Agreement does not replace any privacy notice or consent required by law.
+A separate Privacy Policy is published at https://danatstores-wq.github.io/fitness-pro-mobile/privacy-policy.html. It describes the current app implementation and should be reviewed and updated whenever the production configuration, data processors, retention periods, transfer arrangements or user rights change. This Agreement does not replace any additional privacy notice or consent required by law.
 
 ## 10. Advertising and third-party services
 
