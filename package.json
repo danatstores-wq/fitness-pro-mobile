@@ -29,7 +29,8 @@
     "@appeeky/expo-healthkit": "0.4.1",
     "firebase": "^12.0.0",
     "@react-native-async-storage/async-storage": "2.2.0",
-    "react-native-google-mobile-ads": "^17.4.0"
+    "react-native-google-mobile-ads": "^17.4.0",
+    "react-native-safe-area-context": "~5.11.1"
   },
   "devDependencies": {
     "@types/react": "~19.3.0",
