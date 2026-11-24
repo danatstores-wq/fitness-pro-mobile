@@ -14,6 +14,7 @@ const MAX_RETRY_DELAY_MS = 5 * 60 * 1000;
 
 export default function useAds() {
   const [ready, setReady] = useState(false);
+  const [privacyOptionsRequired, setPrivacyOptionsRequired] = useState(false);
   const adRef = useRef<InterstitialAd | null>(null);
   const loadedRef = useRef(false);
   const pendingActionRef = useRef<(() => void) | null>(null);
@@ -61,7 +62,9 @@ export default function useAds() {
         // Read the latest UMP status. This also lets us use a valid consent
         // decision cached from the previous session if the refresh is offline.
         const consentInfo = await AdsConsent.getConsentInfo();
-        if (!active || !consentInfo.canRequestAds || initializationStarted) return;
+        if (!active) return;
+        setPrivacyOptionsRequired(consentInfo.privacyOptionsRequirementStatus === "REQUIRED");
+        if (!consentInfo.canRequestAds || initializationStarted) return;
         initializationStarted = true;
 
         await mobileAds().initialize();
@@ -142,6 +145,12 @@ export default function useAds() {
     };
   }, []);
 
+  const showPrivacyOptions = async () => {
+    const consentInfo = await AdsConsent.showPrivacyOptionsForm();
+    setPrivacyOptionsRequired(consentInfo.privacyOptionsRequirementStatus === "REQUIRED");
+    return consentInfo;
+  };
+
   const showInterstitial = (afterClose: () => void): boolean => {
     const ad = adRef.current;
     const cooldownRemaining = INTERSTITIAL_COOLDOWN_MS - (Date.now() - lastInterstitialShownAtRef.current);
@@ -164,5 +173,5 @@ export default function useAds() {
     return true;
   };
 
-  return { ready, showInterstitial };
+  return { ready, showInterstitial, privacyOptionsRequired, showPrivacyOptions };
 }
