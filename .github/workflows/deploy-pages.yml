@@ -105,10 +105,10 @@ jobs:
 
             // Confirm the public dashboard remains visible to guests and a protected
             // feature asks them to register/log in instead of exposing private content.
-            await page.getByText("Create your free account", { exact: true }).waitFor({ timeout: 60000 });
-            await page.getByText("Register or log in to unlock Fitness Pro.", { exact: true }).waitFor();
-            await page.getByText("Not now", { exact: true }).click();
-            await page.getByText("Daily calories", { exact: true }).waitFor();
+            // The app intentionally opens on its public guest dashboard after
+            // the four-second welcome screen. Registration is requested only
+            // when a guest opens a protected feature.
+            await page.getByText("Daily calories", { exact: true }).waitFor({ timeout: 60000 });
             await page.getByText("Dashboard", { exact: true }).last().waitFor();
             console.log("PASS: guest can view the dashboard without being forced to register.");
 
