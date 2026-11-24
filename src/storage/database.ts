@@ -19,6 +19,7 @@ let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 export async function clearPersonalData() {
   const db = await database();
+  await db.execAsync("PRAGMA secure_delete = ON;");
   await db.withTransactionAsync(async () => {
     // Remove user-created records before their parent rows. Keep the bundled
     // food catalogue, translations and seed-import markers intact.
@@ -37,6 +38,9 @@ export async function clearPersonalData() {
     await db.runAsync("DELETE FROM user_profile");
     await db.runAsync("DELETE FROM foods WHERE source IN ('user_entry', 'open_food_facts')");
   });
+  // Checkpoint and compact the database so deleted personal rows are not
+  // left in free pages or the WAL file longer than necessary.
+  await db.execAsync("PRAGMA wal_checkpoint(TRUNCATE); VACUUM;");
 }
 
 async function database() {
