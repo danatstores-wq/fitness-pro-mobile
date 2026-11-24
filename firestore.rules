@@ -33,6 +33,22 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // A signed-in user may submit one account-deletion request for their own account.
+    // The support team processes the request using Firebase Admin privileges.
+    match /accountDeletionRequests/{userId} {
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(["uid", "email", "requestedAt", "status"])
+        && request.resource.data.keys().hasOnly(["uid", "email", "requestedAt", "status"])
+        && request.resource.data.uid == userId
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.requestedAt == request.time
+        && request.resource.data.status == "pending";
+
+      allow get: if request.auth != null && request.auth.uid == userId;
+      allow list, update, delete: if false;
+    }
+
     // Deny all other cloud data access until a collection has explicit rules.
     match /{document=**} {
       allow read, write: if false;
