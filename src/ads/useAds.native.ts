@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AppState, Platform } from "react-native";
+import { Platform } from "react-native";
 import mobileAds, { AdsConsent, AdEventType, InterstitialAd, TestIds } from "react-native-google-mobile-ads";
 
 const useTestAds = __DEV__ || process.env.EXPO_PUBLIC_ADMOB_USE_TEST_ADS === "true";
@@ -11,13 +11,13 @@ export default function useAds() {
   const [ready, setReady] = useState(false);
   const adRef = useRef<InterstitialAd | null>(null);
   const loadedRef = useRef(false);
+  const pendingActionRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     let active = true;
     let removeLoaded = () => {};
     let removeClosed = () => {};
     let removeError = () => {};
-    let timer: ReturnType<typeof setInterval> | undefined;
 
     const start = async () => {
       try {
@@ -32,21 +32,19 @@ export default function useAds() {
         removeLoaded = ad.addAdEventListener(AdEventType.LOADED, () => { loadedRef.current = true; });
         removeClosed = ad.addAdEventListener(AdEventType.CLOSED, () => {
           loadedRef.current = false;
+          const action = pendingActionRef.current;
+          pendingActionRef.current = null;
+          action?.();
           ad.load();
         });
         removeError = ad.addAdEventListener(AdEventType.ERROR, error => {
           loadedRef.current = false;
           console.warn("AdMob interstitial failed", error);
+          const action = pendingActionRef.current;
+          pendingActionRef.current = null;
+          action?.();
         });
         ad.load();
-
-        // Show no more than one full-screen advert every three minutes of foreground app use.
-        timer = setInterval(() => {
-          if (AppState.currentState === "active" && loadedRef.current && adRef.current) {
-            loadedRef.current = false;
-            adRef.current.show().catch(error => console.warn("Could not show interstitial", error));
-          }
-        }, 180000);
       } catch (error) {
         console.warn("AdMob consent or initialization failed; ads remain disabled", error);
       }
@@ -55,13 +53,28 @@ export default function useAds() {
     void start();
     return () => {
       active = false;
-      if (timer) clearInterval(timer);
       removeLoaded();
       removeClosed();
       removeError();
       adRef.current = null;
+      pendingActionRef.current = null;
     };
   }, []);
 
-  return ready;
+  const showInterstitial = (afterClose: () => void): boolean => {
+    const ad = adRef.current;
+    if (!ready || !loadedRef.current || !ad) return false;
+    loadedRef.current = false;
+    pendingActionRef.current = afterClose;
+    ad.show().catch(error => {
+      console.warn("Could not show AdMob interstitial", error);
+      loadedRef.current = false;
+      const action = pendingActionRef.current;
+      pendingActionRef.current = null;
+      action?.();
+    });
+    return true;
+  };
+
+  return { ready, showInterstitial };
 }
