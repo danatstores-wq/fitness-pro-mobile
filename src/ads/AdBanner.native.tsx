@@ -2,7 +2,7 @@ import React from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
 
-const unitId = __DEV__ ? TestIds.BANNER : Platform.OS === "ios"
+const useTestAds = __DEV__ || process.env.EXPO_PUBLIC_ADMOB_USE_TEST_ADS === "true";\nconst unitId = useTestAds ? TestIds.BANNER : Platform.OS === "ios"
   ? "ca-app-pub-1622329571366129/6602317693"
   : "ca-app-pub-1622329571366129/1653243347";
 
