@@ -25,6 +25,7 @@
       "baseUrl": "/fitness-pro-mobile"
     },
     "plugins": [
+      "expo-system-ui",
       [
         "@appeeky/expo-healthkit",
         {
