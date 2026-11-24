@@ -33,7 +33,7 @@ jobs:
             exit 1
           fi
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Build Expo web app
         run: npx expo export --platform web
       - name: Upload Pages artifact
