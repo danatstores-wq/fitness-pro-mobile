@@ -16,7 +16,7 @@ import { readTodaySteps, requestAndReadTodaySteps } from "./src/storage/healthSt
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
-import { addActivityLog, clearPersonalData, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
+import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 import AuthGateModal from "./src/components/AuthGateModal";
 import { firebaseAuthConfigured, observeAuthState, registerWithEmail, resendVerificationEmail, refreshEmailVerification, sendPasswordReset, signInWithEmail, signOutUser, requestAccountDeletion } from "./src/firebase/auth";
 import AdBanner from "./src/ads/AdBanner";
