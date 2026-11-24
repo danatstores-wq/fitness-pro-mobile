@@ -16,4 +16,4 @@ Use Firebase Console / an authorized administrator account for these steps. Do n
 
 ## Local device data
 
-The app's profile, food diary, measurements, goals, meal plans, reminders, activity logs, and profile photo are stored only in local app storage. They are not uploaded to this Firebase project. The remote account-deletion process cannot erase data on the user's phone. The deletion page explains that users can clear the app's storage or uninstall the app to remove those local records.
+When a request is submitted from inside the app, the app attempts to erase the local profile, food diary, measurements, goals, meal plans, reminders, activity logs, profile photo, user-entered foods and scanned-food cache, and cancel scheduled mobile reminders. The bundled food catalogue and translations remain so the app can open as a guest. If the user requests deletion by email from outside the app, or if local erasure fails, the user must clear the app's storage or uninstall the app. These local records are not uploaded to this Firebase project.
