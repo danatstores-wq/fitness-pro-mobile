@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import type { Language } from "../i18n";
 
-type Mode = "choice" | "register" | "login" | "reset";
+type Mode = "choice" | "register" | "login" | "reset" | "verify";
 type Props = {
   visible: boolean;
   language: Language;
@@ -13,12 +13,16 @@ type Props = {
   configured: boolean;
   onClose: () => void;
   onRegister: (email: string, password: string, remember: boolean, policyAccepted: boolean) => Promise<void>;
-  onLogin: (email: string, password: string, remember: boolean) => Promise<void>;
+  onLogin: (email: string, password: string, remember: boolean) => Promise<boolean>;
+  verificationRequired: boolean;
+  onResendVerification: () => Promise<void>;
+  onCheckVerification: () => Promise<boolean>;
   onReset: (email: string) => Promise<void>;
 };
 
 const copy = {
   en: {
+    verificationTitle: "Verify your email", verificationBody: "We sent a verification link to", resend: "Resend verification email", checkVerified: "I have verified — check again", verificationSent: "Verification email sent. Check your inbox and spam folder.", notVerified: "Your email is not verified yet. Open the link in the email, then check again.",
     title: "Create your free account", subtitle: "Register or log in to unlock Fitness Pro.",
     register: "Create account", login: "Log in", email: "Email address", password: "Password",
     confirm: "Confirm password", remember: "Remember me on this device", forgot: "Forgot password?",
@@ -31,6 +35,7 @@ const copy = {
     working: "Please wait…"
   },
   fr: {
+    verificationTitle: "Vérifiez votre e-mail", verificationBody: "Nous avons envoyé un lien de vérification à", resend: "Renvoyer l’e-mail de vérification", checkVerified: "J’ai vérifié — vérifier à nouveau", verificationSent: "E-mail de vérification envoyé. Vérifiez votre boîte de réception et les courriers indésirables.", notVerified: "Votre adresse n’est pas encore vérifiée. Ouvrez le lien reçu, puis réessayez.",
     title: "Créez votre compte gratuit", subtitle: "Inscrivez-vous ou connectez-vous pour débloquer Fitness Pro.",
     register: "Créer un compte", login: "Se connecter", email: "Adresse e-mail", password: "Mot de passe",
     confirm: "Confirmer le mot de passe", remember: "Se souvenir de moi sur cet appareil", forgot: "Mot de passe oublié ?",
@@ -43,6 +48,7 @@ const copy = {
     working: "Veuillez patienter…"
   },
   ar: {
+    verificationTitle: "تحقق من بريدك الإلكتروني", verificationBody: "أرسلنا رابط التحقق إلى", resend: "إعادة إرسال رسالة التحقق", checkVerified: "تحققت من بريدي — تحقق مرة أخرى", verificationSent: "تم إرسال رسالة التحقق. افحص صندوق الوارد والرسائل غير المرغوب فيها.", notVerified: "لم يتم التحقق من بريدك بعد. افتح الرابط في الرسالة ثم أعد المحاولة.",
     title: "أنشئ حسابك المجاني", subtitle: "سجّل أو ادخل إلى حسابك لفتح جميع ميزات Fitness Pro.",
     register: "إنشاء حساب", login: "تسجيل الدخول", email: "البريد الإلكتروني", password: "كلمة المرور",
     confirm: "تأكيد كلمة المرور", remember: "تذكرني على هذا الجهاز", forgot: "نسيت كلمة المرور؟",
@@ -56,7 +62,7 @@ const copy = {
   }
 };
 
-export default function AuthGateModal({ visible, language, busy, configured, onClose, onRegister, onLogin, onReset }: Props) {
+export default function AuthGateModal({ visible, language, busy, configured, verificationRequired, onClose, onRegister, onLogin, onResendVerification, onCheckVerification, onReset }: Props) {
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,7 +73,7 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
   const t = copy[language];
 
   useEffect(() => {
-    if (visible) { setMode("choice"); setMessage(""); setPassword(""); setConfirm(""); setPolicyAccepted(false); }
+    if (visible) { setMode(verificationRequired ? "verify" : "choice"); setMessage(""); setPassword(""); setConfirm(""); setPolicyAccepted(false); }
   }, [visible]);
 
   const submit = async () => {
@@ -83,8 +89,8 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
     if (password.length < 6) { setMessage(t.short); return; }
     if (mode === "register" && password !== confirm) { setMessage(t.mismatch); return; }
     try {
-      if (mode === "register") await onRegister(email.trim(), password, remember, policyAccepted);
-      else await onLogin(email.trim(), password, remember);
+      if (mode === "register") { await onRegister(email.trim(), password, remember, policyAccepted); setMode("verify"); setPassword(""); setConfirm(""); setMessage(t.verificationSent); }
+      else { const verified = await onLogin(email.trim(), password, remember); if (verified) onClose(); else { setMode("verify"); setPassword(""); setMessage(t.notVerified); } }
     } catch (error) { setMessage(authError(error)); }
   };
 
@@ -96,8 +102,15 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
           <View style={s.panel}>
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
               <Text style={s.eyebrow}>DANAT / WELLNESS</Text>
-              <Text style={[s.title, rtl && s.rtl]}>{mode === "choice" ? t.title : mode === "register" ? t.register : mode === "login" ? t.login : t.forgot}</Text>
-              {mode === "choice" ? <>
+              <Text style={[s.title, rtl && s.rtl]}>{mode === "verify" ? t.verificationTitle : mode === "choice" ? t.title : mode === "register" ? t.register : mode === "login" ? t.login : t.forgot}</Text>
+              {mode === "verify" ? <>
+                <Text style={[s.subtitle, rtl && s.rtl]}>{t.verificationBody} {email || "your email"}.</Text>
+                <Pressable disabled={busy} style={[s.primary, busy && s.disabled]} onPress={async () => { setMessage(""); try { if (await onCheckVerification()) onClose(); else setMessage(t.notVerified); } catch (error) { setMessage(authError(error)); } }}>
+                  {busy ? <ActivityIndicator color="#09213D"/> : <Text style={s.primaryText}>{t.checkVerified}</Text>}
+                </Pressable>
+                <Pressable disabled={busy} style={s.secondary} onPress={async () => { setMessage(""); try { await onResendVerification(); setMessage(t.verificationSent); } catch (error) { setMessage(authError(error)); } }}><Text style={s.secondaryText}>{t.resend}</Text></Pressable>
+                {message ? <Text style={s.message}>{message}</Text> : null}
+              </> : mode === "choice" ? <>
                 <Text style={[s.subtitle, rtl && s.rtl]}>{t.subtitle}</Text>
                 <Pressable style={s.primary} onPress={() => { setPolicyAccepted(false); setMode("register"); }}><Text style={s.primaryText}>{t.register}</Text></Pressable>
                 <Pressable style={s.secondary} onPress={() => setMode("login")}><Text style={s.secondaryText}>{t.login}</Text></Pressable>
