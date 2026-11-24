@@ -2,6 +2,8 @@
 
 The in-app request flow creates one Firestore document at `accountDeletionRequests/{uid}`. It contains the Firebase UID, account email, server timestamp, and `pending` status. The user is signed out after submission, and the app blocks a new sign-in while that request document exists.
 
+**Before release:** publish the repository's updated `firestore.rules` in Firebase Console → Firestore Database → Rules. The app cannot submit or check deletion requests until this rule change is published.
+
 ## Manual processing checklist
 
 1. Open Firebase Console for project `fitness-pro-by-danat`.
