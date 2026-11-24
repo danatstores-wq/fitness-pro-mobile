@@ -528,7 +528,7 @@ function FitnessProApp() {
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
     </View>
-    <Pressable onPress={()=>setTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
+    <Pressable onPress={()=>navigateToTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
       <View style={styles.dashboardGreetingAvatar}>
         {profilePhotoUri ? <Image source={{uri:profilePhotoUri}} style={styles.dashboardGreetingAvatarImage}/> : <Ionicons name="person" size={29} color="#FFFFFF"/>}
       </View>
@@ -789,7 +789,7 @@ function FitnessProApp() {
           ["progress", "stats-chart", "stats-chart-outline", t.progress],
           ["profile", "person-circle", "person-circle-outline", t.profile]
         ] as [Tab, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, string][]).map(([key, activeIcon, inactiveIcon, label]) =>
-          <Pressable key={key} onPress={() => key === "profile" ? setTab("profile") : navigateToTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
+          <Pressable key={key} onPress={() => navigateToTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
             <Ionicons name={tab === key ? activeIcon : inactiveIcon} size={23} color={tab === key ? GREEN : "#6F89A8"} />
             <Text style={[styles.tabLabel, tab === key && styles.activeTab]} numberOfLines={1}>{label}</Text>
           </Pressable>
