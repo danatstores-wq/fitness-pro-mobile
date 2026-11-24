@@ -4,7 +4,7 @@ import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, c
 import type { ImportedFoodRecord, FoodRecord } from "./src/storage/database";
 import {
   StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
-  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Modal
+  Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, Modal, Linking
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -519,6 +519,17 @@ function FitnessProApp() {
                 <Text style={styles.muted}>{language === "ar" ? "سجّل الدخول أو أنشئ حساباً لفتح جميع ميزات Fitness Pro." : language === "fr" ? "Connectez-vous ou créez un compte pour accéder à toutes les fonctions de Fitness Pro." : "Log in or create an account to unlock all Fitness Pro features."}</Text>
                 <GoldButton title={language === "ar" ? "تسجيل الدخول / إنشاء حساب" : language === "fr" ? "Connexion / Créer un compte" : "Log in / Create account"} onPress={() => setAuthPromptVisible(true)} />
               </>}
+            </Card>
+            <Card>
+              <Text style={styles.cardTitle}>{language === "ar" ? "الخصوصية وبيانات الحساب" : language === "fr" ? "CONFIDENTIALITÉ ET COMPTE" : "PRIVACY & ACCOUNT DATA"}</Text>
+              <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://danatstores-wq.github.io/fitness-pro-mobile/privacy-policy.html").catch(() => Alert.alert("Unable to open", "Please try again or contact IT@danat-gulf.com."))} style={{ paddingVertical: 12 }}>
+                <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "سياسة الخصوصية" : language === "fr" ? "Politique de confidentialité" : "Privacy Policy"}</Text>
+                <Text style={styles.muted}>{language === "ar" ? "افتح سياسة الخصوصية للاطلاع على كيفية التعامل مع بياناتك." : language === "fr" ? "Ouvrez la politique pour savoir comment vos données sont traitées." : "Open the privacy notice to see how your information is handled."}</Text>
+              </Pressable>
+              <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://danatstores-wq.github.io/fitness-pro-mobile/account-deletion.html").catch(() => Alert.alert("Unable to open", "Please try again or contact IT@danat-gulf.com."))} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1" }}>
+                <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion"}</Text>
+                <Text style={styles.muted}>{language === "ar" ? "يمكنك طلب حذف الحساب حتى بعد حذف التطبيق." : language === "fr" ? "Vous pouvez demander la suppression même après avoir désinstallé l’application." : "You can request account deletion even after uninstalling the app."}</Text>
+              </Pressable>
             </Card>
             <Card>
               <Text style={styles.fieldLabel}>{language === "ar" ? "اللغة" : language === "fr" ? "Langue" : "Language"}</Text>
