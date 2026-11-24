@@ -13,7 +13,7 @@ type Props = {
   busy: boolean;
   configured: boolean;
   onClose: () => void;
-  onRegister: (email: string, password: string, remember: boolean, policyAccepted: boolean) => Promise<void>;
+  onRegister: (email: string, password: string, remember: boolean, policyAccepted: boolean) => Promise<boolean>;
   onLogin: (email: string, password: string, remember: boolean) => Promise<boolean>;
   verificationRequired: boolean;
   verificationEmail: string | null;
@@ -24,7 +24,7 @@ type Props = {
 
 const copy = {
   en: {
-    verificationTitle: "Verify your email", verificationBody: "We sent a verification link to", resend: "Resend verification email", checkVerified: "I have verified — check again", verificationSent: "Verification email sent. Check your inbox and spam folder.", notVerified: "Your email is not verified yet. Open the link in the email, then check again.",
+    verificationTitle: "Verify your email", verificationBody: "We sent a verification link to", resend: "Resend verification email", checkVerified: "I have verified — check again", verificationSent: "Verification email sent. Check your inbox and spam folder.", verificationFailed: "Your account was created, but Firebase could not send the verification email. Tap Resend verification email and check the error if it fails again.", notVerified: "Your email is not verified yet. Open the link in the email, then check again.",
     title: "Create your free account", subtitle: "Register or log in to unlock Fitness Pro.",
     register: "Create account", login: "Log in", email: "Email address", password: "Password",
     confirm: "Confirm password", remember: "Remember me on this device", forgot: "Forgot password?",
@@ -37,7 +37,7 @@ const copy = {
     working: "Please wait…"
   },
   fr: {
-    verificationTitle: "Vérifiez votre e-mail", verificationBody: "Nous avons envoyé un lien de vérification à", resend: "Renvoyer l’e-mail de vérification", checkVerified: "J’ai vérifié — vérifier à nouveau", verificationSent: "E-mail de vérification envoyé. Vérifiez votre boîte de réception et les courriers indésirables.", notVerified: "Votre adresse n’est pas encore vérifiée. Ouvrez le lien reçu, puis réessayez.",
+    verificationTitle: "Vérifiez votre e-mail", verificationBody: "Nous avons envoyé un lien de vérification à", resend: "Renvoyer l’e-mail de vérification", checkVerified: "J’ai vérifié — vérifier à nouveau", verificationSent: "E-mail de vérification envoyé. Vérifiez votre boîte de réception et les courriers indésirables.", verificationFailed: "Votre compte a été créé, mais Firebase n’a pas pu envoyer l’e-mail. Appuyez sur Renvoyer l’e-mail de vérification.", notVerified: "Votre adresse n’est pas encore vérifiée. Ouvrez le lien reçu, puis réessayez.",
     title: "Créez votre compte gratuit", subtitle: "Inscrivez-vous ou connectez-vous pour débloquer Fitness Pro.",
     register: "Créer un compte", login: "Se connecter", email: "Adresse e-mail", password: "Mot de passe",
     confirm: "Confirmer le mot de passe", remember: "Se souvenir de moi sur cet appareil", forgot: "Mot de passe oublié ?",
@@ -50,7 +50,7 @@ const copy = {
     working: "Veuillez patienter…"
   },
   ar: {
-    verificationTitle: "تحقق من بريدك الإلكتروني", verificationBody: "أرسلنا رابط التحقق إلى", resend: "إعادة إرسال رسالة التحقق", checkVerified: "تحققت من بريدي — تحقق مرة أخرى", verificationSent: "تم إرسال رسالة التحقق. افحص صندوق الوارد والرسائل غير المرغوب فيها.", notVerified: "لم يتم التحقق من بريدك بعد. افتح الرابط في الرسالة ثم أعد المحاولة.",
+    verificationTitle: "تحقق من بريدك الإلكتروني", verificationBody: "أرسلنا رابط التحقق إلى", resend: "إعادة إرسال رسالة التحقق", checkVerified: "تحققت من بريدي — تحقق مرة أخرى", verificationSent: "تم إرسال رسالة التحقق. افحص صندوق الوارد والرسائل غير المرغوب فيها.", verificationFailed: "تم إنشاء حسابك، لكن Firebase لم يتمكن من إرسال رسالة التحقق. اضغط على إعادة إرسال رسالة التحقق.", notVerified: "لم يتم التحقق من بريدك بعد. افتح الرابط في الرسالة ثم أعد المحاولة.",
     title: "أنشئ حسابك المجاني", subtitle: "سجّل أو ادخل إلى حسابك لفتح جميع ميزات Fitness Pro.",
     register: "إنشاء حساب", login: "تسجيل الدخول", email: "البريد الإلكتروني", password: "كلمة المرور",
     confirm: "تأكيد كلمة المرور", remember: "تذكرني على هذا الجهاز", forgot: "نسيت كلمة المرور؟",
@@ -92,7 +92,7 @@ export default function AuthGateModal({ visible, language, busy, configured, ver
     if (password.length < 6) { setMessage(t.short); return; }
     if (mode === "register" && password !== confirm) { setMessage(t.mismatch); return; }
     try {
-      if (mode === "register") { await onRegister(email.trim(), password, remember, policyAccepted); setMode("verify"); setPassword(""); setConfirm(""); setMessage(t.verificationSent); }
+      if (mode === "register") { const sent = await onRegister(email.trim(), password, remember, policyAccepted); setMode("verify"); setPassword(""); setConfirm(""); setMessage(sent ? t.verificationSent : t.verificationFailed); }
       else { const verified = await onLogin(email.trim(), password, remember); if (verified) onClose(); else { setMode("verify"); setPassword(""); setMessage(t.notVerified); } }
     } catch (error) { setMessage(authError(error)); }
   };
@@ -210,7 +210,13 @@ function authError(error: unknown) {
     "auth/too-many-requests": "Too many attempts. Please wait and try again.",
     "auth/network-request-failed": "Network error. Check your internet connection and try again.",
     "auth/operation-not-allowed": "Email/password sign-in is not enabled in Firebase Authentication.",
-    "auth/configuration-not-found": "Firebase Authentication is not configured for this project."
+    "auth/configuration-not-found": "Firebase Authentication is not configured for this project.",
+    "auth/unauthorized-domain": "Firebase blocked this website domain. Add danatstores-wq.github.io to Firebase Console → Authentication → Settings → Authorized domains, then resend.",
+    "auth/too-many-requests": "Firebase temporarily blocked email requests due to too many attempts. Wait a while, then try Resend verification email.",
+    "auth/network-request-failed": "The verification request could not reach Firebase. Check your internet connection and try again.",
+    "auth/invalid-continue-uri": "Firebase rejected the verification link configuration. Check the Authentication email template settings in Firebase Console.",
+    "auth/missing-continue-uri": "Firebase requires a valid verification link configuration. Check the Authentication email template settings.",
+    "auth/user-disabled": "This Firebase account has been disabled. Contact the app administrator."
   };
-  return messages[code] ?? "Could not complete the request. Please check your details and try again.";
+  return messages[code] ?? (code ? "Firebase error (" + code + "). Please try again or contact support." : "Could not complete the request. Please check your details and try again.");
 }
