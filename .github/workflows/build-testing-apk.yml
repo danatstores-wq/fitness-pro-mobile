@@ -18,7 +18,7 @@ jobs:
     name: Build standalone Android testing APK
     runs-on: ubuntu-latest
     env:
-      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}\n      EXPO_PUBLIC_ADMOB_USE_TEST_ADS: "true"
     timeout-minutes: 45
     steps:
       - name: Check out working version
