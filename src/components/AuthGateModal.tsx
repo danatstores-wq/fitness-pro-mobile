@@ -102,7 +102,7 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
           <View style={s.panel}>
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
               <Text style={s.eyebrow}>DANAT / WELLNESS</Text>
-              <Text style={[s.title, rtl && s.rtl]}>{mode === "choice" ? t.title : mode === "register" ? t.register : mode === "login" ? t.login : t.forgot}</Text>
+              <Text style={[s.title, rtl && s.rtl]}>{mode === "choice" ? t.title : mode === "register" ? t.register : mode === "login" ? t.login : mode === "verify" ? t.verifyTitle : t.forgot}</Text>
               {mode === "choice" ? <>
                 <Text style={[s.subtitle, rtl && s.rtl]}>{t.subtitle}</Text>
                 <Pressable style={s.primary} onPress={() => { setPolicyAccepted(false); setMode("register"); }}><Text style={s.primaryText}>{t.register}</Text></Pressable>
