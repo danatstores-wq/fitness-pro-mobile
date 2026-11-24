@@ -391,7 +391,7 @@ export default function App() {
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
     </View>
-    <Pressable onPress={()=>navigateToTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
+    <Pressable onPress={()=>setTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
       <View style={styles.dashboardGreetingAvatar}>
         {profilePhotoUri ? <Image source={{uri:profilePhotoUri}} style={styles.dashboardGreetingAvatarImage}/> : <Ionicons name="person" size={29} color="#FFFFFF"/>}
       </View>
@@ -490,6 +490,16 @@ export default function App() {
 {tab === "profile" && <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={[styles.pageTitle, direction, { color: "#FFFFFF" }]}>{t.profile}</Text>
+            <Card>
+              <Text style={styles.cardTitle}>{language === "ar" ? "حسابك" : language === "fr" ? "VOTRE COMPTE" : "YOUR ACCOUNT"}</Text>
+              {authUser ? <>
+                <Text style={styles.muted}>{language === "ar" ? "تم تسجيل الدخول" : language === "fr" ? "Connecté en tant que" : "Signed in as"}: {authUser.email || authUser.uid}</Text>
+                <GoldButton title={language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out"} onPress={confirmSignOut} />
+              </> : <>
+                <Text style={styles.muted}>{language === "ar" ? "سجّل الدخول أو أنشئ حساباً لفتح جميع ميزات Fitness Pro." : language === "fr" ? "Connectez-vous ou créez un compte pour accéder à toutes les fonctions de Fitness Pro." : "Log in or create an account to unlock all Fitness Pro features."}</Text>
+                <GoldButton title={language === "ar" ? "تسجيل الدخول / إنشاء حساب" : language === "fr" ? "Connexion / Créer un compte" : "Log in / Create account"} onPress={() => setAuthPromptVisible(true)} />
+              </>}
+            </Card>
             <Card>
               <Text style={styles.fieldLabel}>{language === "ar" ? "اللغة" : language === "fr" ? "Langue" : "Language"}</Text>
               <View style={[styles.languageSelector,{marginBottom:18}]}><LanguageChoices language={language} onChange={setLanguage} /></View>
@@ -590,7 +600,7 @@ export default function App() {
           ["progress", "stats-chart", "stats-chart-outline", t.progress],
           ["profile", "person-circle", "person-circle-outline", t.profile]
         ] as [Tab, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, string][]).map(([key, activeIcon, inactiveIcon, label]) =>
-          <Pressable key={key} onPress={() => navigateToTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
+          <Pressable key={key} onPress={() => key === "profile" ? setTab("profile") : navigateToTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
             <Ionicons name={tab === key ? activeIcon : inactiveIcon} size={23} color={tab === key ? GREEN : "#6F89A8"} />
             <Text style={[styles.tabLabel, tab === key && styles.activeTab]} numberOfLines={1}>{label}</Text>
           </Pressable>
