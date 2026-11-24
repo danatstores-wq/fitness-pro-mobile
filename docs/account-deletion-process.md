@@ -4,6 +4,8 @@ The in-app request flow creates one Firestore document at `accountDeletionReques
 
 **Before release:** publish the repository's updated `firestore.rules` in Firebase Console → Firestore Database → Rules. The app cannot submit or check deletion requests until this rule change is published.
 
+**Operational note:** the app does not send an automatic email notification to support when a request is created. Monitor the `accountDeletionRequests` collection regularly, or configure a trusted backend notification before public launch.
+
 ## Manual processing checklist
 
 1. Open Firebase Console for project `fitness-pro-by-danat`.
