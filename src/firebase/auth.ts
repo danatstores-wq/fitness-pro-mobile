@@ -4,20 +4,17 @@ import * as FirebaseAuth from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
   deleteUser,
-  doc,
-  getFirestore,
   getAuth,
   inMemoryPersistence,
   initializeAuth,
   onAuthStateChanged,
   sendPasswordResetEmail,
-  serverTimestamp,
-  setDoc,
   setPersistence,
   signInWithEmailAndPassword,
   signOut,
   type User,
 } from "firebase/auth";
+import { doc, getFirestore, serverTimestamp, setDoc } from "firebase/firestore";
 
 const getReactNativePersistence = (FirebaseAuth as any).getReactNativePersistence as (storage: typeof AsyncStorage) => any;
 
