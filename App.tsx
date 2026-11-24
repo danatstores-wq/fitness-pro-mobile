@@ -388,7 +388,7 @@ function FitnessProApp() {
       try {
         if (Platform.OS === "web" && typeof window !== "undefined") {
           for (const key of Object.keys(window.localStorage)) {
-            if (key.startsWith("fitness-pro-reminder-fired-")) window.localStorage.removeItem(key);
+            if (key.startsWith("fitness_pro_reminder_fired_")) window.localStorage.removeItem(key);
           }
         } else if (Platform.OS !== "web") {
           const Notifications = await import("expo-notifications");
