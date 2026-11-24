@@ -15,6 +15,10 @@ import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
+import AuthGateModal from "./src/components/AuthGateModal";
+import { firebaseAuthConfigured, observeAuthState, registerWithEmail, sendPasswordReset, signInWithEmail, signOutUser } from "./src/firebase/auth";
+import AdBanner from "./src/ads/AdBanner";
+import useAds from "./src/ads/useAds";
 
 type Tab = "dashboard" | "diary" | "progress" | "weight" | "activity" | "goals" | "challenges" | "profile" | "contact";
 type Profile = {
@@ -78,6 +82,24 @@ function calculate(profile: Profile) {
 export default function App() {
   const [language, setLanguage] = useState<Language>("en");
   const [showWelcome, setShowWelcome] = useState(true);
+  const [authUser, setAuthUser] = useState<{ uid: string; email: string | null } | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [authPromptVisible, setAuthPromptVisible] = useState(false);
+  const [authBusy, setAuthBusy] = useState(false);
+  const adsReady = useAds();
+
+  useEffect(() => {
+    try {
+      const unsubscribe = observeAuthState(user => {
+        setAuthUser(user ? { uid: user.uid, email: user.email } : null);
+        setAuthReady(true);
+      });
+      return unsubscribe;
+    } catch (error) {
+      console.warn("Firebase Authentication is not ready", error);
+      setAuthReady(true);
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setShowWelcome(false), 4000);
@@ -294,6 +316,27 @@ export default function App() {
     [{text:language==="ar"?"إلغاء":language==="fr"?"Annuler":"Cancel",style:"cancel"},{text:language==="ar"?"إعادة ضبط":language==="fr"?"Réinitialiser":"Reset",style:"destructive",onPress:async()=>{try{await clearWeightMeasurements();setWeightLog([]);setEditingWeightId(null);setEditingWeightValue("");}catch(error){Alert.alert(t.saveFailed,String(error));}}}]
   );
 
+  const requestFeature = (action: () => void) => {
+    if (!authReady) {
+      Alert.alert("Please wait", "Fitness Pro is checking your account. Try again in a moment.");
+      return;
+    }
+    if (!authUser) { setAuthPromptVisible(true); return; }
+    action();
+  };
+  const navigateToTab = (nextTab: Tab) => requestFeature(() => setTab(nextTab));
+  const confirmSignOut = () => Alert.alert(
+    language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out",
+    language === "ar" ? "هل تريد تسجيل الخروج من حسابك؟" : language === "fr" ? "Voulez-vous vous déconnecter ?" : "Are you sure you want to sign out?",
+    [
+      { text: language === "ar" ? "إلغاء" : language === "fr" ? "Annuler" : "Cancel", style: "cancel" },
+      { text: language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out", style: "destructive", onPress: async () => {
+        try { await signOutUser(); setTab("dashboard"); }
+        catch (error) { console.warn("Could not sign out", error); Alert.alert("Sign out failed", "Please try again."); }
+      }}
+    ]
+  );
+
   if (showWelcome) {
     return (
       <SafeAreaView style={styles.splashContainer}>        <View style={styles.splashFrame}>          <StatusBar barStyle="light-content" />
@@ -341,13 +384,14 @@ export default function App() {
         <Text style={styles.dashboardBrandSubtitle}>BY DANAT</Text>
       </View>
       <Pressable onPress={()=>setShowLanguageMenu(value=>!value)} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Change language"><Ionicons name="settings-outline" size={24} color="#FFFFFF"/></Pressable>
+      {authUser && <Pressable onPress={confirmSignOut} style={styles.dashboardSettings} accessibilityRole="button" accessibilityLabel="Sign out"><Ionicons name="log-out-outline" size={22} color="#FFD400"/></Pressable>}
     </View>
     {showLanguageMenu && <View style={styles.dashboardLanguageMenu}><LanguageChoices language={language} onChange={code=>{setLanguage(code);setShowLanguageMenu(false);}} /></View>}
     <View style={styles.dashboardHeroMessage}>
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
     </View>
-    <Pressable onPress={()=>setTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
+    <Pressable onPress={()=>navigateToTab("profile") style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
       <View style={styles.dashboardGreetingAvatar}>
         {profilePhotoUri ? <Image source={{uri:profilePhotoUri}} style={styles.dashboardGreetingAvatarImage}/> : <Ionicons name="person" size={29} color="#FFFFFF"/>}
       </View>
@@ -381,13 +425,13 @@ export default function App() {
         ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","activity"],
         ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
         ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
-      ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>target==="scanner"?setScannerVisible(true):setTab(target)} style={styles.dashboardTile}>
+      ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>requestFeature(()=>target==="scanner"?setScannerVisible(true):setTab(target))} style={styles.dashboardTile}>
         <Image source={asset==="scanner.png"?require("./assets/images/scanner.png"):asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="stretch"/>
         <Text style={styles.dashboardTileLabel}>{label}</Text>
       </Pressable>)}
     </View>
     <View style={styles.dashboardNutrition}>
-      <View style={styles.dashboardNutritionHeading}><Text style={styles.dashboardNutritionTitle}>{language==="ar"?"تغذيتك اليوم":language==="fr"?"Nutrition du jour":"Today's Nutrition"}</Text><Pressable onPress={()=>setTab("diary")}><Text style={styles.dashboardNutritionLink}>{language==="ar"?"عرض التفاصيل":language==="fr"?"Voir détails":"View Details"} ›</Text></Pressable></View>
+      <View style={styles.dashboardNutritionHeading}><Text style={styles.dashboardNutritionTitle}>{language==="ar"?"تغذيتك اليوم":language==="fr"?"Nutrition du jour":"Today's Nutrition"}</Text><Pressable onPress={()=>navigateToTab("diary")}><Text style={styles.dashboardNutritionLink}>{language==="ar"?"عرض التفاصيل":language==="fr"?"Voir détails":"View Details"} ›</Text></Pressable></View>
       <View style={styles.dashboardNutritionBar}><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.carbs||0)*4,backgroundColor:"#16B85A"}]}/><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.protein||0)*4,backgroundColor:"#168CF0"}]}/><View style={[styles.dashboardNutritionSegment,{flex:Math.max(0,dailyIntake.fats||0)*9,backgroundColor:"#FF941F"}]}/></View>
       <View style={styles.dashboardNutritionLabels}>
         <View><Text style={styles.dashboardNutritionPercent}>{Math.round((dailyIntake.carbs||0)*4/Math.max(1,(dailyIntake.carbs||0)*4+(dailyIntake.protein||0)*4+(dailyIntake.fats||0)*9)*100)}%</Text><Text style={styles.dashboardNutritionMacro}>{t.carbs}</Text></View>
@@ -516,6 +560,29 @@ export default function App() {
         language={language}
       />
 
+      <AuthGateModal
+        visible={authPromptVisible}
+        language={language}
+        busy={authBusy}
+        configured={firebaseAuthConfigured}
+        onClose={() => setAuthPromptVisible(false)}
+        onRegister={async (email, password, remember) => {
+          setAuthBusy(true);
+          try { await registerWithEmail(email, password, remember); setAuthPromptVisible(false); }
+          finally { setAuthBusy(false); }
+        }}
+        onLogin={async (email, password, remember) => {
+          setAuthBusy(true);
+          try { await signInWithEmail(email, password, remember); setAuthPromptVisible(false); }
+          finally { setAuthBusy(false); }
+        }}
+        onReset={async email => {
+          setAuthBusy(true);
+          try { await sendPasswordReset(email); }
+          finally { setAuthBusy(false); }
+        }}
+      />
+      <AdBanner enabled={adsReady} />
       <View style={[styles.tabBar, isRTL && styles.rowReverse]}>
         {([
           ["dashboard", "home", "home-outline", t.dashboard],
@@ -523,12 +590,12 @@ export default function App() {
           ["progress", "stats-chart", "stats-chart-outline", t.progress],
           ["profile", "person-circle", "person-circle-outline", t.profile]
         ] as [Tab, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, keyof typeof import("@expo/vector-icons").Ionicons.glyphMap, string][]).map(([key, activeIcon, inactiveIcon, label]) =>
-          <Pressable key={key} onPress={() => setTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
+          <Pressable key={key} onPress={() => navigateToTab(key)} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: tab === key }}>
             <Ionicons name={tab === key ? activeIcon : inactiveIcon} size={23} color={tab === key ? GREEN : "#6F89A8"} />
             <Text style={[styles.tabLabel, tab === key && styles.activeTab]} numberOfLines={1}>{label}</Text>
           </Pressable>
         )}
-        <Pressable onPress={() => setTab("contact")} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"} accessibilityState={{ selected: tab === "contact" }}>
+        <Pressable onPress={() => navigateToTab("contact")} style={styles.tabItem} accessibilityRole="button" accessibilityLabel={language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"} accessibilityState={{ selected: tab === "contact" }}>
           <Ionicons name={tab === "contact" ? "mail" : "mail-outline"} size={23} color={tab === "contact" ? GREEN : "#6F89A8"} />
           <Text style={[styles.tabLabel, tab === "contact" && styles.activeTab]} numberOfLines={1}>{language === "ar" ? "اتصل بنا" : language === "fr" ? "Contactez-nous" : "Contact us"}</Text>
         </Pressable>
