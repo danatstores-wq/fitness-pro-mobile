@@ -16,7 +16,7 @@ import { readTodaySteps, requestAndReadTodaySteps } from "./src/storage/healthSt
 import ReminderSettings from "./src/storage/ReminderSettings";
 import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
-import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
+import { addActivityLog, clearPersonalData, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 import AuthGateModal from "./src/components/AuthGateModal";
 import { firebaseAuthConfigured, observeAuthState, registerWithEmail, resendVerificationEmail, refreshEmailVerification, sendPasswordReset, signInWithEmail, signOutUser, requestAccountDeletion } from "./src/firebase/auth";
 import AdBanner from "./src/ads/AdBanner";
@@ -359,10 +359,10 @@ function FitnessProApp() {
   const confirmAccountDeletionRequest = () => {
     const title = language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion";
     const message = language === "ar"
-      ? "سيتم إرسال طلب حذف حسابك إلى DANAT ثم تسجيل خروجك. ستبقى البيانات المخزنة محلياً على هذا الجهاز حتى تمسح بيانات التطبيق أو تحذفه."
+      ? "سيتم إرسال طلب حذف حسابك إلى DANAT ثم تسجيل خروجك. وسيتم أيضاً حذف بيانات اللياقة والسجل الغذائي والقياسات والتذكيرات والصورة المخزنة محلياً على هذا الجهاز."
       : language === "fr"
-        ? "Votre demande sera envoyée à DANAT, puis vous serez déconnecté. Les données stockées localement resteront sur cet appareil jusqu’à l’effacement des données de l’application ou sa désinstallation."
-        : "Your request will be sent to DANAT and you will be signed out. Data stored locally on this device will remain until you clear the app storage or uninstall the app.";
+        ? "Votre demande sera envoyée à DANAT, puis vous serez déconnecté. Les données locales de fitness, le journal alimentaire, les mesures, les rappels et la photo de profil seront également effacés de cet appareil."
+        : "Your request will be sent to DANAT and you will be signed out. Local fitness records, food diary, measurements, reminders and profile photo on this device will also be erased.";
     const submit = () => void performAccountDeletionRequest();
     if (Platform.OS === "web") {
       if (typeof window !== "undefined" && window.confirm(title + "\n\n" + message)) submit();
@@ -378,12 +378,35 @@ function FitnessProApp() {
     setDeleteRequestBusy(true);
     try {
       const result = await requestAccountDeletion();
+      let localDataCleared = false;
+      try {
+        await clearPersonalData();
+        localDataCleared = true;
+      } catch (clearError) {
+        console.warn("Account deletion request was saved, but local data could not be fully erased", clearError);
+      }
+      try {
+        if (Platform.OS === "web" && typeof window !== "undefined") {
+          for (const key of Object.keys(window.localStorage)) {
+            if (key.startsWith("fitness-pro-reminder-fired-")) window.localStorage.removeItem(key);
+          }
+        } else if (Platform.OS !== "web") {
+          const Notifications = await import("expo-notifications");
+          await Notifications.cancelAllScheduledNotificationsAsync();
+        }
+      } catch (notificationError) {
+        console.warn("Could not clear all local reminder notifications", notificationError);
+      }
       await signOutUser();
       setAuthPromptVisible(false);
       setTab("dashboard");
-      const message = result.alreadyPending
+      const requestMessage = result.alreadyPending
         ? (language === "ar" ? "يوجد طلب حذف قيد المعالجة بالفعل. ستتواصل DANAT معك عند اكتماله." : language === "fr" ? "Une demande de suppression est déjà en cours. DANAT vous contactera lorsqu’elle sera terminée." : "A deletion request is already pending. DANAT will contact you when it is completed.")
         : (language === "ar" ? "تم إرسال طلب حذف الحساب بنجاح. ستتواصل DANAT معك عند اكتمال الحذف." : language === "fr" ? "Votre demande de suppression a été envoyée. DANAT vous contactera une fois la suppression terminée." : "Your account deletion request was submitted. DANAT will contact you when deletion is complete.");
+      const localMessage = localDataCleared
+        ? (language === "ar" ? "تم حذف بيانات اللياقة المحلية من هذا الجهاز أيضاً." : language === "fr" ? "Les données de fitness locales de cet appareil ont également été effacées." : "Local fitness data on this device was also erased.")
+        : (language === "ar" ? "تعذر حذف بعض البيانات المحلية تلقائياً. امسح بيانات التطبيق من إعدادات الجهاز أو احذف التطبيق." : language === "fr" ? "Certaines données locales n’ont pas pu être effacées automatiquement. Effacez les données de l’application dans les réglages ou désinstallez-la." : "Some local data could not be erased automatically. Clear the app storage in device settings or uninstall the app.");
+      const message = requestMessage + "\\n\\n" + localMessage;
       if (Platform.OS === "web") window.alert(message);
       else Alert.alert(language === "ar" ? "تم إرسال الطلب" : language === "fr" ? "Demande envoyée" : "Request submitted", message);
     } catch (error) {
