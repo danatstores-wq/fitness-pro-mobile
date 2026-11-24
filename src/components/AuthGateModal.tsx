@@ -4,6 +4,7 @@ import {
   ScrollView, StyleSheet, Text, TextInput, View
 } from "react-native";
 import type { Language } from "../i18n";
+import { Ionicons } from "@expo/vector-icons";
 
 type Mode = "choice" | "register" | "login" | "reset" | "verify";
 type Props = {
@@ -67,6 +68,7 @@ export default function AuthGateModal({ visible, language, busy, configured, ver
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [remember, setRemember] = useState(true);
   const [policyAccepted, setPolicyAccepted] = useState(false);
@@ -117,9 +119,19 @@ export default function AuthGateModal({ visible, language, busy, configured, ver
                 <Pressable style={s.secondary} onPress={() => setMode("login")}><Text style={s.secondaryText}>{t.login}</Text></Pressable>
               </> : <>
                 <TextInput value={email} onChangeText={setEmail} placeholder={t.email} placeholderTextColor="#8B9AAF" autoCapitalize="none" keyboardType="email-address" autoComplete="email" style={[s.input, rtl && s.rtl]} editable={!busy}/>
-                {mode !== "reset" && <TextInput value={password} onChangeText={setPassword} placeholder={t.password} placeholderTextColor="#8B9AAF" secureTextEntry autoComplete={mode === "register" ? "new-password" : "current-password"} style={s.input} editable={!busy}/>}
+                {mode !== "reset" && <View style={s.passwordRow}>
+                  <TextInput value={password} onChangeText={setPassword} placeholder={t.password} placeholderTextColor="#8B9AAF" secureTextEntry={!showPassword} autoComplete={mode === "register" ? "new-password" : "current-password"} style={[s.input, s.passwordInput]} editable={!busy}/>
+                  <Pressable onPress={() => setShowPassword(value => !value)} disabled={busy} style={s.passwordToggle} accessibilityRole="button" accessibilityLabel={showPassword ? "Hide password" : "Show password"}>
+                    <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={21} color="#52677E"/>
+                  </Pressable>
+                </View>}
                 {mode === "register" && <>
-                  <TextInput value={confirm} onChangeText={setConfirm} placeholder={t.confirm} placeholderTextColor="#8B9AAF" secureTextEntry style={s.input} editable={!busy}/>
+                  <View style={s.passwordRow}>
+                    <TextInput value={confirm} onChangeText={setConfirm} placeholder={t.confirm} placeholderTextColor="#8B9AAF" secureTextEntry={!showPassword} style={[s.input, s.passwordInput]} editable={!busy}/>
+                    <Pressable onPress={() => setShowPassword(value => !value)} disabled={busy} style={s.passwordToggle} accessibilityRole="button" accessibilityLabel={showPassword ? "Hide password" : "Show password"}>
+                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={21} color="#52677E"/>
+                    </Pressable>
+                  </View>
                   <View style={[s.policyRow, rtl && s.policyRowRtl]}>
                     <Pressable onPress={() => setPolicyAccepted(value => !value)} disabled={busy} accessibilityRole="checkbox" accessibilityState={{ checked: policyAccepted }} style={[s.policyCheckbox, policyAccepted && s.policyCheckboxOn]}>
                       {policyAccepted ? <Text style={s.policyCheckmark}>✓</Text> : null}
@@ -159,6 +171,9 @@ const s = StyleSheet.create({
   title: { color: "#0B2544", fontSize: 24, lineHeight: 31, fontWeight: "900", textAlign: "center" },
   subtitle: { color: "#52677E", fontSize: 14, lineHeight: 21, textAlign: "center", marginBottom: 8 },
   input: { color: "#102A46", backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#CBD8E6", borderRadius: 12, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15 },
+  passwordRow: { flexDirection: "row", alignItems: "center", backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#CBD8E6", borderRadius: 12 },
+  passwordInput: { flex: 1, borderWidth: 0, backgroundColor: "transparent" },
+  passwordToggle: { minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" },
   rtl: { writingDirection: "rtl", textAlign: "right" },
   primary: { minHeight: 48, borderRadius: 12, backgroundColor: "#FFC928", alignItems: "center", justifyContent: "center", padding: 13, marginTop: 4 },
   primaryText: { color: "#09213D", fontWeight: "900", fontSize: 15 },
