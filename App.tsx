@@ -613,7 +613,7 @@ export default function App() {
         onClose={() => setAuthPromptVisible(false)}
         onRegister={async (email, password, remember, policyAccepted) => {
           setAuthBusy(true);
-          try { await registerWithEmail(email, password, remember, policyAccepted); }
+          try { return await registerWithEmail(email, password, remember, policyAccepted); }
           finally { setAuthBusy(false); }
         }}
         onLogin={async (email, password, remember) => {
