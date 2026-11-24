@@ -83,7 +83,13 @@ export async function registerWithEmail(email: string, password: string, remembe
     }
     throw new Error("We could not securely save your policy acceptance. Your registration was not completed. Please try again.");
   }
-  await sendEmailVerification(credential.user);
+  try {
+    await sendEmailVerification(credential.user);
+  } catch (cause) {
+    const error = new Error("Your account was created, but the verification email could not be sent. Please try resending it.") as Error & { code: string };
+    error.code = "auth/verification-email-send-failed";
+    throw error;
+  }
   return credential;
 }
 
