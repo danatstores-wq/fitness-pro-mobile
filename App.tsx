@@ -566,9 +566,9 @@ export default function App() {
         busy={authBusy}
         configured={firebaseAuthConfigured}
         onClose={() => setAuthPromptVisible(false)}
-        onRegister={async (email, password, remember) => {
+        onRegister={async (email, password, remember, policyAccepted) => {
           setAuthBusy(true);
-          try { await registerWithEmail(email, password, remember); setAuthPromptVisible(false); }
+          try { await registerWithEmail(email, password, remember, policyAccepted); setAuthPromptVisible(false); }
           finally { setAuthBusy(false); }
         }}
         onLogin={async (email, password, remember) => {
