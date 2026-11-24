@@ -99,5 +99,22 @@ jobs:
           }
           console.log("PASS: Android AdMob app ID, READ_STEPS-only permission and Health Connect privacy URL are configured.");
           NODE
+      - name: Generate and verify iOS native configuration
+        run: |
+          npx expo prebuild --platform ios --no-install
+          INFO_PLIST="$(find ios -type f -name Info.plist -not -path '*/Pods/*' | head -n 1)"
+          ENTITLEMENTS="$(find ios -type f -name '*.entitlements' | head -n 1)"
+          PROJECT_FILE="$(find ios -type f -name project.pbxproj | head -n 1)"
+          test -n "$INFO_PLIST" && test -n "$ENTITLEMENTS" && test -n "$PROJECT_FILE"
+          grep -q "NSHealthShareUsageDescription" "$INFO_PLIST"
+          grep -q "GADApplicationIdentifier" "$INFO_PLIST"
+          grep -q "NSUserTrackingUsageDescription" "$INFO_PLIST"
+          grep -q "com.apple.developer.healthkit" "$ENTITLEMENTS"
+          grep -q "IPHONEOS_DEPLOYMENT_TARGET = 16.4" "$PROJECT_FILE"
+          if grep -q "NSHealthUpdateUsageDescription" "$INFO_PLIST"; then
+            echo "::error::The app should not request HealthKit write permission."
+            exit 1
+          fi
+          echo "PASS: iOS AdMob IDs, tracking disclosure, HealthKit read-only entitlement and iOS 16.4 minimum are configured."
       - name: Bundle Android and iOS JavaScript
         run: npx expo export --platform android --platform ios
