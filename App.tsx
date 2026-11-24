@@ -794,7 +794,7 @@ function ActivityTracker({language,weightKg,stepsEnabled,setStepsEnabled}:{langu
   </View>
   <Card>
    <Text style={styles.cardTitle}>{ar?"الخطوات اليومية التلقائية":fr?"PAS QUOTIDIENS AUTOMATIQUES":"AUTOMATIC DAILY STEPS"}</Text>
-   <Text style={styles.muted}>{ar?"اقرأ إجمالي خطوات اليوم من Apple Health أو Health Connect. تبقى بيانات الخطوات منفصلة عن سجل التمارين اليدوي.":fr?"Lisez le total des pas du jour depuis Apple Health ou Health Connect. Ces données restent séparées des activités saisies manuellement.":"Read today's step total from Apple Health or Health Connect. Step data stays separate from manually logged workouts."}</Text>
+   <Text style={styles.muted}>{ar?"اقرأ إجمالي خطوات اليوم من Apple Health أو Health Connect. تُستخدم الخطوات لعرض تقدم نشاطك فقط، ولا تُرسل إلى Firebase أو AdMob أو شركاء الإعلانات.":fr?"Lisez le total des pas du jour depuis Apple Health ou Health Connect. Ces données servent uniquement à afficher votre activité et ne sont envoyées ni à Firebase, ni à AdMob, ni à des partenaires publicitaires.":"Read today's step total from Apple Health or Health Connect. Step data is used only to show your activity progress; it is not sent to Firebase, AdMob or advertising partners."}</Text>
    {stepsEnabled?(
     <View style={{backgroundColor:"#EAF4FF",borderRadius:14,padding:16,marginTop:12}}>
      <Text style={{color:"#23466C",fontSize:13,fontWeight:"800"}}>{ar?"خطوات اليوم":fr?"PAS AUJOURD’HUI":"STEPS TODAY"}</Text>
