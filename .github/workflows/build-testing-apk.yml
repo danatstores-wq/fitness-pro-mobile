@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - ".github/workflows/build-testing-apk.yml"
+      - ".github/workflows/build-testing-apk.yml"\n      - "App.tsx"\n      - "app.json"\n      - "package.json"\n      - "src/**"
 
 permissions:
   contents: read
