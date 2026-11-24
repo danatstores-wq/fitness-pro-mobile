@@ -54,6 +54,27 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
+
+      - name: Capture Android startup diagnostics
+        if: always()
+        working-directory: android
+        run: |
+          mkdir -p ../android-startup-diagnostics
+          ./gradlew :app:dependencies --configuration releaseRuntimeClasspath --no-daemon > ../android-startup-diagnostics/release-dependencies.txt 2>&1 || true
+          ./gradlew :app:dependencyInsight --dependency androidx.work --configuration releaseRuntimeClasspath --no-daemon > ../android-startup-diagnostics/workmanager-dependency.txt 2>&1 || true
+          find app/build/outputs/mapping -type f -name 'mapping.txt' -exec cp --parents {} ../android-startup-diagnostics/ \; 2>/dev/null || true
+          find app/build/intermediates -type f \( -name 'AndroidManifest.xml' -o -name 'AndroidManifest.xml' \) | grep -E 'merged_manifest|merged_manifests' | head -10 | while read f; do cp --parents "$f" ../android-startup-diagnostics/; done
+          find app/build -type f -name '*manifest*report*.txt' -exec cp --parents {} ../android-startup-diagnostics/ \; 2>/dev/null || true
+
+      - name: Upload Android startup diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitness-pro-android-startup-diagnostics
+          path: android-startup-diagnostics/
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Upload standalone testing APK
         uses: actions/upload-artifact@v4
         with:
