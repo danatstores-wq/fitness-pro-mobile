@@ -13,6 +13,15 @@ Premium fitness and nutrition app for Android and iOS, built with Expo, React Na
 - Detailed food nutrient profile per 100 g, including recorded vitamins, minerals, fatty acids and portion weights.
 - USDA Foundation Foods and FNDDS catalogues bundled locally and imported into SQLite once per device.
 
+
+## Firebase Authentication and AdMob
+
+- Firebase Email/Password Authentication only. The app does not use Firestore, Realtime Database or Firebase Storage for fitness data; profile, food diary, weight history and activity data remain in local SQLite.
+- Configure the GitHub Actions repository secret named `EXPO_PUBLIC_FIREBASE_API_KEY`. The Android APK, validation and GitHub Pages build workflows pass it into Expo at bundle time. The key is never committed to the repository. A client API key is included in the compiled client bundle, so apply Firebase API-key restrictions and Authentication security controls; it is not a server secret.
+- For local builds, copy `.env.example` to `.env` and enter the API key locally. Do not commit `.env`.
+- Email/password account creation, sign-in, password reset and a Remember me option are provided by Firebase Authentication. When Remember me is off, the session is not persisted across app/browser restarts.
+- AdMob is configured with separate Android/iOS app IDs and banner/interstitial ad units. Development builds use Google's test ad units; production builds use the supplied DanatBuild units. Consent is collected through Google's UMP flow before ads are requested. Interstitials are limited to one per three minutes of foreground use.
+
 ## USDA food catalogue
 
 The current bundled source catalogues contain:
