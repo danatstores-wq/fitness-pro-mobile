@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import type { Language } from "../i18n";
 
-type Mode = "choice" | "register" | "login" | "reset";
+type Mode = "choice" | "register" | "login" | "reset" | "verify";
 type Props = {
   visible: boolean;
   language: Language;
@@ -15,6 +15,8 @@ type Props = {
   onRegister: (email: string, password: string, remember: boolean, policyAccepted: boolean) => Promise<void>;
   onLogin: (email: string, password: string, remember: boolean) => Promise<void>;
   onReset: (email: string) => Promise<void>;
+  onResendVerification: (email: string) => Promise<void>;
+  onCheckVerification: () => Promise<boolean>;
 };
 
 const copy = {
@@ -28,7 +30,7 @@ const copy = {
     mismatch: "Passwords do not match.", short: "Password must be at least 6 characters.",
     invalid: "Enter a valid email address and password.", resetDone: "Password reset email sent if this address is registered.",
     policyIntro: "I have read and agree to the", policyLink: "Terms of Use and Health Disclaimer", policyRequired: "You must open and accept the Terms of Use and Health Disclaimer to create an account.",
-    working: "Please wait…"
+    verifyTitle: "Verify your email", verifyBody: "We sent a verification link to this address. Open the email and click the link, then return here.", resend: "Resend verification email", checkVerified: "I have verified my email", verifyPending: "Your email is not verified yet. Open the latest verification email and try again.", verifySent: "Verification email sent. Please check your inbox and spam folder.", verifyDone: "Email verified. You can now use Fitness Pro.", verifySendFailed: "The account was created, but the verification email could not be sent. Please try resending it.", working: "Please wait…"
   },
   fr: {
     title: "Créez votre compte gratuit", subtitle: "Inscrivez-vous ou connectez-vous pour débloquer Fitness Pro.",
@@ -40,7 +42,7 @@ const copy = {
     mismatch: "Les mots de passe ne correspondent pas.", short: "Le mot de passe doit contenir au moins 6 caractères.",
     invalid: "Saisissez une adresse e-mail et un mot de passe valides.", resetDone: "E-mail de réinitialisation envoyé si cette adresse est enregistrée.",
     policyIntro: "J’ai lu et j’accepte les", policyLink: "Conditions d’utilisation et avertissement santé", policyRequired: "Vous devez consulter et accepter les conditions d’utilisation et l’avertissement santé pour créer un compte.",
-    working: "Veuillez patienter…"
+    verifyTitle: "Vérifiez votre e-mail", verifyBody: "Nous avons envoyé un lien de vérification à cette adresse. Ouvrez l’e-mail, cliquez sur le lien, puis revenez ici.", resend: "Renvoyer l’e-mail de vérification", checkVerified: "J’ai vérifié mon e-mail", verifyPending: "Votre adresse n’est pas encore vérifiée. Ouvrez le dernier e-mail de vérification et réessayez.", verifySent: "E-mail de vérification envoyé. Vérifiez votre boîte de réception et vos courriers indésirables.", verifyDone: "E-mail vérifié. Vous pouvez maintenant utiliser Fitness Pro.", verifySendFailed: "Le compte a été créé, mais l’e-mail de vérification n’a pas pu être envoyé. Veuillez réessayer.", working: "Veuillez patienter…"
   },
   ar: {
     title: "أنشئ حسابك المجاني", subtitle: "سجّل أو ادخل إلى حسابك لفتح جميع ميزات Fitness Pro.",
@@ -52,11 +54,11 @@ const copy = {
     mismatch: "كلمتا المرور غير متطابقتين.", short: "يجب ألا تقل كلمة المرور عن 6 أحرف.",
     invalid: "أدخل بريداً إلكترونياً وكلمة مرور صالحين.", resetDone: "تم إرسال رسالة إعادة التعيين إذا كان البريد مسجلاً.",
     policyIntro: "لقد قرأت وأوافق على", policyLink: "شروط الاستخدام وإخلاء مسؤولية الصحة", policyRequired: "يجب فتح شروط الاستخدام وإخلاء مسؤولية الصحة والموافقة عليهما لإنشاء حساب.",
-    working: "يرجى الانتظار…"
+    verifyTitle: "تأكيد البريد الإلكتروني", verifyBody: "أرسلنا رابط تأكيد إلى هذا البريد. افتح الرسالة واضغط على الرابط ثم عُد إلى التطبيق.", resend: "إعادة إرسال رسالة التأكيد", checkVerified: "لقد أكدت بريدي الإلكتروني", verifyPending: "لم يتم تأكيد بريدك بعد. افتح أحدث رسالة تأكيد ثم حاول مجدداً.", verifySent: "تم إرسال رسالة التأكيد. تحقق من الوارد والرسائل غير المرغوب فيها.", verifyDone: "تم تأكيد البريد الإلكتروني. يمكنك الآن استخدام Fitness Pro.", verifySendFailed: "تم إنشاء الحساب، لكن تعذر إرسال رسالة التأكيد. حاول إعادة الإرسال.", working: "يرجى الانتظار…"
   }
 };
 
-export default function AuthGateModal({ visible, language, busy, configured, onClose, onRegister, onLogin, onReset }: Props) {
+export default function AuthGateModal({ visible, language, busy, configured, onClose, onRegister, onLogin, onReset, onResendVerification, onCheckVerification }: Props) {
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,9 +85,13 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
     if (password.length < 6) { setMessage(t.short); return; }
     if (mode === "register" && password !== confirm) { setMessage(t.mismatch); return; }
     try {
-      if (mode === "register") await onRegister(email.trim(), password, remember, policyAccepted);
+      if (mode === "register") { await onRegister(email.trim(), password, remember, policyAccepted); setMode("verify"); setMessage(t.verifySent); }
       else await onLogin(email.trim(), password, remember);
-    } catch (error) { setMessage(authError(error)); }
+    } catch (error) {
+      if ((error as { code?: string })?.code === "auth/email-not-verified") { setMode("verify"); setMessage(t.verifyPending); }
+      else if ((error as { code?: string })?.code === "auth/verification-email-send-failed") { setMode("verify"); setMessage(t.verifySendFailed); }
+      else setMessage(authError(error));
+    }
   };
 
   const rtl = language === "ar";
@@ -101,6 +107,16 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
                 <Text style={[s.subtitle, rtl && s.rtl]}>{t.subtitle}</Text>
                 <Pressable style={s.primary} onPress={() => { setPolicyAccepted(false); setMode("register"); }}><Text style={s.primaryText}>{t.register}</Text></Pressable>
                 <Pressable style={s.secondary} onPress={() => setMode("login")}><Text style={s.secondaryText}>{t.login}</Text></Pressable>
+              </> : mode === "verify" ? <>
+                <Text style={[s.subtitle, rtl && s.rtl]}>{t.verifyBody}{"\\n"}{email}</Text>
+                <Pressable disabled={busy} style={[s.primary, busy && s.disabled]} onPress={async () => { setMessage(""); try { await onResendVerification(email.trim()); setMessage(t.verifySent); } catch (error) { setMessage(authError(error)); } }}>
+                  {busy ? <ActivityIndicator color="#09213D"/> : <Text style={s.primaryText}>{t.resend}</Text>}
+                </Pressable>
+                <Pressable disabled={busy} style={s.secondary} onPress={async () => { setMessage(""); try { const verified = await onCheckVerification(); if (verified) { setMessage(t.verifyDone); onClose(); } else setMessage(t.verifyPending); } catch (error) { setMessage(authError(error)); } }}>
+                  <Text style={s.secondaryText}>{t.checkVerified}</Text>
+                </Pressable>
+                {message ? <Text style={s.message}>{message}</Text> : null}
+                <Pressable onPress={() => { setMode("login"); setMessage(""); }}><Text style={s.link}>{t.back}</Text></Pressable>
               </> : <>
                 <TextInput value={email} onChangeText={setEmail} placeholder={t.email} placeholderTextColor="#8B9AAF" autoCapitalize="none" keyboardType="email-address" autoComplete="email" style={[s.input, rtl && s.rtl]} editable={!busy}/>
                 {mode !== "reset" && <TextInput value={password} onChangeText={setPassword} placeholder={t.password} placeholderTextColor="#8B9AAF" secureTextEntry autoComplete={mode === "register" ? "new-password" : "current-password"} style={s.input} editable={!busy}/>}
@@ -173,6 +189,8 @@ function authError(error: unknown) {
   const code = (error as { code?: string })?.code ?? "";
   const messages: Record<string, string> = {
     "auth/email-already-in-use": "This email is already registered. Please log in.",
+    "auth/email-not-verified": "Please verify your email before signing in.",
+    "auth/too-many-requests": "Too many attempts. Please wait and try again.",
     "auth/invalid-email": "Please enter a valid email address.",
     "auth/weak-password": "Choose a stronger password (at least 6 characters).",
     "auth/user-not-found": "No account was found for this email.",
