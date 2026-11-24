@@ -406,7 +406,7 @@ function FitnessProApp() {
       const localMessage = localDataCleared
         ? (language === "ar" ? "تم حذف بيانات اللياقة المحلية من هذا الجهاز أيضاً." : language === "fr" ? "Les données de fitness locales de cet appareil ont également été effacées." : "Local fitness data on this device was also erased.")
         : (language === "ar" ? "تعذر حذف بعض البيانات المحلية تلقائياً. امسح بيانات التطبيق من إعدادات الجهاز أو احذف التطبيق." : language === "fr" ? "Certaines données locales n’ont pas pu être effacées automatiquement. Effacez les données de l’application dans les réglages ou désinstallez-la." : "Some local data could not be erased automatically. Clear the app storage in device settings or uninstall the app.");
-      const message = requestMessage + "\\n\\n" + localMessage;
+      const message = requestMessage + "\n\n" + localMessage;
       if (Platform.OS === "web") window.alert(message);
       else Alert.alert(language === "ar" ? "تم إرسال الطلب" : language === "fr" ? "Demande envoyée" : "Request submitted", message);
     } catch (error) {
