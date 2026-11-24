@@ -16,7 +16,7 @@ import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 import AuthGateModal from "./src/components/AuthGateModal";
-import { firebaseAuthConfigured, observeAuthState, registerWithEmail, sendPasswordReset, signInWithEmail, signOutUser } from "./src/firebase/auth";
+import { firebaseAuthConfigured, observeAuthState, registerWithEmail, resendVerificationEmail, refreshEmailVerification, sendPasswordReset, signInWithEmail, signOutUser } from "./src/firebase/auth";
 import AdBanner from "./src/ads/AdBanner";
 import useAds from "./src/ads/useAds";
 
@@ -82,7 +82,7 @@ function calculate(profile: Profile) {
 export default function App() {
   const [language, setLanguage] = useState<Language>("en");
   const [showWelcome, setShowWelcome] = useState(true);
-  const [authUser, setAuthUser] = useState<{ uid: string; email: string | null } | null>(null);
+  const [authUser, setAuthUser] = useState<{ uid: string; email: string | null; emailVerified: boolean } | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
@@ -91,7 +91,7 @@ export default function App() {
   useEffect(() => {
     try {
       const unsubscribe = observeAuthState(user => {
-        setAuthUser(user ? { uid: user.uid, email: user.email } : null);
+        setAuthUser(user ? { uid: user.uid, email: user.email, emailVerified: user.emailVerified } : null);
         setAuthReady(true);
       });
       return unsubscribe;
@@ -321,7 +321,7 @@ export default function App() {
       Alert.alert("Please wait", "Fitness Pro is checking your account. Try again in a moment.");
       return;
     }
-    if (!authUser) { setAuthPromptVisible(true); return; }
+    if (!authUser || !authUser.emailVerified) { setAuthPromptVisible(true); return; }
     action();
   };
   const openFeatureWithAd = (action: () => void) => {
@@ -582,16 +582,30 @@ export default function App() {
         language={language}
         busy={authBusy}
         configured={firebaseAuthConfigured}
+        verificationRequired={Boolean(authUser && !authUser.emailVerified)}
         onClose={() => setAuthPromptVisible(false)}
         onRegister={async (email, password, remember, policyAccepted) => {
           setAuthBusy(true);
-          try { await registerWithEmail(email, password, remember, policyAccepted); setAuthPromptVisible(false); }
+          try { await registerWithEmail(email, password, remember, policyAccepted); }
           finally { setAuthBusy(false); }
         }}
         onLogin={async (email, password, remember) => {
           setAuthBusy(true);
-          try { await signInWithEmail(email, password, remember); setAuthPromptVisible(false); }
+          try { const credential = await signInWithEmail(email, password, remember); return credential.user.emailVerified; }
           finally { setAuthBusy(false); }
+        }}
+        onResendVerification={async () => {
+          setAuthBusy(true);
+          try { await resendVerificationEmail(); }
+          finally { setAuthBusy(false); }
+        }}
+        onCheckVerification={async () => {
+          setAuthBusy(true);
+          try {
+            const verified = await refreshEmailVerification();
+            if (verified) setAuthUser(current => current ? { ...current, emailVerified: true } : current);
+            return verified;
+          } finally { setAuthBusy(false); }
         }}
         onReset={async email => {
           setAuthBusy(true);
