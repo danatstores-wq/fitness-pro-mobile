@@ -50,5 +50,28 @@ jobs:
         run: npm run typecheck
       - name: Expo dependency validation
         run: npx expo install --check
+      - name: Generate and verify Android native configuration
+        run: |
+          npx expo prebuild --platform android --no-install
+          node <<'NODE'
+          const fs = require("node:fs");
+          const manifest = fs.readFileSync("android/app/src/main/AndroidManifest.xml", "utf8");
+          const required = [
+            "android.permission.health.READ_STEPS",
+            "expo.modules.healthkit.HEALTH_CONNECT_PRIVACY_POLICY_URL",
+            "https://danatstores-wq.github.io/fitness-pro-mobile/privacy-policy.html",
+            "ca-app-pub-1622329571366129~2966325014"
+          ];
+          const missing = required.filter(value => !manifest.includes(value));
+          if (missing.length) {
+            console.error("Android manifest is missing expected config:", missing);
+            process.exit(1);
+          }
+          if (manifest.includes("android.permission.health.WRITE_STEPS")) {
+            console.error("Unexpected Health Connect WRITE_STEPS permission is declared.");
+            process.exit(1);
+          }
+          console.log("PASS: Android AdMob app ID, READ_STEPS-only permission and Health Connect privacy URL are configured.");
+          NODE
       - name: Bundle Android and iOS JavaScript
         run: npx expo export --platform android --platform ios
