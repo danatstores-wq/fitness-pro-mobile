@@ -5,6 +5,8 @@ import {
   getAuth,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  reload,
   setPersistence,
   createUserWithEmailAndPassword,
   deleteUser,
@@ -57,7 +59,7 @@ export async function registerWithEmail(email: string, password: string, remembe
       acceptanceMethod: "registration_checkbox",
       acceptedAt: serverTimestamp(),
     });
-    return credential;
+    
   } catch (error) {
     try {
       await deleteUser(credential.user);
@@ -66,12 +68,43 @@ export async function registerWithEmail(email: string, password: string, remembe
     }
     throw new Error("We could not securely save your policy acceptance. Your registration was not completed. Please try again.");
   }
+  try {
+    await sendEmailVerification(credential.user);
+  } catch (cause) {
+    const error = new Error("Your account was created, but the verification email could not be sent. Please try resending it.") as Error & { code: string };
+    error.code = "auth/verification-email-send-failed";
+    throw error;
+  }
+  return credential;
 }
 
 export async function signInWithEmail(email: string, password: string, remember: boolean) {
   const auth = getFirebaseAuth();
   await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
-  return signInWithEmailAndPassword(auth, email.trim(), password);
+  const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
+  if (!credential.user.emailVerified) {
+    const error = new Error("Please verify your email before signing in.") as Error & { code: string };
+    error.code = "auth/email-not-verified";
+    throw error;
+  }
+  return credential;
+}
+
+export async function resendVerificationEmail(email: string) {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user || user.email?.toLowerCase() !== email.trim().toLowerCase()) {
+    throw new Error("Please log in with the account awaiting verification, then resend the email.");
+  }
+  await sendEmailVerification(user);
+}
+
+export async function checkEmailVerification() {
+  const auth = getFirebaseAuth();
+  const user = auth.currentUser;
+  if (!user) return null;
+  await reload(user);
+  return user.emailVerified ? { uid: user.uid, email: user.email } : null;
 }
 
 export async function sendPasswordReset(email: string) {
