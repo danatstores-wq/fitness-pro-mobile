@@ -15,6 +15,7 @@ type Props = {
   onRegister: (email: string, password: string, remember: boolean, policyAccepted: boolean) => Promise<void>;
   onLogin: (email: string, password: string, remember: boolean) => Promise<boolean>;
   verificationRequired: boolean;
+  verificationEmail: string | null;
   onResendVerification: () => Promise<void>;
   onCheckVerification: () => Promise<boolean>;
   onReset: (email: string) => Promise<void>;
@@ -62,7 +63,7 @@ const copy = {
   }
 };
 
-export default function AuthGateModal({ visible, language, busy, configured, verificationRequired, onClose, onRegister, onLogin, onResendVerification, onCheckVerification, onReset }: Props) {
+export default function AuthGateModal({ visible, language, busy, configured, verificationRequired, verificationEmail, onClose, onRegister, onLogin, onResendVerification, onCheckVerification, onReset }: Props) {
   const [mode, setMode] = useState<Mode>("choice");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +74,7 @@ export default function AuthGateModal({ visible, language, busy, configured, ver
   const t = copy[language];
 
   useEffect(() => {
-    if (visible) { setMode(verificationRequired ? "verify" : "choice"); setMessage(""); setPassword(""); setConfirm(""); setPolicyAccepted(false); }
+    if (visible) { setMode(verificationRequired ? "verify" : "choice"); setMessage(""); setPassword(""); setConfirm(""); setPolicyAccepted(false); if (verificationEmail) setEmail(verificationEmail); }
   }, [visible]);
 
   const submit = async () => {
