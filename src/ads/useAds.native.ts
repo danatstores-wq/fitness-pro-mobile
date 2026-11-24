@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Platform } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import mobileAds, { AdsConsent, AdEventType, InterstitialAd, TestIds } from "react-native-google-mobile-ads";
 
@@ -23,6 +24,7 @@ export default function useAds() {
   useEffect(() => {
     let active = true;
     let initializationStarted = false;
+    let consentRefreshInFlight = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
     let retryDelayMs = INITIAL_RETRY_DELAY_MS;
     let removeLoaded = () => {};
@@ -123,17 +125,30 @@ export default function useAds() {
     };
 
     // Try the previous session's consent immediately, then refresh consent.
-    // If the refresh fails, the cached decision can still allow ad requests.
-    void initializeAdsIfAllowed();
-    void AdsConsent.gatherConsent()
-      .then(() => initializeAdsIfAllowed())
-      .catch(error => {
+    // Retry the consent update when connectivity returns so an app opened
+    // offline can still initialize ads later in the same session.
+    const gatherAndInitialize = async () => {
+      if (!active || consentRefreshInFlight) return;
+      consentRefreshInFlight = true;
+      try {
+        await AdsConsent.gatherConsent();
+      } catch (error) {
         console.warn("AdMob consent refresh failed; checking the previous consent decision", error);
-        void initializeAdsIfAllowed();
-      });
+      } finally {
+        consentRefreshInFlight = false;
+      }
+      await initializeAdsIfAllowed();
+    };
+
+    void initializeAdsIfAllowed();
+    void gatherAndInitialize();
+    const unsubscribeNetwork = NetInfo.addEventListener(state => {
+      if (state.isInternetReachable === true) void gatherAndInitialize();
+    });
 
     return () => {
       active = false;
+      unsubscribeNetwork();
       if (retryTimer) clearTimeout(retryTimer);
       removeLoaded();
       removeOpened();
