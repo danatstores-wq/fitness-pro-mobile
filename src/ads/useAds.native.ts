@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { AppState, Platform } from "react-native";
 import mobileAds, { AdsConsent, AdEventType, InterstitialAd, TestIds } from "react-native-google-mobile-ads";
 
-const interstitialId = __DEV__ ? TestIds.INTERSTITIAL : Platform.OS === "ios"
+const useTestAds = __DEV__ || process.env.EXPO_PUBLIC_ADMOB_USE_TEST_ADS === "true";\nconst interstitialId = useTestAds ? TestIds.INTERSTITIAL : Platform.OS === "ios"
   ? "ca-app-pub-1622329571366129/9865814828"
   : "ca-app-pub-1622329571366129/1541562708";
 
