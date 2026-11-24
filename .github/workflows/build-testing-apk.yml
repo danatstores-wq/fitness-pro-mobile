@@ -30,10 +30,9 @@ jobs:
           java-version: "17"
 
       - name: Prepare Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
-          api-level: 37
-          build-tools: 37.0.0
+          packages: 'platform-tools platforms;android-37 build-tools;37.0.0'
           accept-android-sdk-licenses: true
 
       - name: Verify Firebase API key secret is configured
