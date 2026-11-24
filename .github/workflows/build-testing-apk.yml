@@ -38,6 +38,12 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
+      - name: Verify Firebase API key secret is configured
+        run: |
+          if [ -z "$EXPO_PUBLIC_FIREBASE_API_KEY" ]; then
+            echo "::error::Add EXPO_PUBLIC_FIREBASE_API_KEY under Repository Settings > Secrets and variables > Actions > Secrets."
+            exit 1
+          fi
       - name: Install JavaScript dependencies
         run: npm install --no-audit --no-fund
 
