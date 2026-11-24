@@ -391,7 +391,7 @@ export default function App() {
       <Text style={[styles.dashboardSlogan,direction]}>{language==="ar"?"كن أقوى كل يوم":language==="fr"?"Plus fort chaque jour":"Be Stronger"}</Text>
       <Text style={[styles.dashboardSloganAccent,direction]}>{language==="ar"?"كل يوم":language==="fr"?"Chaque jour":"Every Day"}</Text>
     </View>
-    <Pressable onPress={()=>navigateToTab("profile") style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
+    <Pressable onPress={()=>navigateToTab("profile")} style={[styles.dashboardGreetingRow,isRTL && styles.rowReverse]}>
       <View style={styles.dashboardGreetingAvatar}>
         {profilePhotoUri ? <Image source={{uri:profilePhotoUri}} style={styles.dashboardGreetingAvatarImage}/> : <Ionicons name="person" size={29} color="#FFFFFF"/>}
       </View>
