@@ -67,8 +67,15 @@ export async function registerWithEmail(email: string, password: string, remembe
     }
     throw new Error("We could not securely save your policy acceptance. Your registration was not completed. Please try again.");
   }
-  await sendEmailVerification(credential.user);
-  return credential;
+  try {
+    await sendEmailVerification(credential.user);
+    return true;
+  } catch (error) {
+    // The Firebase account and policy acceptance already exist. Keep the user
+    // signed in so the verification screen can offer a resend action.
+    console.warn("Initial verification email could not be sent", error);
+    return false;
+  }
 }
 
 export async function signInWithEmail(email: string, password: string, remember: boolean) {
