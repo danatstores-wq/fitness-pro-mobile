@@ -32,8 +32,11 @@ jobs:
       - name: Prepare Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-37 build-tools;37.0.0'
+          packages: 'platform-tools build-tools;37.0.0'
           accept-android-sdk-licenses: true
+
+      - name: Install Android 17 preview platform required by Expo SDK 58
+        run: yes | sdkmanager --channel=1 "platforms;android-37.0"
 
       - name: Verify Firebase API key secret is configured
         run: |
