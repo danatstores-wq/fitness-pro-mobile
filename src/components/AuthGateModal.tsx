@@ -207,8 +207,6 @@ function authError(error: unknown) {
     "auth/user-not-found": "No account was found for this email.",
     "auth/wrong-password": "The email or password is incorrect.",
     "auth/invalid-credential": "The email or password is incorrect.",
-    "auth/too-many-requests": "Too many attempts. Please wait and try again.",
-    "auth/network-request-failed": "Network error. Check your internet connection and try again.",
     "auth/operation-not-allowed": "Email/password sign-in is not enabled in Firebase Authentication.",
     "auth/configuration-not-found": "Firebase Authentication is not configured for this project.",
     "auth/unauthorized-domain": "Firebase blocked this website domain. Add danatstores-wq.github.io to Firebase Console → Authentication → Settings → Authorized domains, then resend.",
