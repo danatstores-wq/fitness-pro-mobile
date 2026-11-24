@@ -2,7 +2,7 @@ name: Validate FITNESS PRO mobile
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/firebase-auth-gate]
   pull_request:
     branches: [main]
 
@@ -12,6 +12,9 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_ADMOB_USE_TEST_ADS: "true"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -19,6 +22,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Verify Firebase API key secret is configured
+        run: |
+          if [ -z "$EXPO_PUBLIC_FIREBASE_API_KEY" ]; then
+            echo "::error::Add EXPO_PUBLIC_FIREBASE_API_KEY under Repository Settings > Secrets and variables > Actions > Secrets."
+            exit 1
+          fi
       - name: Install dependencies
         run: npm install
       - name: TypeScript validation

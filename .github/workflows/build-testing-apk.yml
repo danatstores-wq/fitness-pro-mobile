@@ -2,9 +2,6 @@ name: Build FITNESS PRO testing APK
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/build-testing-apk.yml"
 
 permissions:
   contents: read
@@ -13,6 +10,9 @@ jobs:
   android-testing-apk:
     name: Build standalone Android testing APK
     runs-on: ubuntu-latest
+    env:
+      EXPO_PUBLIC_FIREBASE_API_KEY: ${{ secrets.EXPO_PUBLIC_FIREBASE_API_KEY }}
+      EXPO_PUBLIC_ADMOB_USE_TEST_ADS: "true"
     timeout-minutes: 45
     steps:
       - name: Check out working version
@@ -36,6 +36,12 @@ jobs:
           yes | "$SDKMANAGER" --licenses >/dev/null
           "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
+      - name: Verify Firebase API key secret is configured
+        run: |
+          if [ -z "$EXPO_PUBLIC_FIREBASE_API_KEY" ]; then
+            echo "::error::Add EXPO_PUBLIC_FIREBASE_API_KEY under Repository Settings > Secrets and variables > Actions > Secrets."
+            exit 1
+          fi
       - name: Install JavaScript dependencies
         run: npm install --no-audit --no-fund
 
