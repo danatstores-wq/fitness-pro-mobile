@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Immutable, per-user policy acceptance evidence.
+    match /policyAcceptances/{userId}/versions/{policyVersion} {
+      allow create: if request.auth != null
+        && request.auth.uid == userId
+        && policyVersion == "1.0"
+        && request.resource.data.keys().hasAll([
+          "uid",
+          "policyVersion",
+          "policyEffectiveDate",
+          "accepted",
+          "acceptanceMethod",
+          "acceptedAt"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "uid",
+          "policyVersion",
+          "policyEffectiveDate",
+          "accepted",
+          "acceptanceMethod",
+          "acceptedAt"
+        ])
+        && request.resource.data.uid == userId
+        && request.resource.data.policyVersion == "1.0"
+        && request.resource.data.policyEffectiveDate == "2026-11-22"
+        && request.resource.data.accepted == true
+        && request.resource.data.acceptanceMethod == "registration_checkbox"
+        && request.resource.data.acceptedAt == request.time;
+
+      allow get, list: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if false;
+    }
+
+    // Deny all other cloud data access until a collection has explicit rules.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
