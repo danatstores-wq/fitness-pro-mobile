@@ -71,14 +71,16 @@ export default function AuthGateModal({ visible, language, busy, configured, onC
     if (!configured) { setMessage(t.config); return; }
     if (!email.trim() || !email.includes("@")) { setMessage(t.invalid); return; }
     if (mode === "reset") {
-      await onReset(email.trim());
-      setMessage(t.resetDone);
+      try { await onReset(email.trim()); setMessage(t.resetDone); }
+      catch (error) { setMessage(authError(error)); }
       return;
     }
     if (password.length < 6) { setMessage(t.short); return; }
     if (mode === "register" && password !== confirm) { setMessage(t.mismatch); return; }
-    if (mode === "register") await onRegister(email.trim(), password, remember);
-    else await onLogin(email.trim(), password, remember);
+    try {
+      if (mode === "register") await onRegister(email.trim(), password, remember);
+      else await onLogin(email.trim(), password, remember);
+    } catch (error) { setMessage(authError(error)); }
   };
 
   const rtl = language === "ar";
@@ -144,3 +146,20 @@ const s = StyleSheet.create({
   closeText: { color: "#6C7D90", fontWeight: "700" },
   disabled: { opacity: 0.6 }
 });
+
+function authError(error: unknown) {
+  const code = (error as { code?: string })?.code ?? "";
+  const messages: Record<string, string> = {
+    "auth/email-already-in-use": "This email is already registered. Please log in.",
+    "auth/invalid-email": "Please enter a valid email address.",
+    "auth/weak-password": "Choose a stronger password (at least 6 characters).",
+    "auth/user-not-found": "No account was found for this email.",
+    "auth/wrong-password": "The email or password is incorrect.",
+    "auth/invalid-credential": "The email or password is incorrect.",
+    "auth/too-many-requests": "Too many attempts. Please wait and try again.",
+    "auth/network-request-failed": "Network error. Check your internet connection and try again.",
+    "auth/operation-not-allowed": "Email/password sign-in is not enabled in Firebase Authentication.",
+    "auth/configuration-not-found": "Firebase Authentication is not configured for this project."
+  };
+  return messages[code] ?? "Could not complete the request. Please check your details and try again.";
+}
