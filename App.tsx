@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { addWeightMeasurement, getWeightMeasurements, updateWeightMeasurement, clearWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
+import { addWeightMeasurement, clearPersonalData, getWeightMeasurements, updateWeightMeasurement, clearWeightMeasurements, getDailyMealFoods, nutritionForQuantity, loadProfile, saveProfile as saveProfileToDatabase, ensureFoundationFoodsImported, ensureFnddsFoodsImported, getProfilePhotoDataUri, saveProfilePhotoDataUri, deleteProfilePhoto } from "./src/storage/database";
 import type { ImportedFoodRecord, FoodRecord } from "./src/storage/database";
 import {
   StatusBar, StyleSheet, Text, View, ScrollView, Image, ImageBackground,
