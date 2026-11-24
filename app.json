@@ -51,6 +51,14 @@
           "color": "#EFFF00",
           "enableRemoteNotifications": false
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-1622329571366129~2966325014",
+          "iosAppId": "ca-app-pub-1622329571366129~8528682424",
+          "userTrackingUsageDescription": "Fitness Pro uses device identifiers to measure advertising performance and support ad delivery."
+        }
       ]
     ]
   }
