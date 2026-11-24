@@ -365,7 +365,7 @@ function FitnessProApp() {
         : "Your request will be sent to DANAT and you will be signed out. Data stored locally on this device will remain until you clear the app storage or uninstall the app.";
     const submit = () => void performAccountDeletionRequest();
     if (Platform.OS === "web") {
-      if (typeof window !== "undefined" && window.confirm(title + "\\n\\n" + message)) submit();
+      if (typeof window !== "undefined" && window.confirm(title + "\n\n" + message)) submit();
       return;
     }
     Alert.alert(title, message, [
