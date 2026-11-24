@@ -100,7 +100,8 @@ function FitnessProApp() {
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
   const { ready: adsReady, showInterstitial } = useAds();
-  const { isInternetReachable, refresh: refreshNetwork } = useNetInfo();
+  const networkState = useNetInfo();
+  const isInternetReachable = networkState.isInternetReachable;
   const hasInternet = isInternetReachable === true;
 
   useEffect(() => {
@@ -387,7 +388,7 @@ function FitnessProApp() {
         <Text style={{ color: "#FFD400", fontSize: 23, fontWeight: "900", textAlign: "center", marginBottom: 12 }}>{title}</Text>
         <Text style={{ color: "#FFFFFF", fontSize: 15, lineHeight: 24, textAlign: "center", maxWidth: 340 }}>{message}</Text>
         <Pressable
-          onPress={() => { void refreshNetwork(); }}
+          onPress={() => { void NetInfo.refresh(); }}
           style={{ marginTop: 28, minWidth: 190, paddingHorizontal: 24, paddingVertical: 15, borderRadius: 13, backgroundColor: "#FFD400", alignItems: "center" }}
           accessibilityRole="button"
           accessibilityLabel={retryLabel}
