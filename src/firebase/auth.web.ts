@@ -5,6 +5,8 @@ import {
   getAuth,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  reload,
   setPersistence,
   createUserWithEmailAndPassword,
   deleteUser,
@@ -57,7 +59,6 @@ export async function registerWithEmail(email: string, password: string, remembe
       acceptanceMethod: "registration_checkbox",
       acceptedAt: serverTimestamp(),
     });
-    return credential;
   } catch (error) {
     try {
       await deleteUser(credential.user);
@@ -66,12 +67,28 @@ export async function registerWithEmail(email: string, password: string, remembe
     }
     throw new Error("We could not securely save your policy acceptance. Your registration was not completed. Please try again.");
   }
+  await sendEmailVerification(credential.user);
+  return credential;
 }
 
 export async function signInWithEmail(email: string, password: string, remember: boolean) {
   const auth = getFirebaseAuth();
   await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
   return signInWithEmailAndPassword(auth, email.trim(), password);
+}
+
+export async function resendVerificationEmail() {
+  const user = getFirebaseAuth().currentUser;
+  if (!user) throw new Error("auth/no-current-user");
+  if (user.emailVerified) return;
+  await sendEmailVerification(user);
+}
+
+export async function refreshEmailVerification() {
+  const user = getFirebaseAuth().currentUser;
+  if (!user) return false;
+  await reload(user);
+  return getFirebaseAuth().currentUser?.emailVerified ?? false;
 }
 
 export async function sendPasswordReset(email: string) {
