@@ -359,10 +359,10 @@ function FitnessProApp() {
   const confirmAccountDeletionRequest = () => {
     const title = language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion";
     const message = language === "ar"
-      ? "سيتم إرسال طلب حذف حسابك إلى DANAT ثم تسجيل خروجك. وسيتم أيضاً حذف بيانات اللياقة والسجل الغذائي والقياسات والتذكيرات والصورة المخزنة محلياً على هذا الجهاز."
+      ? "سيتم إرسال طلب حذف حسابك إلى DANAT ثم تسجيل خروجك. وسيتم حذف ملفك المحلي والسجل الغذائي والأطعمة المضافة والممسوحة والقياسات والأهداف والخطط والتذكيرات وسجلات النشاط والصورة من هذا الجهاز. لا يمكن التراجع عن ذلك."
       : language === "fr"
-        ? "Votre demande sera envoyée à DANAT, puis vous serez déconnecté. Les données locales de fitness, le journal alimentaire, les mesures, les rappels et la photo de profil seront également effacés de cet appareil."
-        : "Your request will be sent to DANAT and you will be signed out. Local fitness records, food diary, measurements, reminders and profile photo on this device will also be erased.";
+        ? "Votre demande sera envoyée à DANAT, puis vous serez déconnecté. Le profil local, le journal alimentaire, les aliments ajoutés ou scannés, les mesures, les objectifs, les plans, les rappels, les activités et la photo seront effacés de cet appareil. Cette action est irréversible."
+        : "Your request will be sent to DANAT and you will be signed out. Your local profile, food diary, custom and scanned foods, measurements, goals, meal plans, reminders, activity logs and profile photo will also be erased from this device. This cannot be undone.";
     const submit = () => void performAccountDeletionRequest();
     if (Platform.OS === "web") {
       if (typeof window !== "undefined" && window.confirm(title + "\n\n" + message)) submit();
@@ -645,7 +645,7 @@ function FitnessProApp() {
               </Pressable>
               {authUser ? <Pressable accessibilityRole="button" disabled={deleteRequestBusy} onPress={confirmAccountDeletionRequest} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1", opacity: deleteRequestBusy ? 0.6 : 1 }}>
                 <Text style={{ color: "#B42318", fontWeight: "900", textDecorationLine: "underline" }}>{deleteRequestBusy ? (language === "ar" ? "جارٍ إرسال الطلب..." : language === "fr" ? "Envoi en cours..." : "Submitting request...") : (language === "ar" ? "إرسال طلب حذف الحساب الآن" : language === "fr" ? "Envoyer une demande de suppression" : "Submit in-app account deletion request")}</Text>
-                <Text style={styles.muted}>{language === "ar" ? "يرسل طلباً آمناً إلى DANAT ثم يسجّل خروجك. تبقى البيانات المحلية على جهازك." : language === "fr" ? "Envoie une demande sécurisée à DANAT puis vous déconnecte. Les données locales restent sur votre appareil." : "Sends a secure request to DANAT and signs you out. Local device data remains on your device."}</Text>
+                <Text style={styles.muted}>{language === "ar" ? "يرسل طلباً آمناً إلى DANAT، ويحذف بيانات اللياقة المحلية، ثم يسجّل خروجك." : language === "fr" ? "Envoie une demande sécurisée à DANAT, efface les données locales de fitness puis vous déconnecte." : "Sends a secure request to DANAT, erases local fitness data, and signs you out."}</Text>
               </Pressable> : null}
               <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://danatstores-wq.github.io/fitness-pro-mobile/account-deletion.html").catch(() => Alert.alert("Unable to open", "Please try again or contact IT@danat-gulf.com."))} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1" }}>
                 <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion"}</Text>
