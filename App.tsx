@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import NetInfo, { useNetInfo } from "@react-native-community/netinfo";
 import { Language, translations, rtl } from "./src/i18n";
 import FoodDiary from "./src/storage/FoodDiary";
 import BarcodeScanner from "./src/storage/BarcodeScanner";
@@ -39,6 +40,15 @@ const initialProfile: Profile = {
   name: '', age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", ibwFormula: "devine", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
 };
+NetInfo.configure({
+  reachabilityUrl: "https://clients3.google.com/generate_204",
+  reachabilityTest: async response => response.status === 204,
+  reachabilityRequestTimeout: 5000,
+  reachabilityShortTimeout: 5000,
+  reachabilityLongTimeout: 15000,
+  reachabilityShouldRun: () => true
+});
+
 const activityFactor: Record<Profile["activity"], number> = {
   sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, veryActive: 1.9
 };
@@ -90,6 +100,8 @@ function FitnessProApp() {
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
   const { ready: adsReady, showInterstitial } = useAds();
+  const { isInternetReachable, refresh: refreshNetwork } = useNetInfo();
+  const hasInternet = isInternetReachable === true;
 
   useEffect(() => {
     try {
@@ -356,6 +368,40 @@ function FitnessProApp() {
       setSignOutBusy(false);
     }
   };
+
+  if (!hasInternet) {
+    const title = language === "ar" ? "الاتصال بالإنترنت مطلوب" : language === "fr" ? "Connexion Internet requise" : "Internet connection required";
+    const message = language === "ar"
+      ? "يرجى الاتصال بالإنترنت لاستخدام FITNESS PRO BY DANAT. سيُعاد فتح التطبيق تلقائياً عند استعادة الاتصال."
+      : language === "fr"
+        ? "Connectez-vous à Internet pour utiliser FITNESS PRO BY DANAT. L’application reprendra automatiquement lorsque la connexion sera rétablie."
+        : "Please connect to the internet to use FITNESS PRO BY DANAT. The app will become available automatically when your connection is restored.";
+    const retryLabel = language === "ar" ? "إعادة المحاولة" : language === "fr" ? "Réessayer" : "Retry connection";
+    const checking = isInternetReachable === null;
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#071A33", alignItems: "center", justifyContent: "center", padding: 28 }}>
+        <StatusBar barStyle="light-content" />
+        <View style={{ width: 82, height: 82, borderRadius: 41, backgroundColor: "rgba(255,212,0,0.12)", borderWidth: 1, borderColor: "#FFD400", alignItems: "center", justifyContent: "center", marginBottom: 25 }}>
+          <Ionicons name="cloud-offline-outline" size={39} color="#FFD400" />
+        </View>
+        <Text style={{ color: "#FFD400", fontSize: 23, fontWeight: "900", textAlign: "center", marginBottom: 12 }}>{title}</Text>
+        <Text style={{ color: "#FFFFFF", fontSize: 15, lineHeight: 24, textAlign: "center", maxWidth: 340 }}>{message}</Text>
+        <Pressable
+          onPress={() => { void refreshNetwork(); }}
+          style={{ marginTop: 28, minWidth: 190, paddingHorizontal: 24, paddingVertical: 15, borderRadius: 13, backgroundColor: "#FFD400", alignItems: "center" }}
+          accessibilityRole="button"
+          accessibilityLabel={retryLabel}
+        >
+          <Text style={{ color: "#071A33", fontSize: 15, fontWeight: "900" }}>{retryLabel}</Text>
+        </Pressable>
+        <Text style={{ color: "#B8C9DA", fontSize: 11, marginTop: 18, textAlign: "center" }}>
+          {checking
+            ? (language === "ar" ? "جارٍ التحقق من الاتصال..." : language === "fr" ? "Vérification de la connexion..." : "Checking internet connection...")
+            : (language === "ar" ? "لا يوجد اتصال فعّال بالإنترنت" : language === "fr" ? "Aucune connexion Internet active" : "No active internet connection detected")}
+        </Text>
+      </SafeAreaView>
+    );
+  }
 
   if (showWelcome) {
     return (
