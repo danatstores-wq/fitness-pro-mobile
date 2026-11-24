@@ -86,7 +86,7 @@ export default function App() {
   const [authReady, setAuthReady] = useState(false);
   const [authPromptVisible, setAuthPromptVisible] = useState(false);
   const [authBusy, setAuthBusy] = useState(false);
-  const adsReady = useAds();
+  const { ready: adsReady, showInterstitial } = useAds();
 
   useEffect(() => {
     try {
@@ -324,7 +324,14 @@ export default function App() {
     if (!authUser) { setAuthPromptVisible(true); return; }
     action();
   };
-  const navigateToTab = (nextTab: Tab) => requestFeature(() => setTab(nextTab));
+  const openFeatureWithAd = (action: () => void) => {
+    if (Platform.OS !== "web" && showInterstitial(action)) return;
+    action();
+  };
+  const navigateToTab = (nextTab: Tab) => requestFeature(() => {
+    if (nextTab === "diary") openFeatureWithAd(() => setTab(nextTab));
+    else setTab(nextTab);
+  });
   const confirmSignOut = () => Alert.alert(
     language === "ar" ? "تسجيل الخروج" : language === "fr" ? "Se déconnecter" : "Sign out",
     language === "ar" ? "هل تريد تسجيل الخروج من حسابك؟" : language === "fr" ? "Voulez-vous vous déconnecter ?" : "Are you sure you want to sign out?",
@@ -425,7 +432,7 @@ export default function App() {
         ["activity.png",language==="ar"?"النشاط":language==="fr"?"Activité":"Activity","activity"],
         ["goals.png",language==="ar"?"الأهداف":language==="fr"?"Objectifs":"Goals","goals"],
         ["challenges.png",language==="ar"?"التحديات":language==="fr"?"Défis":"Challenges","challenges"]
-      ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>requestFeature(()=>target==="scanner"?setScannerVisible(true):setTab(target))} style={styles.dashboardTile}>
+      ] as [string,string,Tab|"scanner"][]).map(([asset,label,target])=><Pressable key={asset} onPress={()=>requestFeature(()=>target==="scanner"||target==="diary"?openFeatureWithAd(()=>target==="scanner"?setScannerVisible(true):setTab("diary")):setTab(target))} style={styles.dashboardTile}>
         <Image source={asset==="scanner.png"?require("./assets/images/scanner.png"):asset==="food-diary.png"?require("./assets/images/food-diary.png"):asset==="progress.png"?require("./assets/images/progress.png"):asset==="activity.png"?require("./assets/images/activity.png"):asset==="goals.png"?require("./assets/images/goals.png"):require("./assets/images/challenges.png")} style={styles.dashboardTileIcon} resizeMode="stretch"/>
         <Text style={styles.dashboardTileLabel}>{label}</Text>
       </Pressable>)}
