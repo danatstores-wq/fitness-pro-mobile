@@ -40,13 +40,20 @@ const initialProfile: Profile = {
   name: '', age: "", sex: "male", height: "", weight: "", targetWeight: "",
   activity: "moderate", objective: "maintain", ibwFormula: "devine", waist: "", hip: "", neck: "", bodyFat: "", muscleMass: ""
 };
+const isWebPlatform = Platform.OS === "web";
 NetInfo.configure({
-  reachabilityUrl: "https://clients3.google.com/generate_204",
-  reachabilityTest: async response => response.status === 204,
+  // Use a same-origin check on web to avoid cross-origin/CORS failures.
+  // Native devices use Google's lightweight 204 reachability endpoint.
+  reachabilityUrl: isWebPlatform && typeof window !== "undefined"
+    ? window.location.href
+    : "https://clients3.google.com/generate_204",
+  reachabilityMethod: "HEAD",
+  reachabilityTest: async response => response.status === (isWebPlatform ? 200 : 204),
   reachabilityRequestTimeout: 5000,
   reachabilityShortTimeout: 5000,
   reachabilityLongTimeout: 15000,
-  reachabilityShouldRun: () => true
+  reachabilityShouldRun: () => true,
+  useNativeReachability: false
 });
 
 const activityFactor: Record<Profile["activity"], number> = {
