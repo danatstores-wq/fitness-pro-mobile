@@ -18,7 +18,7 @@ import { USDA_FOUNDATION_FOODS } from "./src/data/usda-foundation-foods";
 import { loadFnddsFoods } from "./src/data/load-fndds-foods";
 import { addActivityLog, deleteActivityLog, deleteActivityLogsForDay, getActivityLogs, getChallengeCheckins, toggleChallengeCheckin } from "./src/storage/database";
 import AuthGateModal from "./src/components/AuthGateModal";
-import { firebaseAuthConfigured, observeAuthState, registerWithEmail, resendVerificationEmail, refreshEmailVerification, sendPasswordReset, signInWithEmail, signOutUser } from "./src/firebase/auth";
+import { firebaseAuthConfigured, observeAuthState, registerWithEmail, resendVerificationEmail, refreshEmailVerification, sendPasswordReset, signInWithEmail, signOutUser, requestAccountDeletion } from "./src/firebase/auth";
 import AdBanner from "./src/ads/AdBanner";
 import useAds from "./src/ads/useAds";
 
@@ -106,6 +106,7 @@ function FitnessProApp() {
   const [authBusy, setAuthBusy] = useState(false);
   const [signOutConfirmVisible, setSignOutConfirmVisible] = useState(false);
   const [signOutBusy, setSignOutBusy] = useState(false);
+  const [deleteRequestBusy, setDeleteRequestBusy] = useState(false);
   const { ready: adsReady, showInterstitial, privacyOptionsRequired, showPrivacyOptions } = useAds();
   const networkState = useNetInfo();
   const isInternetReachable = networkState.isInternetReachable;
@@ -355,6 +356,45 @@ function FitnessProApp() {
     if (nextTab === "diary") openFeatureWithAd(() => setTab(nextTab));
     else setTab(nextTab);
   });
+  const confirmAccountDeletionRequest = () => {
+    const title = language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion";
+    const message = language === "ar"
+      ? "سيتم إرسال طلب حذف حسابك إلى DANAT ثم تسجيل خروجك. ستبقى البيانات المخزنة محلياً على هذا الجهاز حتى تمسح بيانات التطبيق أو تحذفه."
+      : language === "fr"
+        ? "Votre demande sera envoyée à DANAT, puis vous serez déconnecté. Les données stockées localement resteront sur cet appareil jusqu’à l’effacement des données de l’application ou sa désinstallation."
+        : "Your request will be sent to DANAT and you will be signed out. Data stored locally on this device will remain until you clear the app storage or uninstall the app.";
+    const submit = () => void performAccountDeletionRequest();
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.confirm(title + "\\n\\n" + message)) submit();
+      return;
+    }
+    Alert.alert(title, message, [
+      { text: language === "ar" ? "إلغاء" : language === "fr" ? "Annuler" : "Cancel", style: "cancel" },
+      { text: language === "ar" ? "إرسال الطلب" : language === "fr" ? "Envoyer la demande" : "Submit request", style: "destructive", onPress: submit }
+    ]);
+  };
+  const performAccountDeletionRequest = async () => {
+    if (deleteRequestBusy) return;
+    setDeleteRequestBusy(true);
+    try {
+      const result = await requestAccountDeletion();
+      await signOutUser();
+      setAuthPromptVisible(false);
+      setTab("dashboard");
+      const message = result.alreadyPending
+        ? (language === "ar" ? "يوجد طلب حذف قيد المعالجة بالفعل. ستتواصل DANAT معك عند اكتماله." : language === "fr" ? "Une demande de suppression est déjà en cours. DANAT vous contactera lorsqu’elle sera terminée." : "A deletion request is already pending. DANAT will contact you when it is completed.")
+        : (language === "ar" ? "تم إرسال طلب حذف الحساب بنجاح. ستتواصل DANAT معك عند اكتمال الحذف." : language === "fr" ? "Votre demande de suppression a été envoyée. DANAT vous contactera une fois la suppression terminée." : "Your account deletion request was submitted. DANAT will contact you when deletion is complete.");
+      if (Platform.OS === "web") window.alert(message);
+      else Alert.alert(language === "ar" ? "تم إرسال الطلب" : language === "fr" ? "Demande envoyée" : "Request submitted", message);
+    } catch (error) {
+      console.warn("Could not submit account deletion request", error);
+      const message = language === "ar" ? "تعذر إرسال طلب الحذف. حاول مرة أخرى." : language === "fr" ? "Impossible d’envoyer la demande. Réessayez." : "Could not submit the deletion request. Please try again.";
+      if (Platform.OS === "web") window.alert(message);
+      else Alert.alert(language === "ar" ? "تعذر إرسال الطلب" : language === "fr" ? "Échec de l’envoi" : "Request failed", message);
+    } finally {
+      setDeleteRequestBusy(false);
+    }
+  };
   const confirmSignOut = () => setSignOutConfirmVisible(true);
   const performSignOut = async () => {
     if (signOutBusy) return;
@@ -580,6 +620,10 @@ function FitnessProApp() {
                 <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "سياسة الخصوصية" : language === "fr" ? "Politique de confidentialité" : "Privacy Policy"}</Text>
                 <Text style={styles.muted}>{language === "ar" ? "افتح سياسة الخصوصية للاطلاع على كيفية التعامل مع بياناتك." : language === "fr" ? "Ouvrez la politique pour savoir comment vos données sont traitées." : "Open the privacy notice to see how your information is handled."}</Text>
               </Pressable>
+              {authUser ? <Pressable accessibilityRole="button" disabled={deleteRequestBusy} onPress={confirmAccountDeletionRequest} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1", opacity: deleteRequestBusy ? 0.6 : 1 }}>
+                <Text style={{ color: "#B42318", fontWeight: "900", textDecorationLine: "underline" }}>{deleteRequestBusy ? (language === "ar" ? "جارٍ إرسال الطلب..." : language === "fr" ? "Envoi en cours..." : "Submitting request...") : (language === "ar" ? "إرسال طلب حذف الحساب الآن" : language === "fr" ? "Envoyer une demande de suppression" : "Submit in-app account deletion request")}</Text>
+                <Text style={styles.muted}>{language === "ar" ? "يرسل طلباً آمناً إلى DANAT ثم يسجّل خروجك. تبقى البيانات المحلية على جهازك." : language === "fr" ? "Envoie une demande sécurisée à DANAT puis vous déconnecte. Les données locales restent sur votre appareil." : "Sends a secure request to DANAT and signs you out. Local device data remains on your device."}</Text>
+              </Pressable> : null}
               <Pressable accessibilityRole="link" onPress={() => void Linking.openURL("https://danatstores-wq.github.io/fitness-pro-mobile/account-deletion.html").catch(() => Alert.alert("Unable to open", "Please try again or contact IT@danat-gulf.com."))} style={{ paddingVertical: 12, borderTopWidth: 1, borderTopColor: "#D8E5F1" }}>
                 <Text style={{ color: "#1267B2", fontWeight: "900", textDecorationLine: "underline" }}>{language === "ar" ? "طلب حذف الحساب" : language === "fr" ? "Demander la suppression du compte" : "Request account deletion"}</Text>
                 <Text style={styles.muted}>{language === "ar" ? "يمكنك طلب حذف الحساب حتى بعد حذف التطبيق." : language === "fr" ? "Vous pouvez demander la suppression même après avoir désinstallé l’application." : "You can request account deletion even after uninstalling the app."}</Text>
