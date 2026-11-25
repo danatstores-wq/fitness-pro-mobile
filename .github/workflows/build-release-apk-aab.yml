@@ -66,7 +66,19 @@ jobs:
       - name: Configure release signing
         run: |
           set -euo pipefail
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | base64 --decode > android/app/fitness-pro-upload.jks
+          python3 - <<'PY'
+          import base64, os, re
+          lines = os.environ["ANDROID_KEYSTORE_BASE64"].splitlines()
+          # Windows certutil may add BEGIN/END header lines; remove those and whitespace.
+          payload = "".join(line.strip() for line in lines if not line.strip().startswith("-----"))
+          payload = re.sub(r"\s+", "", payload)
+          data = base64.b64decode(payload, validate=True)
+          if not data:
+              raise SystemExit("Keystore decode produced an empty file")
+          with open("android/app/fitness-pro-upload.jks", "wb") as f:
+              f.write(data)
+          print("Keystore decoded successfully.")
+          PY
           python3 - <<'PY'
           from pathlib import Path
           import re
