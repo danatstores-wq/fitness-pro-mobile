@@ -42,7 +42,7 @@ export default function AdBanner({ enabled }: { enabled: boolean }) {
     <BannerAd
       key={attempt}
       unitId={unitId}
-      size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+      size={BannerAdSize.BANNER}
       onAdLoaded={() => { retryDelayRef.current = INITIAL_RETRY_DELAY_MS; }}
       onAdFailedToLoad={handleLoadFailure}
     />
