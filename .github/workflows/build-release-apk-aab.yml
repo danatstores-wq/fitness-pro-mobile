@@ -81,13 +81,13 @@ jobs:
               }
           """
           if 'signingConfigs.create("release")' not in source:
-              match = re.search(r"(?m)^(\\s*)buildTypes\\s*\\{", source)
+              match = re.search(r"(?m)^(\s*)buildTypes\s*\{", source)
               if not match:
                   raise SystemExit("Unable to find buildTypes in generated Gradle file")
               source = source[:match.start()] + config + "\\n" + source[match.start():]
           source, count = re.subn(
               r"(?m)^(\\s*)signingConfig\\s+signingConfigs\\.debug\\s*$",
-              r'\\1signingConfig signingConfigs.getByName("release")',
+              r'\1signingConfig signingConfigs.getByName("release")',
               source,
               count=1,
           )
