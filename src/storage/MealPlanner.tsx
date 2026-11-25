@@ -22,9 +22,9 @@ const styles = StyleSheet.create({
 });
 export default function MealPlanner({language,targetCalories,targetProtein,targetCarbs,targetFat,onAdded}:{language:Language;targetCalories:number;targetProtein?:number;targetCarbs?:number;targetFat?:number;onAdded?:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
- const w=ar?{title:"مخطط الوجبات",subtitle:"أنشئ خطة يومية أو أسبوعية وفق هدف السعرات.",all:"كل الأطعمة",veg:"نباتي",high:"غني بالبروتين",generate:"إنشاء خطة",loading:"جارٍ إعداد الخطة…",today:"خطة اليوم",week:"الخطة الأسبوعية",add:"إضافة خطة اليوم إلى المفكرة",added:"تمت إضافة جميع وجبات اليوم إلى المفكرة.",breakfast:"الفطور",lunch:"الغداء",dinner:"العشاء",snacks:"وجبات خفيفة",empty:"لا توجد أطعمة كافية في قاعدة البيانات. أضف أو استورد الأطعمة أولاً.",error:"تعذر إضافة الخطة.",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",sugar:"السكريات",satFat:"الدهون المشبعة",cholesterol:"الكوليسترول",water:"الماء",nutrition:"إجمالي القيم الغذائية لخطة اليوم",micros:"الفيتامينات والمعادن والعناصر الأخرى",unknown:"لا تتوفر بيانات غذائية إضافية لهذه الأطعمة."}
- :fr?{title:"Planificateur de repas",subtitle:"Créez un plan quotidien ou hebdomadaire selon votre objectif calorique.",all:"Tous les aliments",veg:"Végétarien",high:"Riche en protéines",generate:"Générer le plan",loading:"Création du plan…",today:"Plan du jour",week:"Plan de la semaine",add:"Ajouter le plan du jour au journal",added:"Tous les repas du jour ont été ajoutés au journal.",breakfast:"Petit-déjeuner",lunch:"Déjeuner",dinner:"Dîner",snacks:"Collations",empty:"Pas assez d’aliments dans la base. Importez ou ajoutez des aliments.",error:"Impossible d’ajouter le plan.",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",sugar:"Sucres",satFat:"Graisses saturées",cholesterol:"Cholestérol",water:"Eau",nutrition:"Valeurs nutritionnelles totales du jour",micros:"Vitamines, minéraux et autres nutriments",unknown:"Aucune autre donnée nutritionnelle disponible pour ces aliments."}
- :{title:"Automatic meal planner",subtitle:"Build daily and weekly meal plans around your calorie target.",all:"All foods",veg:"Vegetarian",high:"High protein",generate:"Generate plan",loading:"Building your plan…",today:"Today's plan",week:"Weekly plan",add:"Add today's plan to diary",added:"All of today's meals were added to your diary.",breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snacks:"Snacks",empty:"Not enough foods in the catalogue. Import or add foods first.",error:"Could not add the plan.",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",sugar:"Sugars",satFat:"Saturated fat",cholesterol:"Cholesterol",water:"Water",nutrition:"Today's plan — nutrition totals",micros:"Vitamins, minerals and other nutrients",unknown:"No additional nutrition data is available for these foods."};
+ const w=ar?{title:"مخطط الوجبات",subtitle:"أنشئ خطة يومية أو أسبوعية وفق هدف السعرات.",all:"كل الأطعمة",veg:"نباتي",high:"غني بالبروتين",generate:"إنشاء خطة",loading:"جارٍ إعداد الخطة…",today:"خطة اليوم",week:"الخطة الأسبوعية",add:"إضافة خطة اليوم إلى المفكرة",addWeek:"إضافة الخطة الأسبوعية إلى المفكرة",added:"تمت إضافة جميع وجبات اليوم إلى المفكرة.",weekAdded:"تمت إضافة الخطة الأسبوعية إلى المفكرة.",breakfast:"الفطور",lunch:"الغداء",dinner:"العشاء",snacks:"وجبات خفيفة",empty:"لا توجد أطعمة كافية في قاعدة البيانات. أضف أو استورد الأطعمة أولاً.",error:"تعذر إضافة الخطة.",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",sugar:"السكريات",satFat:"الدهون المشبعة",cholesterol:"الكوليسترول",water:"الماء",nutrition:"إجمالي القيم الغذائية لخطة اليوم",micros:"الفيتامينات والمعادن والعناصر الأخرى",unknown:"لا تتوفر بيانات غذائية إضافية لهذه الأطعمة."}
+ :fr?{title:"Planificateur de repas",subtitle:"Créez un plan quotidien ou hebdomadaire selon votre objectif calorique.",all:"Tous les aliments",veg:"Végétarien",high:"Riche en protéines",generate:"Générer le plan",loading:"Création du plan…",today:"Plan du jour",week:"Plan de la semaine",add:"Ajouter le plan du jour au journal",addWeek:"Ajouter le plan de la semaine au journal",added:"Tous les repas du jour ont été ajoutés au journal.",weekAdded:"Le plan de la semaine a été ajouté au journal.",breakfast:"Petit-déjeuner",lunch:"Déjeuner",dinner:"Dîner",snacks:"Collations",empty:"Pas assez d’aliments dans la base. Importez ou ajoutez des aliments.",error:"Impossible d’ajouter le plan.",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",sugar:"Sucres",satFat:"Graisses saturées",cholesterol:"Cholestérol",water:"Eau",nutrition:"Valeurs nutritionnelles totales du jour",micros:"Vitamines, minéraux et autres nutriments",unknown:"Aucune autre donnée nutritionnelle disponible pour ces aliments."}
+ :{title:"Automatic meal planner",subtitle:"Build daily and weekly meal plans around your calorie target.",all:"All foods",veg:"Vegetarian",high:"High protein",generate:"Generate plan",loading:"Building your plan…",today:"Today's plan",week:"Weekly plan",add:"Add today's plan to diary",addWeek:"Add full weekly plan to diary",added:"All of today's meals were added to your diary.",weekAdded:"The full weekly plan was added to your diary.",breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snacks:"Snacks",empty:"Not enough foods in the catalogue. Import or add foods first.",error:"Could not add the plan.",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",sugar:"Sugars",satFat:"Saturated fat",cholesterol:"Cholesterol",water:"Water",nutrition:"Today's plan — nutrition totals",micros:"Vitamins, minerals and other nutrients",unknown:"No additional nutrition data is available for these foods."};
  const [foods,setFoods]=useState<FoodRecord[]>([]);
  const [preference,setPreference]=useState<"all"|"vegetarian"|"high">("all");
  const [plan,setPlan]=useState<PlanDay[]>([]);
@@ -42,7 +42,8 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   return()=>{live=false;};
  },[]);
  const [busy,setBusy]=useState(false);
- const [added,setAdded]=useState(false);
+ const [addedToday,setAddedToday]=useState(false);
+ const [addedWeek,setAddedWeek]=useState(false);
  const [planMicros,setPlanMicros]=useState<NutrientTotal[]>([]);
  const fmtDate=(d:Date)=>d.toLocaleDateString(ar?"ar":fr?"fr-FR":"en-US",{weekday:"short",month:"short",day:"numeric"});
  useEffect(()=>{getMealPlannerFoods().then(setFoods).catch(e=>console.warn("Planner catalogue unavailable",e));},[]);
@@ -128,7 +129,7 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
    }
    const date=new Date();date.setDate(date.getDate()+day);built.push({date,items});
   }
-  setAdded(false);setPlan(built);
+  setAddedToday(false);setAddedWeek(false);setPlan(built);
   saveMealPlannerPlan(JSON.stringify(built.map(day=>({date:day.date.toISOString(),items:day.items}))))
    .catch(error=>console.warn("Could not save weekly meal plan",error));
  };
@@ -146,12 +147,26 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
  },[today,language]);
  const mealName=(m:Meal)=>w[m];
  const addToday=async()=>{
-  if(!today||busy||added)return;
+  if(!today||busy||addedToday)return;
   try{
    setBusy(true);
-   await addFoodPlanToDiary(today.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date());
-   setAdded(true);
+   await addFoodPlanToDiary(today.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(today.date));
+   setAddedToday(true);
    Alert.alert(w.added);
+   onAdded?.();
+  }catch(e){Alert.alert(w.error,String(e));}
+  finally{setBusy(false);}
+ };
+ const addWeek=async()=>{
+  if(plan.length!==7||busy||addedWeek)return;
+  try{
+   setBusy(true);
+   for(const day of plan){
+    await addFoodPlanToDiary(day.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(day.date));
+   }
+   setAddedToday(true);
+   setAddedWeek(true);
+   Alert.alert(w.weekAdded);
    onAdded?.();
   }catch(e){Alert.alert(w.error,String(e));}
   finally{setBusy(false);}
@@ -170,8 +185,8 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
    </View>
    <Text style={styles.section}>{w.micros}</Text>
    {planMicros.length===0?<Text style={styles.muted}>{w.unknown}</Text>:<View style={styles.nutrientGrid}>{planMicros.map(row=><View key={row.name+"|"+row.unit} style={styles.nutrient}><Text style={styles.nutrientName}>{localizeNutrientName(row.name,language)}</Text><Text style={styles.nutrientValue}>{Number(row.amount.toFixed(3))} {row.unit}</Text></View>)}</View>}
-   <Pressable disabled={busy||added} style={[styles.button,(busy||added)&&{opacity:.55}]} onPress={addToday}><Text style={styles.buttonText}>{added?(ar?"تمت الإضافة ✓":fr?"Ajouté ✓":"Added ✓"):busy?w.loading:w.add}</Text></Pressable>
+   <Pressable disabled={busy||addedToday} style={[styles.button,(busy||addedToday)&&{opacity:.55}]} onPress={addToday}><Text style={styles.buttonText}>{addedToday?(ar?"تمت الإضافة ✓":fr?"Ajouté ✓":"Added ✓"):busy?w.loading:w.add}</Text></Pressable>
   </View>
-  <View style={styles.card}><Text style={styles.title}>{w.week}</Text>{plan.map((d,i)=><View key={i} style={styles.line}><Text style={styles.day}>{fmtDate(d.date)}</Text>{d.items.map((item,j)=><Text key={j} style={styles.muted}>• {mealName(item.meal)}: {localizeFoodName(item.food.name,language)} ({item.grams} g)</Text>)}</View>)}</View></>}
+  <View style={styles.card}><Text style={styles.title}>{w.week}</Text>{plan.map((d,i)=><View key={i} style={styles.line}><Text style={styles.day}>{fmtDate(d.date)}</Text>{d.items.map((item,j)=><Text key={j} style={styles.muted}>• {mealName(item.meal)}: {localizeFoodName(item.food.name,language)} ({item.grams} g)</Text>)}</View>)}<Pressable disabled={busy||addedWeek} style={[styles.button,(busy||addedWeek)&&{opacity:.55}]} onPress={addWeek}><Text style={styles.buttonText}>{addedWeek?(ar?"تمت الإضافة ✓":fr?"Ajouté ✓":"Added ✓"):busy?w.loading:w.addWeek}</Text></Pressable></View></>}
  </ScrollView>;
 }
