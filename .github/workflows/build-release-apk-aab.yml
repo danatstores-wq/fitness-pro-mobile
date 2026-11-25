@@ -66,7 +66,7 @@ jobs:
       - name: Configure release signing
         run: |
           set -euo pipefail
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | sed '/-----BEGIN CERTIFICATE-----/d; /-----END CERTIFICATE-----/d' | tr -d '\r\n' | base64 --decode > android/app/fitness-pro-upload.jks
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | tr -d '\r\n' | base64 --decode > android/app/fitness-pro-upload.jks
           python3 - <<'PY'
           from pathlib import Path
           import re
@@ -84,9 +84,9 @@ jobs:
               match = re.search(r"(?m)^(\s*)buildTypes\s*\{", source)
               if not match:
                   raise SystemExit("Unable to find buildTypes in generated Gradle file")
-              source = source[:match.start()] + config + "\\n" + source[match.start():]
+              source = source[:match.start()] + config + "\n" + source[match.start():]
           source, count = re.subn(
-              r"(?m)^(\\s*)signingConfig\\s+signingConfigs\\.debug\\s*$",
+              r"(?m)^(\s*)signingConfig\s+signingConfigs\.debug\s*$",
               r'\1signingConfig signingConfigs.getByName("release")',
               source,
               count=1,
