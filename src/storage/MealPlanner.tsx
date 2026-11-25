@@ -22,9 +22,9 @@ const styles = StyleSheet.create({
 });
 export default function MealPlanner({language,targetCalories,targetProtein,targetCarbs,targetFat,onAdded}:{language:Language;targetCalories:number;targetProtein?:number;targetCarbs?:number;targetFat?:number;onAdded?:()=>void}) {
  const ar=language==="ar", fr=language==="fr";
- const w=ar?{title:"مخطط الوجبات",subtitle:"أنشئ خطة يومية أو أسبوعية وفق هدف السعرات.",all:"كل الأطعمة",veg:"نباتي",high:"غني بالبروتين",generate:"إنشاء خطة",loading:"جارٍ إعداد الخطة…",today:"خطة اليوم",week:"الخطة الأسبوعية",add:"إضافة خطة اليوم إلى المفكرة",addWeek:"إضافة الخطة الأسبوعية إلى المفكرة",added:"تمت إضافة جميع وجبات اليوم إلى المفكرة.",weekAdded:"تمت إضافة الخطة الأسبوعية إلى المفكرة.",breakfast:"الفطور",lunch:"الغداء",dinner:"العشاء",snacks:"وجبات خفيفة",empty:"لا توجد أطعمة كافية في قاعدة البيانات. أضف أو استورد الأطعمة أولاً.",error:"تعذر إضافة الخطة.",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",sugar:"السكريات",satFat:"الدهون المشبعة",cholesterol:"الكوليسترول",water:"الماء",nutrition:"إجمالي القيم الغذائية لخطة اليوم",micros:"الفيتامينات والمعادن والعناصر الأخرى",unknown:"لا تتوفر بيانات غذائية إضافية لهذه الأطعمة."}
- :fr?{title:"Planificateur de repas",subtitle:"Créez un plan quotidien ou hebdomadaire selon votre objectif calorique.",all:"Tous les aliments",veg:"Végétarien",high:"Riche en protéines",generate:"Générer le plan",loading:"Création du plan…",today:"Plan du jour",week:"Plan de la semaine",add:"Ajouter le plan du jour au journal",addWeek:"Ajouter le plan de la semaine au journal",added:"Tous les repas du jour ont été ajoutés au journal.",weekAdded:"Le plan de la semaine a été ajouté au journal.",breakfast:"Petit-déjeuner",lunch:"Déjeuner",dinner:"Dîner",snacks:"Collations",empty:"Pas assez d’aliments dans la base. Importez ou ajoutez des aliments.",error:"Impossible d’ajouter le plan.",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",sugar:"Sucres",satFat:"Graisses saturées",cholesterol:"Cholestérol",water:"Eau",nutrition:"Valeurs nutritionnelles totales du jour",micros:"Vitamines, minéraux et autres nutriments",unknown:"Aucune autre donnée nutritionnelle disponible pour ces aliments."}
- :{title:"Automatic meal planner",subtitle:"Build daily and weekly meal plans around your calorie target.",all:"All foods",veg:"Vegetarian",high:"High protein",generate:"Generate plan",loading:"Building your plan…",today:"Today's plan",week:"Weekly plan",add:"Add today's plan to diary",addWeek:"Add full weekly plan to diary",added:"All of today's meals were added to your diary.",weekAdded:"The full weekly plan was added to your diary.",breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snacks:"Snacks",empty:"Not enough foods in the catalogue. Import or add foods first.",error:"Could not add the plan.",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",sugar:"Sugars",satFat:"Saturated fat",cholesterol:"Cholesterol",water:"Water",nutrition:"Today's plan — nutrition totals",micros:"Vitamins, minerals and other nutrients",unknown:"No additional nutrition data is available for these foods."};
+ const w=ar?{title:"مخطط الوجبات",subtitle:"أنشئ خطة يومية أو أسبوعية وفق هدف السعرات.",all:"كل الأطعمة",veg:"نباتي",high:"غني بالبروتين",generate:"إنشاء خطة",loading:"جارٍ إعداد الخطة…",today:"خطة اليوم",week:"الخطة الأسبوعية",add:"إضافة خطة اليوم إلى المفكرة",addWeek:"إضافة الخطة الأسبوعية إلى المفكرة",added:"تمت إضافة جميع وجبات اليوم إلى المفكرة.",alreadyAdded:"توجد خطة مضافة لهذا التاريخ بالفعل. لم تتم إضافة أي أطعمة أو سعرات مكررة.",weekAdded:"تمت إضافة الخطة الأسبوعية إلى المفكرة.",breakfast:"الفطور",lunch:"الغداء",dinner:"العشاء",snacks:"وجبات خفيفة",empty:"لا توجد أطعمة كافية في قاعدة البيانات. أضف أو استورد الأطعمة أولاً.",error:"تعذر إضافة الخطة.",calories:"السعرات",protein:"البروتين",carbs:"الكربوهيدرات",fat:"الدهون",fiber:"الألياف",sugar:"السكريات",satFat:"الدهون المشبعة",cholesterol:"الكوليسترول",water:"الماء",nutrition:"إجمالي القيم الغذائية لخطة اليوم",micros:"الفيتامينات والمعادن والعناصر الأخرى",unknown:"لا تتوفر بيانات غذائية إضافية لهذه الأطعمة."}
+ :fr?{title:"Planificateur de repas",subtitle:"Créez un plan quotidien ou hebdomadaire selon votre objectif calorique.",all:"Tous les aliments",veg:"Végétarien",high:"Riche en protéines",generate:"Générer le plan",loading:"Création du plan…",today:"Plan du jour",week:"Plan de la semaine",add:"Ajouter le plan du jour au journal",addWeek:"Ajouter le plan de la semaine au journal",added:"Tous les repas du jour ont été ajoutés au journal.",alreadyAdded:"Un plan existe déjà pour cette date. Aucun aliment ni aucune calorie n’a été ajouté en double.",weekAdded:"Le plan de la semaine a été ajouté au journal.",breakfast:"Petit-déjeuner",lunch:"Déjeuner",dinner:"Dîner",snacks:"Collations",empty:"Pas assez d’aliments dans la base. Importez ou ajoutez des aliments.",error:"Impossible d’ajouter le plan.",calories:"Calories",protein:"Protéines",carbs:"Glucides",fat:"Lipides",fiber:"Fibres",sugar:"Sucres",satFat:"Graisses saturées",cholesterol:"Cholestérol",water:"Eau",nutrition:"Valeurs nutritionnelles totales du jour",micros:"Vitamines, minéraux et autres nutriments",unknown:"Aucune autre donnée nutritionnelle disponible pour ces aliments."}
+ :{title:"Automatic meal planner",subtitle:"Build daily and weekly meal plans around your calorie target.",all:"All foods",veg:"Vegetarian",high:"High protein",generate:"Generate plan",loading:"Building your plan…",today:"Today's plan",week:"Weekly plan",add:"Add today's plan to diary",addWeek:"Add full weekly plan to diary",added:"All of today's meals were added to your diary.",alreadyAdded:"A meal plan already exists for this date. No duplicate food or calories were added.",weekAdded:"The full weekly plan was added to your diary.",breakfast:"Breakfast",lunch:"Lunch",dinner:"Dinner",snacks:"Snacks",empty:"Not enough foods in the catalogue. Import or add foods first.",error:"Could not add the plan.",calories:"Calories",protein:"Protein",carbs:"Carbohydrates",fat:"Fat",fiber:"Fiber",sugar:"Sugars",satFat:"Saturated fat",cholesterol:"Cholesterol",water:"Water",nutrition:"Today's plan — nutrition totals",micros:"Vitamins, minerals and other nutrients",unknown:"No additional nutrition data is available for these foods."};
  const [foods,setFoods]=useState<FoodRecord[]>([]);
  const [preference,setPreference]=useState<"all"|"vegetarian"|"high">("all");
  const [plan,setPlan]=useState<PlanDay[]>([]);
@@ -150,9 +150,9 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   if(!today||busy||addedToday)return;
   try{
    setBusy(true);
-   await addFoodPlanToDiary(today.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(today.date));
+   const inserted = await addFoodPlanToDiary(today.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(today.date));
    setAddedToday(true);
-   Alert.alert(w.added);
+   Alert.alert(inserted ? w.added : w.alreadyAdded);
    onAdded?.();
   }catch(e){Alert.alert(w.error,String(e));}
   finally{setBusy(false);}
@@ -161,12 +161,14 @@ export default function MealPlanner({language,targetCalories,targetProtein,targe
   if(plan.length!==7||busy||addedWeek)return;
   try{
    setBusy(true);
+   let insertedDays = 0;
    for(const day of plan){
-    await addFoodPlanToDiary(day.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(day.date));
+    const inserted = await addFoodPlanToDiary(day.items.map(item=>({foodId:item.food.id,mealType:item.meal,quantityGrams:item.grams})),new Date(day.date));
+    if(inserted) insertedDays++;
    }
    setAddedToday(true);
    setAddedWeek(true);
-   Alert.alert(w.weekAdded);
+   Alert.alert(insertedDays===0 ? w.alreadyAdded : w.weekAdded);
    onAdded?.();
   }catch(e){Alert.alert(w.error,String(e));}
   finally{setBusy(false);}
