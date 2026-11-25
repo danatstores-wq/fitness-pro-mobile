@@ -182,6 +182,10 @@ async function database() {
           plan_json TEXT NOT NULL,
           updated_at TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS meal_plan_diary_imports (
+          plan_key TEXT PRIMARY KEY NOT NULL,
+          imported_at TEXT NOT NULL
+        );
         CREATE TABLE IF NOT EXISTS reminder_settings (
           id INTEGER PRIMARY KEY NOT NULL CHECK (id = 1),
           breakfast_enabled INTEGER NOT NULL DEFAULT 1, breakfast_time TEXT NOT NULL DEFAULT '08:00',
@@ -596,7 +600,18 @@ export async function addFoodPlanToDiary(
   const db = await database();
   const day = date.toISOString().slice(0, 10);
   const timestamp = date.toISOString();
+  // Share an import key between the Today and Weekly actions to prevent duplicates.
+  const normalizedItems = items
+    .map(item => [item.foodId, item.mealType, item.quantityGrams] as const)
+    .sort((a, b) => a[1].localeCompare(b[1]) || a[0] - b[0] || a[2] - b[2]);
+  const planKey = JSON.stringify({ day, items: normalizedItems });
+  let inserted = false;
   await db.withTransactionAsync(async () => {
+    const priorImport = await db.getFirstAsync<{ plan_key: string }>(
+      "SELECT plan_key FROM meal_plan_diary_imports WHERE plan_key = ?",
+      planKey
+    );
+    if (priorImport) return;
     const mealIds = new Map<string, number>();
     for (const item of items) {
       let mealId = mealIds.get(item.mealType);
@@ -622,7 +637,13 @@ export async function addFoodPlanToDiary(
         mealId, item.foodId, item.quantityGrams
       );
     }
+    await db.runAsync(
+      "INSERT INTO meal_plan_diary_imports (plan_key, imported_at) VALUES (?, ?)",
+      planKey, new Date().toISOString()
+    );
+    inserted = true;
   });
+  return inserted;
 }
 
 
