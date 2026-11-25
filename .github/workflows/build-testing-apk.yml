@@ -84,13 +84,13 @@ jobs:
 
           """
           if 'signingConfigs.create("release")' not in source:
-              match = re.search(r"(?m)^(\\s*)buildTypes\\s*\\{", source)
+              match = re.search(r"(?m)^(\s*)buildTypes\s*\{", source)
               if not match:
                   raise SystemExit("Could not locate buildTypes block in app/build.gradle")
               source = source[:match.start()] + config + source[match.start():]
           source, count = re.subn(
-              r"(?m)^(\\s*)signingConfig\\s+signingConfigs\\.debug\\s*$",
-              r"\\1signingConfig signingConfigs.getByName(\"release\")",
+              r"(?m)^(\s*)signingConfig\s+signingConfigs\.debug\s*$",
+              r'\1signingConfig signingConfigs.getByName("release")',
               source,
               count=1,
           )
