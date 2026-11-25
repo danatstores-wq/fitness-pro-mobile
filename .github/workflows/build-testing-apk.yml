@@ -84,12 +84,40 @@ jobs:
                   }
               }
           """
-          if "signingConfigs {" not in source:
-              source, count = re.subn(r"(android\s*\{)", r"\1" + signing, source, count=1)
-              if count != 1:
+          marker = "signingConfigs {"
+          pos = source.find(marker)
+          if pos < 0:
+              android_match = re.search(r"android\\s*\\{", source)
+              if not android_match:
                   raise SystemExit("Could not locate the android block in app/build.gradle")
-          release_pattern = r"(release\s*\{[\s\S]*?signingConfig\s+)signingConfigs\.debug"
-          source, count = re.subn(release_pattern, r"\1signingConfigs.release", source, count=1)
+              insert_at = android_match.end()
+              source = source[:insert_at] + "\\n    signingConfigs {\\n    }" + source[insert_at:]
+              pos = source.find(marker)
+          open_brace = source.find("{", pos)
+          depth = 0
+          close_brace = None
+          for index in range(open_brace, len(source)):
+              if source[index] == "{":
+                  depth += 1
+              elif source[index] == "}":
+                  depth -= 1
+                  if depth == 0:
+                      close_brace = index
+                      break
+          if close_brace is None:
+              raise SystemExit("Could not parse signingConfigs block")
+          release_signing = """
+                  release {
+                      storeFile file("fitness-pro-upload.jks")
+                      storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                      keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                      keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                  }
+          """
+          if "release {" not in source[open_brace:close_brace]:
+              source = source[:close_brace] + release_signing + source[close_brace:]
+          release_pattern = r"(release\\s*\\{[\\s\\S]*?signingConfig\\s+)signingConfigs\\.debug"
+          source, count = re.subn(release_pattern, r"\\1signingConfigs.release", source, count=1)
           if count != 1:
               raise SystemExit("Could not find the release build's debug signingConfig to replace")
           gradle_file.write_text(source)
