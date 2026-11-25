@@ -17,6 +17,46 @@ export type StoredProfile = {
 
 let databasePromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
+// expo-sqlite's web backend uses an exclusive OPFS access handle. Keep one
+// origin-wide Web Lock for the lifetime of this tab so a second tab cannot
+// try to open the same database file and trigger an Access Handle conflict.
+let webDatabaseLockPromise: Promise<void> | null = null;
+let releaseWebDatabaseLock: (() => void) | null = null;
+
+function acquireWebDatabaseLock(): Promise<void> {
+  const browser = globalThis as any;
+  if (!browser.window || typeof browser.navigator?.locks?.request !== "function") {
+    return Promise.resolve();
+  }
+  if (!webDatabaseLockPromise) {
+    webDatabaseLockPromise = new Promise<void>((resolve, reject) => {
+      browser.navigator.locks.request(
+        "fitness-pro-danat-sqlite",
+        { mode: "exclusive", ifAvailable: true },
+        async (lock: any) => {
+          if (!lock) {
+            reject(new Error("The Fitness Pro food database is already open in another browser tab. Close the other Fitness Pro tab and reload this page."));
+            return;
+          }
+          resolve();
+          await new Promise<void>(release => {
+            releaseWebDatabaseLock = release;
+            browser.window.addEventListener("pagehide", () => {
+              release();
+              releaseWebDatabaseLock = null;
+              webDatabaseLockPromise = null;
+            }, { once: true });
+          });
+        }
+      ).catch(reject);
+    }).catch(error => {
+      webDatabaseLockPromise = null;
+      throw error;
+    });
+  }
+  return webDatabaseLockPromise;
+}
+
 export async function clearPersonalData() {
   const db = await database();
   try {
@@ -59,6 +99,7 @@ export async function clearPersonalData() {
 async function database() {
   if (!databasePromise) {
     databasePromise = (async () => {
+      await acquireWebDatabaseLock();
       const db = await SQLite.openDatabaseAsync("fitness_pro_danat.db");
       await db.execAsync(`
         PRAGMA journal_mode = WAL;
@@ -266,7 +307,16 @@ async function database() {
         await db.runAsync("INSERT OR IGNORE INTO nutrients (name, unit) VALUES (?, ?)", name, unit);
       }
       return db;
-    })();
+    })().catch(error => {
+      // Do not cache a rejected open promise forever. Once another tab closes,
+      // the user can reload/retry and this module can open the database again.
+      databasePromise = null;
+      const message = error instanceof Error ? error.message : String(error);
+      if (/Access Handles cannot be created|Access Handle/i.test(message)) {
+        throw new Error("The Fitness Pro food database is already open in another browser tab. Close other Fitness Pro tabs and reload the app.");
+      }
+      throw error;
+    });
   }
   return databasePromise;
 }
