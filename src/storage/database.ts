@@ -607,11 +607,13 @@ export async function addFoodPlanToDiary(
   const planKey = JSON.stringify({ day, items: normalizedItems });
   let inserted = false;
   await db.withTransactionAsync(async () => {
-    const priorImport = await db.getFirstAsync<{ plan_key: string }>(
-      "SELECT plan_key FROM meal_plan_diary_imports WHERE plan_key = ?",
-      planKey
+    const priorImports = await db.getAllAsync<{ plan_key: string }>(
+      "SELECT plan_key FROM meal_plan_diary_imports"
     );
-    if (priorImport) return;
+    const dayAlreadyHasPlan = priorImports.some(row => {
+      try { return JSON.parse(row.plan_key).day === day; } catch { return false; }
+    });
+    if (dayAlreadyHasPlan) return;
     const mealIds = new Map<string, number>();
     for (const item of items) {
       let mealId = mealIds.get(item.mealType);
